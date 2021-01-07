@@ -1,0 +1,170 @@
+-- SQLite
+
+CREATE TABLE IF NOT EXISTS userlevel (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    level VARCHAR(32) NOT NULL,
+    description VARCHAR(512));
+
+CREATE TABLE IF NOT EXISTS userstatus (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    description VARCHAR(512));
+
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    level INTEGER NOT NULL,
+    username VARCHAR(16) UNIQUE NOT NULL,
+    password VARCHAR(256) NOT NULL,
+    fname VARCHAR(32) NOT NULL,
+    lname VARCHAR(32) NOT NULL,
+    email VARCHAR(64) UNIQUE NOT NULL,
+    status INTEGER NOT NULL,
+    picture VARCHAR(256),
+    FOREIGN KEY (level) REFERENCES userlevel(id),
+    FOREIGN KEY (status) REFERENCES userstatus(id));
+
+
+
+CREATE TABLE IF NOT EXISTS querycat (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    category VARCHAR(32) NOT NULL,
+    description VARCHAR(512));
+
+CREATE TABLE IF NOT EXISTS queries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    userid INTEGER NOT NULL,
+    name VARCHAR(32) UNIQUE NOT NULL,
+    category INTEGER(4) NOT NULL,
+    description VARCHAR(512) NOT NULL,
+    picture VARCHAR(256),
+    FOREIGN KEY (category) REFERENCES querycat(id),
+    FOREIGN KEY (userid) REFERENCES users(id));
+
+CREATE TABLE IF NOT EXISTS answers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    queryid INTEGER NOT NULL,
+    userid INTEGER UNIQUE NOT NULL,
+    description VARCHAR(512) NOT NULL,
+    FOREIGN KEY (queryid) REFERENCES queries(id),
+    FOREIGN KEY (userid) REFERENCES users(id));
+
+
+
+INSERT INTO userlevel (level, description) VALUES("admin", "Administrator. Super admin with all privileges");
+INSERT INTO userlevel (level, description) VALUES("contributor", "Contributor. Can answer queries and mark queries as answered");
+INSERT INTO userlevel (level, description) VALUES("user", "Regular user. Can create queries and delete their own queries");
+
+INSERT INTO userstatus (status) VALUES("active");
+INSERT INTO userstatus (status) VALUES("hibernation");
+INSERT INTO userstatus (status) VALUES("banned");
+
+INSERT INTO querycat (category) VALUES("Computer");
+INSERT INTO querycat (category) VALUES("Cellphone");
+INSERT INTO querycat (category) VALUES("Broadband");
+INSERT INTO querycat (category) VALUES("Telephony");
+
+
+
+DELETE FROM users WHERE id = 2;
+DELETE FROM queries WHERE id = 1;
+DELETE FROM answers WHERE id = 1;
+DELETE FROM categories WHERE id = 1;
+
+DROP TABLE answers;
+DROP TABLE queries;
+DROP TABLE querycat;
+DROP TABLE users;
+DROP TABLE userstatus;
+DROP TABLE userlevel;
+
+##############################################################################
+
+USERLEVEL
+
+
+USERSTATUS
+
+
+USERS
+{
+    "level": 1,
+    "username": "admin",
+    "password": "admin",
+    "fname": "admin",
+    "lname": "admin",
+    "email": "site_admin@site.se",
+	"status": 1
+}
+{
+    "level": 2,
+    "username": "contributor1",
+    "password": "contributor1",
+    "fname": "contributor1",
+    "lname": "contributor1",
+    "email": "contributor1@site.se",
+	"status": 1
+}
+{
+    "level": 3,
+    "username": "user1",
+    "password": "user1",
+    "fname": "user1",
+    "lname": "user1",
+    "email": "user1@site.se",
+	"status": 1
+}
+
+
+QUERYCAT
+{
+	"category": "computer",
+	"description": ""
+}
+
+
+QUERIES
+{
+	"userid": 1,
+	"name": "",
+	"category": 1,
+	"description": ""
+}
+
+
+ANSWERS
+{
+	"queryid": 1,
+	"userid": 1,
+	"description": ""
+}
+
+
+
+UPDATE
+{
+	"id": 1,
+	"username": "admin",
+	"password": "admin",
+	"fname": "admin",
+	"lname": "admin",
+	"email": "site_admin@help.se"
+}
+
+LOGIN
+{
+	"password": "admin",
+	"email": "site_admin@site.se"
+}
+{
+	"password": "contributor1",
+	"email": "contributor1@site.se"
+}
+
+
+DELETE
+{
+	"password": "admin",
+	"id": 1
+}
