@@ -28,8 +28,8 @@ const addUser = async (data) => {
 const addQuery = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('INSERT INTO queries (userid, name, category, description) VALUES(?, ?, ?, ?)', [data.userid, data.name, data.category, data.description]);
-        const query = await dbConnection.get('SELECT MAX(rowid) FROM queries');
+        await dbConnection.run('INSERT INTO queries (title, category, userId, description) VALUES(?, ?, ?, ?)', [data.title, data.category, data.userId, data.description]);
+        const query = await dbConnection.get('SELECT * FROM queries ORDER BY id DESC LIMIT 1');
         return { status: '200', content: query };
     }
     catch (error) {
@@ -122,7 +122,7 @@ const getUsers = async () => {
 const getUser = async (id) => {
     try {
         const dbConnection = await database;
-        const user = await dbConnection.get('SELECT accessLevel, username, fname, lname, email, picture FROM users WHERE id = (?)', [id]);
+        const user = await dbConnection.get('SELECT id, accessLevel, username, fname, lname, email, picture FROM users WHERE id = (?)', [id]);
         if (user) {
             return { status: '200', user: user };
         }
@@ -192,15 +192,21 @@ const getUserStatus = async (data) => {
     }
 };
 
-const getQueries = async () => {
+const getQueries = async (data) => {
     try {
+        let queries = []
         const dbConnection = await database;
-        const queries = await dbConnection.all('SELECT id, userid, name, category, description, picture FROM queries ORDER BY id ASC');
+        if (data.accessLevel == 3) {
+            queries = await dbConnection.all('SELECT id, userid, title, category, description FROM queries ORDER BY id ASC');
+        }
+        else {
+            queries = await dbConnection.all('SELECT id, userid, title, category, description FROM queries WHERE userId = (?) ORDER BY id ASC', [data.userId]);
+        }
         if (queries) {
             return { status: '200', content: queries };
         }
         else
-            throw error;
+            return { status: '200' };
     }
     catch (error) {
         console.log(`| ERROR | ${error} |`);
@@ -212,7 +218,7 @@ const getQueries = async () => {
 const getQuery = async (id) => {
     try {
         const dbConnection = await database;
-        const query = await dbConnection.all('SELECT id, userid, name, category, description, picture FROM queries WHERE id = (?)', [id]);
+        const query = await dbConnection.all('SELECT id, userid, title, category, description FROM queries WHERE id = (?)', [id]);
         if (query.length > 0) {
             return { status: '200', content: query };
         }
@@ -230,7 +236,7 @@ const getQuery = async (id) => {
 const getCategory = async (data) => {
     try {
         const dbConnection = await database;
-        const category = await dbConnection.all('SELECT category, description FROM querycat WHERE category = (?)', [data]);
+        const category = await dbConnection.all('SELECT category, description FROM queryCategory WHERE category = (?)', [data]);
         if (category.length > 0) {
             return { status: '200', content: category };
         }

@@ -241,6 +241,15 @@
                                         placeholder="Enter title" title="title" v-model="title">
                                 </div>
                                 <div class="form-group modalColor">
+                                    <label for="inputCategory">Category</label>
+                                    <select class="form-control" name="inputCategory" id="inputCategory" v-model="category">
+                                        <option type="text">Computer</option>
+                                        <option type="text">Cellphone</option>
+                                        <option type="text">Broadband</option>
+                                        <option type="text">Telephony</option>
+                                    </select>
+                                </div>
+                                <div class="form-group modalColor">
                                     <label for="inputDescription">Description</label>
                                     <textarea class="form-control" id="inputDescription" 
                                         placeholder="Description" rows="6" description="description" 
@@ -249,7 +258,7 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" v-on:click="sendQuery(title, description)"
+                            <button type="button" class="btn btn-primary" v-on:click="sendQuery()"
                                 data-dismiss="modal">Submit</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetQueryModal()">Close</button>
                         </div>
@@ -326,7 +335,8 @@
                     newFname: "",
                     newLname: "",
                     title: "",
-                    description: ""
+                    description: "",
+                    category: ""
                 },
                 methods: {
                     async loginUser(emailUsername, password) {
@@ -399,10 +409,24 @@
                     },
 
                     async updateQueries() {
-                        var self = this;
-                        var queries = [];
-                        await $.getJSON('/queries/', function (jsondata) {
-                            self.queries = jsondata;
+                        var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/queries/',
+                            type: 'POST',
+                            data: user,
+                            success: function (response) {
+                                var self = this;
+                                if (response) {
+                                    self.queries = response;
+                                }
+                                else {
+                                    self.queries = []
+                                }
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                            }
                         });
                     },
                     selectItem(item) {
@@ -410,6 +434,32 @@
                     },
                     unselectItem() {
                         this.selectedItem = '';
+                    },
+                    async sendQuery() {
+                        var message;
+                        var query = {
+                            title: $('#queryModal #inputTitle').val(),
+                            category: $('#queryModal #inputCategory').val(),
+                            description: $('#queryModal #inputDescription').val(),
+                            userId: this.user.id
+                        }
+                        console.log(query);
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/query/',
+                            type: 'POST',
+                            data: query,
+                            success: (response) => {
+                                var self = this;
+                                message = response;
+                                alert(message);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                                alert(message);
+                            }
+                        });
+                        self.updateQueries();
                     },
                     resetQueryModal() {
                         $('#queryModal #inputTitle').val("");
@@ -433,9 +483,9 @@
                         self.lastAsked = jsondata;
                     });
                     */
-                    this.checkLoggedIn();
+                    await this.checkLoggedIn();
                     if (this.loggedIn) {
-                        this.updateQueries();
+                        await this.updateQueries();
                     }
                 }
             });

@@ -147,9 +147,9 @@ routes.get('/users/', async (req, res) => {
         logSave('| GET | all users |');
         let dbRes = await database.getUsers();
         if (dbRes.status=='200') {
-            for (i of dbRes.content) {
-                i.password = 'xxxx';
-            }
+            //for (i of dbRes.content) {
+            //    i.password = 'xxxx';
+            //}
             res.json(dbRes.content);
         }
         else {
@@ -163,13 +163,19 @@ routes.get('/users/', async (req, res) => {
     }
 });
 
-routes.get('/queries/', async (req, res) => {
+routes.post('/queries/', async (req, res) => {
     try {
+        const data = req.body;
         console.log(`| Handling GET-request for all queries |`);
         logSave("| GET | all queries |");
-        const dbRes = await database.getQueries();
+        const dbRes = await database.getQueries(data);
         if (dbRes.status=='200') {
-            res.status(200).json(dbRes.content);
+            if (dbRes.content) {
+                res.status(200).json(dbRes.content);
+            }
+            else {
+                res.status(200);
+            }
         }
         else {
             res.status(400).json(dbRes.content);
@@ -292,8 +298,9 @@ routes.post('/user/', async (req, res) => {
 routes.post('/query/', async (req, res) => {
     try {
         const data = req.body;
-        console.log(`| Handling POST-request for query: ${data.name} |`);
-        logSave(`| POST | QUERY: ${data.name} |`);
+        //data.userId = parseInt(data.userId);
+        console.log(`| Handling POST-request for query: ${data.title} |`);
+        logSave(`| POST | QUERY: ${data.title} |`);
         let userInput = await inputControl('query', data);
         if (userInput[0]) {
             console.log(`| ERROR | ${userInput[1]} |`);
@@ -302,10 +309,9 @@ routes.post('/query/', async (req, res) => {
         }
         else {
             try {
-                data.category = parseInt(data.category);
                 let dbRes = await database.addQuery(data);
                 if (dbRes.status == '200') {
-                    const id = dbRes.content[0].id;
+                    const id = dbRes.content.id;
                     console.log(`| SUCCESS | Query saved |`);
                     logSave(`| SUCCESS | Query saved | ID: ${id}|`);
                     res.status(200).json(`Query with id ${id} saved`);
@@ -572,10 +578,10 @@ routes.delete('/query/', async (req, res) => {
 //############################ INPUT CONTROL ############################
 async function inputControl(scope, data) {
     let errorLog = [];
-    errorLog.push("ERROR! Could not save product");
-    errorLog.push("Following fields contain faults:");
     let inputTest = false;
     if (scope == 'user') {
+        errorLog.push("ERROR! Could not save user");
+        errorLog.push("Following fields contain faults:");
         if (data.username.length > 16 || data.username.length == 0) {
             console.log(`| ERROR | Username length |`);
             logSave(`| ERROR | Username length |`);
@@ -620,11 +626,13 @@ async function inputControl(scope, data) {
         }
     }
     else if (scope == 'query') {
-        if (data.name.length > 32 || data.name.length == 0) {
-            console.log(`| ERROR | Name length |`);
-            logSave(`| ERROR | Name length |`);
+        errorLog.push("ERROR! Could not save query");
+        errorLog.push("Following fields contain faults:");
+        if (data.title.length > 32 || data.title.length == 0) {
+            console.log(`| ERROR | Title length |`);
+            logSave(`| ERROR | Title length |`);
             inputTest = true;
-            errorLog.push("-Name too long or empty");
+            errorLog.push("-Title too long or empty");
         }
         let dbRes = await database.getCategory(data.category);
         if (dbRes.status != '200') {
@@ -633,20 +641,20 @@ async function inputControl(scope, data) {
             inputTest = true;
             errorLog.push("-Category not found");
         }
-        if (isNaN(data.userid)) {
+        if (isNaN(data.userId)) {
             console.log(`| ERROR | UserId is NAN |`);
             logSave(`| ERROR | UserId is NAN |`);
             inputTest = true;
             errorLog.push("-UserId must be a number");
         }
-        dbRes = await database.getUser(data.userid)
+        dbRes = await database.getUser(data.userId)
         if (dbRes.status != '200') {
             console.log(`| ERROR | User not found |`);
             logSave(`| ERROR | User not found |`);
             inputTest = true;
             errorLog.push("-User not found");
         }
-        if (data.description.length > 512) {
+        if (data.description.length > 512 || data.description.length == 0) {
             console.log(`| ERROR | Description length |`);
             logSave(`| ERROR | Description length |`);
             inputTest = true;
@@ -654,6 +662,8 @@ async function inputControl(scope, data) {
         }
     }
     else if (scope == 'answer') {
+        errorLog.push("ERROR! Could not save answer");
+        errorLog.push("Following fields contain faults:");
         let dbRes = await database.getQuery(data.queryid);
         if (dbRes.status != '200') {
             console.log(`| ERROR | Query not found |`);

@@ -95,6 +95,7 @@
         <div class="container-fluid table-responsive-lg">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
                 data-target="#addUserModal">New User</button>
+            <label class="table-label" for="usersTable">USERS</label>
             <table class="table table-image" id="usersTable">
                 <thead>
                     <tr class="admin-table">
@@ -134,7 +135,53 @@
                 </tbody>
             </table>
         </div>
-
+        <div class="border border-primary table-divider"></div>
+        <!-- QUERIES -->
+        <!-- QUERIES -->
+        <div class="container-fluid table-responsive-lg">
+            <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
+                data-target="#addQueryModal">New Query</button>
+            <label class="table-label" for="queriesTableTable">QUERIES</label>
+            <table class="table table-image" id="queriesTable">
+                <thead>
+                    <tr class="admin-table">
+                        <th scope="col">Id</th>
+                        <th scope="col">Posted</th>
+                        <th scope="col">Posted by ID</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Duplicate</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="admin-table" v-for="item in queries" :key="item.id">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.time }}</td>
+                        <td>{{ item.userId }}</td>
+                        <td>{{ item.title }}</td>
+                        <td>{{ item.category }}</td>
+                        <td>{{ item.description}}</td>
+                        <td>{{ item.duplicate}}</td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
+                                data-target="#updateQueryModal" v-on:click="selectItem(item)">
+                                Update
+                            </button>
+                            <button type="button" class="btn btn-warning btn-card" data-toggle="modal"
+                                v-on:click="flagQuery(item)">
+                                Flag
+                            </button>
+                            <button type="button" class="btn btn-danger btn-card" data-toggle="modal"
+                                v-on:click="deleteQuery(item)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
         <!------------------------------------------------------------------------------------------------------------------------------>
         <!-- MODALS -->
@@ -366,7 +413,8 @@
                 newFname: "",
                 newLname: "",
                 title: "",
-                description: ""
+                description: "",
+                category: ""
             },
             methods: {
                 async loginUser(emailUsername, password) {
@@ -470,7 +518,6 @@
                         lname: $('#addUserModal #newLname').val(),
                         email: $('#addUserModal #newEmail').val()
                     }
-                    console.log(user);
                     $.ajax({
                         url: '/user/',
                         type: 'POST',
@@ -540,6 +587,46 @@
                         }
                     });
                 },
+                async updateQueries() {
+                    var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/queries/',
+                        type: 'POST',
+                        data: user,
+                        success: (response) => {
+                            var self = this;
+                            self.queries = response;
+                            //alert(`User ${response.username} logged in`);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                        }
+                    });
+                },
+                deleteQuery(item) {
+                    //var password = prompt("Please type password");
+                    var message;
+                    var query = item;
+                    //var userData = { "id": user.id, "password": password };
+                    var queryData = { "id": query.id };
+                    $.ajax({
+                        url: '/user/',
+                        type: 'DELETE',
+                        data: queryData,
+                        success: (response) => {
+                            var self = this;
+                            self.unselectItem();
+                            self.updateQueries();
+                            alert(response);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
+                            alert(message);
+                        }
+                    });
+                },
                 resetQueryModal() {
                     $('#queryModal #inputTitle').val("");
                     $('#queryModal #inputDescription').val("");
@@ -565,7 +652,7 @@
             async mounted() {
                 this.checkLoggedIn();
                 if (this.loggedIn) {
-                    //this.updateQueries();
+                    this.updateQueries();
                     this.updateUsers();
                 }
             }
