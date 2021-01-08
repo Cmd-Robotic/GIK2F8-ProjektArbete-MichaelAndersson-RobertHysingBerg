@@ -95,7 +95,7 @@
         <div class="container-fluid table-responsive-lg">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
                 data-target="#addUserModal">New User</button>
-            <table class="table table-image">
+            <table class="table table-image" id="usersTable">
                 <thead>
                     <tr class="admin-table">
                         <th scope="col">Id</th>
@@ -119,7 +119,7 @@
                         <td>{{ item.lastLogin}}</td>
                         <td>
                             <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
-                                data-target="#updateProdModal" v-on:click="selectItem(item)">
+                                data-target="#updateUserModal" v-on:click="selectItem(item)">
                                 Update info
                             </button>
                             <button type="button" class="btn btn-warning btn-card" data-toggle="modal" v-on:click="banUser(item)">
@@ -154,7 +154,7 @@
                     </div>
                     <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
                     <div class="modal-body">
-                        <form id="formaddProd">
+                        <form id="formAddUser">
                             <div class="form-group modalColor">
                                 <label for="newAccessLevel">Access level</label>
                                 <select class="form-control" name="newAccessLevel" id="newAccessLevel"
@@ -200,6 +200,71 @@
             </div>
         </div>
 
+        <!-- UPDATE USER MODAL -->
+        <!-- UPDATE USER MODAL -->
+        <div class="modal fade" id="updateUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
+            :item="item">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateUserLabel">Update user</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
+                    <div class="modal-body">
+                        <form id="formUpdateUser">
+                            <div class="form-group modalColor">
+                                <label for="updateId">ID</label>
+                                <input type="text" class="form-control" name="updateId" id="updateId"
+                                    v-bind:value="selectedItem.id" readonly>
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="updateAccessLevel">Access level</label>
+                                <select class="form-control" name="updateAccessLevel" id="updateAccessLevel"
+                                    v-bind:value="selectedItem.accessLevel">
+                                    <option type="number">1</option>
+                                    <option type="number">2</option>
+                                    <option type="number">3</option>
+                                </select>
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="updateUsername">Username</label>
+                                <input type="text" class="form-control" name="updateUsername" id="updateUsername"
+                                    v-bind:value="selectedItem.username">
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="updatePassword">Password</label>
+                                <input type="text" class="form-control" name="updatePassword" id="updatePassword"
+                                    v-bind:value="selectedItem.password">
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="updateFname">Firstname</label>
+                                <input type="text" class="form-control" name="updateFname" id="updateFname"
+                                    v-bind:value="selectedItem.fname">
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="updateLname">Lastname</label>
+                                <input type="text" class="form-control" name="updateLname" id="updateLname"
+                                    v-bind:value="selectedItem.lname">
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="updateEmail">Email</label>
+                                <input type="email" class="form-control" name="updateEmail" id="updateEmail"
+                                    v-bind:value="selectedItem.email">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer modalColor">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            v-on:click="resetUpdateUserModal()">Close</button>
+                        <button type="button" class="btn btn-primary" v-on:click="updateUser()" data-dismiss="modal">Save
+                            changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- QUERY MODAL -->
         <!-- QUERY MODAL -->
@@ -428,6 +493,35 @@
                         }
                     });
                 },
+                updateUser() {
+                    var message;
+                    var user = {
+                        id: $('#updateUserModal #updateId').val(),
+                        accessLevel: $('#updateUserModal #updateAccessLevel').val(),
+                        username: $('#updateUserModal #updateUsername').val(),
+                        password: $('#updateUserModal #updatePassword').val(),
+                        fname: $('#updateUserModal #updateFname').val(),
+                        lname: $('#updateUserModal #updateLname').val(),
+                        email: $('#updateUserModal #updateEmail').val()
+                    }
+                    console.log(user);
+                    $.ajax({
+                        url: '/user/',
+                        type: 'PUT',
+                        data: user,
+                        success: (response) => {
+                            var self = this;
+                            self.updateUsers();
+                            message = response;
+                            alert(message);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to update user`);
+                            alert(message);
+                        }
+                    });
+                },
                 deleteUser(item) {
                     //var password = prompt("Please type password");
                     var message;
@@ -461,6 +555,15 @@
                     $('#addUserModal #newFname').val("");
                     $('#addUserModal #newLname').val("");
                     $('#addUserModal #newEmail').val("");
+                },
+                resetUpdateUserModal() {
+                    $('#updateUserModal #updateId').val("");
+                    $('#updateUserModal #updateAccessLevel').val("");
+                    $('#updateUserModal #updateUsername').val("");
+                    $('#updateUserModal #updatePassword').val("");
+                    $('#updateUserModal #updateFname').val("");
+                    $('#updateUserModal #updateLname').val("");
+                    $('#updateUserModal #updateEmail').val("");
                 },
             },
             async mounted() {

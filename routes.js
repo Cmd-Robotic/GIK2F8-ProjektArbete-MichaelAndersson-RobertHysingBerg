@@ -397,11 +397,11 @@ routes.put('/user/', async (req, res) => {
                     logSave(`| ERROR | ${userInput[1]} |`);
                     res.status(400).json(userInput[1]);
                 }
-                dbRes = await database.updateUser(user.id, data);
+                dbRes = await database.updateUser(data);
                 if (dbRes.status=='200') {
                     console.log(`| SUCCESS | User updated |`);
                     logSave(`| SUCCESS | User updated |`);
-                    res.status(200).json(`User with id ${user.id} and username ${user.username} updated`);
+                    res.status(200).json(`User with id ${data.id} and username ${data.username} updated`);
                 }
                 else {
                     throw error;

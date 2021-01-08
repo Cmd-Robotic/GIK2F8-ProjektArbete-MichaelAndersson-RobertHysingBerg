@@ -250,10 +250,10 @@ const getCategory = async (data) => {
 
 //##############################################################
 //############################ UPDATE ############################
-const updateUser = async (id, data) => {
+const updateUser = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('UPDATE users SET level = (?), username = (?), fname = (?), lname = (?), email = (?) WHERE id = (?)', [data.level, data.username, data.fname, data.lname, data.email, id]);
+        await dbConnection.run('UPDATE users SET level = (?), username = (?), fname = (?), lname = (?), email = (?) WHERE id = (?)', [data.userLevel, data.username, data.fname, data.lname, data.email, data.id]);
         return { status: '200', content: 'User updated' };
     }
     catch {
