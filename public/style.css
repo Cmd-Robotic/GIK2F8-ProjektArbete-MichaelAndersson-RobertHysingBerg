@@ -37,16 +37,6 @@ div.dropdown-menu > :first-child {
     color: whitesmoke;
 }
 
-ol.breadcrumb{
-    background-color: #0000009f;
-    margin-bottom: 0px;
-    padding-top: 5px;
-}
-ol.breadcrumb > li.breadcrumb-item {
-    background-color: transparent;
-    color: whitesmoke;
-}
-
 
 /* PAGE HEADER */
 .container-pg-head {
@@ -67,31 +57,23 @@ ol.breadcrumb > li.breadcrumb-item {
     margin-right: 10px;
 }
 
-/* CART MODAL */
-.btn-cart {
+/* QUERY MODAL */
+.btn-query {
     height: 25px!important;
     width: 25px!important;
     padding: 0!important;
 }
-#shoppingCartModal > .modal-dialog {
-    width: auto;
-    max-width: 700px;
+
+
+/* CONTAINERS */
+.site-container {
+    margin: 20px 0 20px 0;
 }
-
-
-/* CAROUSEL */
-#carousel {
-    margin: 40px 40px;
-    max-height: inherit;
-}
-
 
 /* CARDS */
-.div-cards {
-    margin: 0 20px;
-}
+
 .card {
-    margin: 20px 5px;
+    margin: 10px;
     background-color: #0000009f!important;
     color: whitesmoke;
 }
@@ -140,12 +122,6 @@ footer img {
     justify-content: start;
 }
 
-
-/*
-background-color: rgb(20, 20, 20);
-
-
-*/
 
 @media (min-width: 768px) {
     footer #footer-textC {

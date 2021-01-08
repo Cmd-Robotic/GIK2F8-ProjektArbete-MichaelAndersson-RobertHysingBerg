@@ -15,8 +15,12 @@
 
     <body>
         <div class="container-fluid" id="app">
+
+            <!------------------------------------------------------------------------------------------------------------------------------>
+            <!-- NAVBAR -->
+            <!-- NAVBAR -->
             <nav class="navbar navbar-expand-lg navbar-dark border border-primary">
-                <a class="navbar-brand" href="#">AtoTheQ</a>
+                <a class="navbar-brand" href="#">A to The Q</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -73,10 +77,77 @@
                 </div>
             </nav>
 
+            <!------------------------------------------------------------------------------------------------------------------------------>
+            <!-- FREQUENTLY ASKED -->
+            <!-- FREQUENTLY ASKED -->
+            <div class="container-fluid" id="frequentlyAskedQs">
+                <div class="container-fluid border border-primary site-container">
+                    <div class="row row-cols-1 row-cols-md-3">
+                        <div class="col mb-4" v-for="item in freqAskedQ" :key="item.id">
+                            <div class="card h-100 border rounded">
+                                <img v-bind:src="item.picture" class="card-img-top" alt="...">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.title }}</h5>
+                                    <div>Asked by: {{ item.userid }}</div>
+                                    <p class="card-text">{{ item.description }}</p>
+                                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-card" data-toggle="modal" data-target="#cardModal"
+                                    v-on:click="selectItem(item)">
+                                    More info
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
 
+            <!------------------------------------------------------------------------------------------------------------------------------>
+            <!-- MODALS -->
+            <!-- MODALS -->
+
+            <!-- LOGIN MODAL -->
+            <!-- LOGIN MODAL -->
+            <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group modalColor">
+                                    <label for="inputEmail">Email address</label>
+                                    <input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp"
+                                        placeholder="Enter email" email="email" v-model="email">
+                                    <small id="emailHelp" class="form-text text-muted">We will never share your email with anyone
+                                        else.</small>
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputPassword">Password</label>
+                                    <input type="password" class="form-control" id="inputPassword" placeholder="Password"
+                                        password="password" v-model="password">
+                                </div>
+                                <div class="form-check modalColor">
+                                    <input type="checkbox" class="form-check-input" id="check">
+                                </div>
+                                <button type="button" class="btn btn-primary" v-on:click="loginUser(email, password)"
+                                    data-dismiss="modal">Submit</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
+
 
         <!------------------------------------------------------------------------------------------------------------------------------>
         <!-- FOOTER -->
@@ -93,7 +164,7 @@
                         </a>
                     </div>
                     <div id="footer-textC" class="footer-text col-sm d-flex">
-                        <p>CyberWatch TM</p>
+                        <p>AtoQ TM</p>
                     </div>
                     <div id="footer-textL" class="footer-text col-sm d-flex">
                         <p>Made with the help of<a href="https://getbootstrap.com"> Bootstrap</a>...and stuff</p>
