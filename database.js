@@ -197,10 +197,10 @@ const getQueries = async (data) => {
         let queries = []
         const dbConnection = await database;
         if (data.accessLevel == 3) {
-            queries = await dbConnection.all('SELECT id, userid, title, category, description FROM queries ORDER BY id ASC');
+            queries = await dbConnection.all('SELECT id, time, userid, title, category, description FROM queries ORDER BY id ASC');
         }
         else {
-            queries = await dbConnection.all('SELECT id, userid, title, category, description FROM queries WHERE userId = (?) ORDER BY id ASC', [data.userId]);
+            queries = await dbConnection.all('SELECT id, time, userid, title, category, description FROM queries WHERE userId = (?) ORDER BY id ASC', [data.userId]);
         }
         if (queries) {
             return { status: '200', content: queries };

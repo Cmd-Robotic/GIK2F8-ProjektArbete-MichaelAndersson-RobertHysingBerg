@@ -64,7 +64,8 @@
                                 <div class="dropdown-divider"></div>
                             </span>
                             <span v-show="admin"><a class="dropdown-item" href="adminSite.html">Admin</a></span>
-                            <span v-show="loggedIn"><a class="dropdown-item" href="userProfile.html">Settings</a></span>
+                            <span v-show="loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
+                                    data-target="#settingsModal">Settings</a></span>
                             <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
                                     data-target="#registerModal">Register</a></span>
                             <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
@@ -92,7 +93,7 @@
 
         <!-- USERS -->
         <!-- USERS -->
-        <div class="container-fluid table-responsive-lg">
+        <div class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
                 data-target="#addUserModal">New User</button>
             <label class="table-label" for="usersTable">USERS</label>
@@ -135,12 +136,12 @@
                 </tbody>
             </table>
         </div>
-        <div class="border border-primary table-divider"></div>
+        
         <!-- QUERIES -->
         <!-- QUERIES -->
-        <div class="container-fluid table-responsive-lg">
+        <div class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
-                data-target="#addQueryModal">New Query</button>
+                data-target="#queryModal">New Query</button>
             <label class="table-label" for="queriesTableTable">QUERIES</label>
             <table class="table table-image" id="queriesTable">
                 <thead>
@@ -323,8 +324,17 @@
                         <form>
                             <div class="form-group modalColor">
                                 <label for="inputTitle">Title</label>
-                                <input type="text" class="form-control" id="inputTitle" placeholder="Enter title"
-                                    title="title" v-model="title">
+                                <input type="text" class="form-control" id="inputTitle" placeholder="Enter title" title="title"
+                                    v-model="title">
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="inputCategory">Category</label>
+                                <select class="form-control" name="inputCategory" id="inputCategory" v-model="category">
+                                    <option type="text">Computer</option>
+                                    <option type="text">Cellphone</option>
+                                    <option type="text">Broadband</option>
+                                    <option type="text">Telephony</option>
+                                </select>
                             </div>
                             <div class="form-group modalColor">
                                 <label for="inputDescription">Description</label>
@@ -334,7 +344,7 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" v-on:click="sendQuery(title, description)"
+                        <button type="button" class="btn btn-primary" v-on:click="sendQuery()"
                             data-dismiss="modal">Submit</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal"
                             v-on:click="resetQueryModal()">Close</button>
@@ -480,12 +490,6 @@
                         }
                     }
                 },
-
-                updateLocalStorage() {
-                    var parsed = JSON.stringify(this.queries)
-                    localStorage.setItem('cart', parsed)
-                },
-
                 async updateQueries() {
                     var self = this;
                     var queries = [];
@@ -604,6 +608,32 @@
                         }
                     });
                 },
+                async sendQuery() {
+                    var message;
+                    var query = {
+                        title: $('#queryModal #inputTitle').val(),
+                        category: $('#queryModal #inputCategory').val(),
+                        description: $('#queryModal #inputDescription').val(),
+                        userId: this.user.id
+                    }
+                    console.log(query);
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/query/',
+                        type: 'POST',
+                        data: query,
+                        success: (response) => {
+                            var self = this;
+                            message = response;
+                            alert(message);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                            alert(message);
+                        }
+                    });
+                    this.updateQueries();
+                },
                 deleteQuery(item) {
                     //var password = prompt("Please type password");
                     var message;
@@ -611,7 +641,7 @@
                     //var userData = { "id": user.id, "password": password };
                     var queryData = { "id": query.id };
                     $.ajax({
-                        url: '/user/',
+                        url: 'http://127.0.0.1:5000/query/',
                         type: 'DELETE',
                         data: queryData,
                         success: (response) => {
@@ -629,11 +659,13 @@
                 },
                 resetQueryModal() {
                     $('#queryModal #inputTitle').val("");
+                    $('#queryModal #inputCategory').val("");
                     $('#queryModal #inputDescription').val("");
                 },
                 resetAddUserModal() {
                     $('#addUserModal #newAccessLevel').val("");
                     $('#addUserModal #newUsername').val("");
+                    $('#addUserModal #newPassword').val("");
                     $('#addUserModal #newFname').val("");
                     $('#addUserModal #newLname').val("");
                     $('#addUserModal #newEmail').val("");

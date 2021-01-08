@@ -94,8 +94,9 @@ div.dropdown-menu > :first-child {
 .table > tbody > .admin-table > td > img{
     color: black;
 }
-.table-divider {
-    margin: 10px 0 20px 0;
+.admin-tables {
+    padding-top: 20px;
+    margin-bottom: 30px;
 }
 .table-label {
     color: whitesmoke;
