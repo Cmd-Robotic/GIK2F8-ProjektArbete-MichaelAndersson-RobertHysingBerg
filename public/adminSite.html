@@ -81,6 +81,63 @@
             </div>
         </nav>
 
+
+        <!------------------------------------------------------------------------------------------------------------------------------>
+        
+        <!-- PAGE HEADER -->
+        <!-- PAGE HEADER -->
+        <div class="container container-pg-head">
+            <h1 class="h1-pg">Admin Site</h1>
+        </div>
+
+        <!-- USERS -->
+        <!-- USERS -->
+        <div class="container">
+            <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
+                data-target="#addUserModal">New User</button>
+            <table class="table table-image">
+                <thead>
+                    <tr class="admin-table">
+                        <th scope="col">Id</th>
+                        <th scope="col">Accesslevel</th>
+                        <th scope="col">Username</th>
+                        <th scope="col">Firstname</th>
+                        <th scope="col">Lastname</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Last login</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="admin-table" v-for="item in users" :key="item.id">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.accessLevel }}</td>
+                        <td>{{ item.username }}</td>
+                        <td>{{ item.fname }}</td>
+                        <td>{{ item.lname }}</td>
+                        <td>{{ item.email}}</td>
+                        <td>{{ item.lastLogin}}</td>
+                        <td>
+                            <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
+                                data-target="#updateProdModal" v-on:click="selectItem(item)">
+                                Update info
+                            </button>
+                            <button type="button" class="btn btn-warning btn-card" data-toggle="modal" v-on:click="banUser(item)">
+                                Ban user
+                            </button>
+                            <button type="button" class="btn btn-danger btn-card" data-toggle="modal"
+                                v-on:click="deleteUser(item)">
+                                Delete
+                            </button>
+
+                        </td>
+                    </tr>
+        
+                </tbody>
+            </table>
+        </div>
+
+
         <!------------------------------------------------------------------------------------------------------------------------------>
         <!-- MODALS -->
         <!-- MODALS -->
@@ -290,7 +347,7 @@
             },
             async mounted() {
                 this.checkLoggedIn();
-                if (loggedIn) {
+                if (this.loggedIn) {
                     this.updateQueries();
                     this.updateUsers();
                 }

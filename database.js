@@ -105,7 +105,7 @@ const getUserByEmail = async (email) => {
 const getUsers = async () => {
     try {
         const dbConnection = await database;
-        const users = await dbConnection.all('SELECT id, level, username, password, fname, lname, email FROM users ORDER BY id ASC');
+        const users = await dbConnection.all('SELECT id, accessLevel, username, fname, lname, email , lastLogin FROM users ORDER BY accessLevel DESC');
         if (users) {
             return { status: '200', content: users };
         }
