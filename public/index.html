@@ -86,7 +86,7 @@
             <div class="container-fluid" id="frequentlyAskedQs">
                 <div class="container-fluid border border-primary site-container">
                     <div class="row row-cols-1 row-cols-md-3">
-                        <div class="col mb-4" v-for="item in freqAskedQ" :key="item.id">
+                        <div class="col mb-4" v-for="item in frequentlyAsked" :key="item.id">
                             <div class="card h-100 border rounded">
                                 <img v-bind:src="item.picture" class="card-img-top" alt="...">
                                 <div class="card-body">
@@ -110,7 +110,7 @@
             <div class="container-fluid" id="lastAskedQs">
                 <div class="container-fluid border border-primary site-container">
                     <div class="row row-cols-1 row-cols-md-3">
-                        <div class="col mb-4" v-for="item in freqAskedQ" :key="item.id">
+                        <div class="col mb-4" v-for="item in lastAsked" :key="item.id">
                             <div class="card h-100 border rounded">
                                 <img v-bind:src="item.picture" class="card-img-top" alt="...">
                                 <div class="card-body">
@@ -203,18 +203,18 @@
                                 </div>
                                 <div class="form-group modalColor">
                                     <label for="inputNewFname">Firstname</label>
-                                    <input type="text" class="form-control" id="inputNewFname" placeholder="Firstname" newfirstname="newFirstname"
-                                        v-model="newFirstname">
+                                    <input type="text" class="form-control" id="inputNewFname" placeholder="Firstname" newfname="newFname"
+                                        v-model="newFname">
                                 </div>
                                 <div class="form-group modalColor">
                                     <label for="inputNewLname">Lastname</label>
-                                    <input type="text" class="form-control" id="inputNewLname" placeholder="Lastname" newlastname="newLastname"
-                                        v-model="newLastname">
+                                    <input type="text" class="form-control" id="inputNewLname" placeholder="Lastname" newlname="newLname"
+                                        v-model="newLname">
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" v-on:click="registerUser(username, email, password, fname, lname)"
+                            <button type="button" class="btn btn-primary" v-on:click="registerUser(newUsername, newEmail, newPassword, newFname, newLname)"
                                 data-dismiss="modal">Submit</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetRegisterModal()">Close</button>
                         </div>
@@ -244,7 +244,7 @@
                                     <label for="inputDescription">Description</label>
                                     <textarea class="form-control" id="inputDescription" 
                                         placeholder="Description" rows="6" description="description" 
-                                        v-model="inputDescription"></textarea>
+                                        v-model="description"></textarea>
                                 </div>
                             </form>
                         </div>
@@ -318,7 +318,15 @@
                     loggedIn: false,
                     admin: false,
                     contributor: false,
-                    user: false
+                    user: false,
+                    emailUsername: "",
+                    newUsername: "",
+                    newEmail: "",
+                    newPassword: "",
+                    newFname: "",
+                    newLname: "",
+                    title: "",
+                    description: ""
                 },
                 methods: {
                     async loginUser(emailUsername, password) {
