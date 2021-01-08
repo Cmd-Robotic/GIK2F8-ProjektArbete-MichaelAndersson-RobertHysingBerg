@@ -1,0 +1,157 @@
+/* BODY */
+body {
+    background-color: black;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 100px;
+}
+
+
+/* NAVBAR */
+.navbar {
+    background-color: #0000009f;
+}
+#navbarUser {
+    margin-right: 40px;
+}
+div.dropdown-menu {
+    background-color: #0000009f;
+    border-right-color: whitesmoke;
+    border-left-color: whitesmoke;
+    border-bottom-color: whitesmoke;
+}
+div.dropdown-menu > :first-child {
+    user-select: none;
+    
+}
+.dropdown-menu > span > a {
+    background-color: #0000009f;
+    color: whitesmoke;
+}
+.dropdown-menu > a {
+    background-color: #0000009f;
+    color: whitesmoke;
+}
+
+ol.breadcrumb{
+    background-color: #0000009f;
+    margin-bottom: 0px;
+    padding-top: 5px;
+}
+ol.breadcrumb > li.breadcrumb-item {
+    background-color: transparent;
+    color: whitesmoke;
+}
+
+
+/* PAGE HEADER */
+.container-pg-head {
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+.h1-pg {
+    color: whitesmoke;
+}
+
+
+/* MODALS */
+.modalColor {
+    color: black;
+}
+.modal {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/* CART MODAL */
+.btn-cart {
+    height: 25px!important;
+    width: 25px!important;
+    padding: 0!important;
+}
+#shoppingCartModal > .modal-dialog {
+    width: auto;
+    max-width: 700px;
+}
+
+
+/* CAROUSEL */
+#carousel {
+    margin: 40px 40px;
+    max-height: inherit;
+}
+
+
+/* CARDS */
+.div-cards {
+    margin: 0 20px;
+}
+.card {
+    margin: 20px 5px;
+    background-color: #0000009f!important;
+    color: whitesmoke;
+}
+.btn-card {
+    width: max-content;
+    align-self: center;
+    margin-bottom: 5px;
+}
+
+
+/* TABLE */
+.table > thead > .admin-table > th{
+    color: whitesmoke;
+}
+.table > tbody > .admin-table > td{
+    color: whitesmoke;
+}
+.table > tbody > .admin-table > td > img{
+    color: black;
+}
+
+
+/* FORM */
+form {
+    color: whitesmoke;
+}
+
+
+/* FOOTER */
+footer {
+    background-color: black;
+    height: 80px;
+    margin-top: 40px;
+    padding: 10px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+footer .social-icons {
+    margin: 5px 20px;
+}
+footer img {
+    height: 40px;
+}
+.footer-text {
+    justify-content: start;
+}
+
+
+/*
+background-color: rgb(20, 20, 20);
+
+
+*/
+
+@media (min-width: 768px) {
+    footer #footer-textC {
+        justify-content: center;
+    }
+    footer #footer-textL {
+        justify-content: end;
+    }
+}
