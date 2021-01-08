@@ -29,23 +29,29 @@ CREATE TABLE IF NOT EXISTS queryCategory (
 CREATE TABLE IF NOT EXISTS queries (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    userid INTEGER NOT NULL,
+    userId INTEGER NOT NULL,
     title VARCHAR(32) NOT NULL,
     category INTEGER(16) NOT NULL,
     description VARCHAR(512) NOT NULL,
     picture VARCHAR(256) NULL,
     duplicate INTEGER DEFAULT NULL, -- points to the id of the query it is a duplicate of
     FOREIGN KEY (category) REFERENCES queryCategory(id),
-    FOREIGN KEY (userid) REFERENCES users(id));
+    FOREIGN KEY (userId) REFERENCES users(id));
 
 CREATE TABLE IF NOT EXISTS answers (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    queryid INTEGER NOT NULL,
-    userid INTEGER NOT NULL,
+    queryId INTEGER NOT NULL,
+    userId INTEGER NOT NULL,
     answer VARCHAR(512) NOT NULL,
-    FOREIGN KEY (queryid) REFERENCES queries(id),
-    FOREIGN KEY (userid) REFERENCES users(id));
+    FOREIGN KEY (queryId) REFERENCES queries(id),
+    FOREIGN KEY (userId) REFERENCES users(id));
+
+CREATE TABLE IF NOT EXISTS tokens (
+    userId INTEGER UNIQUE NOT NULL,
+    token VARCHAR(64) UNIQUE NOT NULL,  -- remember to check if the token was saved
+    validUntil DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userId) REFERENCES users(id));
 
 INSERT INTO queryCategory (category) VALUES("Computer");
 INSERT INTO queryCategory (category) VALUES("Cellphone");
