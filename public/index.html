@@ -62,7 +62,8 @@
                                 </span>
                                 <span v-show="loggedIn"><a class="dropdown-item" href="adminSite.html">Admin</a></span>
                                 <span v-show="loggedIn"><a class="dropdown-item" href="userProfile.html">Settings</a></span>
-                                <span v-show="!loggedIn"><a class="dropdown-item" href="userProfile.html">Register</a></span>
+                                <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
+                                        data-target="#registerModal">Register</a></span>
                                 <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
                                         data-target="#loginModal">Log in</a></span>
                                 <span v-show="loggedIn"><a class="dropdown-item" href="#" v-on:click="logOutUser()">Log
@@ -168,6 +169,57 @@
                 </div>
             </div>
 
+            <!-- REGISTER MODAL -->
+            <!-- REGISTER MODAL -->
+            <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="registerModalLabel">Register</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group modalColor">
+                                    <label for="inputNewUsername">Username</label>
+                                    <input type="text" class="form-control" id="inputNewUsername" placeholder="Username" newusername="newUsername"
+                                        v-model="newUsername">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputNewEmail">Email address</label>
+                                    <input type="email" class="form-control" id="inputNewEmail" aria-describedby="newEmailHelp"
+                                        placeholder="Enter email" newemail="newEmail" v-model="newEmail">
+                                    <small id="newEmailHelp" class="form-text text-muted">We will never share your email with anyone
+                                        else.</small>
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputNewPassword">Password</label>
+                                    <input type="password" class="form-control" id="inputNewPassword" placeholder="Password"
+                                        newpassword="newPassword" v-model="newPassword">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputNewFname">Firstname</label>
+                                    <input type="text" class="form-control" id="inputNewFname" placeholder="Firstname" newfirstname="newFirstname"
+                                        v-model="newFirstname">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputNewLname">Lastname</label>
+                                    <input type="text" class="form-control" id="inputNewLname" placeholder="Lastname" newlastname="newLastname"
+                                        v-model="newLastname">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" v-on:click="registerUser(username, email, password, fname, lname)"
+                                data-dismiss="modal">Submit</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetRegisterModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- QUERY MODAL -->
             <!-- QUERY MODAL -->
             <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
@@ -264,7 +316,7 @@
                 },
                 methods: {
                     async loginUser(email, password) {
-                        var userLogin = { 'email': email, 'password': password };
+                        var userLogin = { 'emailUsername': email, 'password': password };
                         await $.ajax({
                             url: '/login/',
                             type: 'POST',
@@ -327,7 +379,13 @@
                         $('#queryModal #inputTitle').val("");
                         $('#queryModal #inputDescription').val("");
                     },
-
+                    resetRegisterModal() {
+                        $('#registerModal #inputNewUsername').val("");
+                        $('#registerModal #inputNewEmail').val("");
+                        $('#registerModal #inputNewPassword').val("");
+                        $('#registerModal #inputNewFname').val("");
+                        $('#registerModal #inputNewLname').val("");
+                    },
                 },
                 async mounted() {
                     var self = this;
