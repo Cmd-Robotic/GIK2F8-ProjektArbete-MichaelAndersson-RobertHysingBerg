@@ -272,7 +272,7 @@ routes.post('/user/', async (req, res) => {
                     const user = dbRes.user;
                     console.log(`| SUCCESS | User saved |`);
                     logSave(`| SUCCESS | User saved | ID: ${user.id}|`);
-                    res.status(200).json(`User with username ${user.username} saved`);
+                    res.status(200).json(`User with username ${data.username} saved`);
                 }
                 else {
                     console.log(`| ERROR | ${dbRes.content} |`);
@@ -482,23 +482,24 @@ routes.delete('/user/', async (req, res) => {
         console.log(`| Handling DELETE-request for user id: ${data.id} |`);
         logSave(`| DELETE | USER ID: ${data.id} |`);
         let dbRes = await database.getUser(data.id);
-        let username = dbRes.content[0].username;
+        let username = dbRes.user.username;
         let err = false;
-        let pass = false;
+        //let pass = false;
+        let pass = true;
         let noUser = false;
         if (dbRes.status=='200') {
-            dbRes = await database.getLogin(dbRes.content[0].email)
-            const user = dbRes.content[0];
+            //dbRes = await database.getLogin(dbRes.user.email)
+            //const user = dbRes.user;
             //const inPass = prompt("Please enter password");
-            const userPass = data.password;
-            const hash = dbRes.content[0].password;
-            pass = await comparePass(userPass, hash);
+            //const userPass = data.password;
+            //const hash = dbRes.content[0].password;
+            //pass = await comparePass(userPass, hash);
             if (pass) {
                 dbRes = await database.deleteUser(data.id);
                 if (dbRes.status=='200') {
                     console.log(`| SUCCESS | User deleted |`);
                     logSave(`| SUCCESS | User deleted |`);
-                    res.status(200).json(`User with id ${user.id} and username ${username} deleted`);
+                    res.status(200).json(`User with id ${data.id} and username ${username} deleted`);
                 }
                 else {
                     throw error;
