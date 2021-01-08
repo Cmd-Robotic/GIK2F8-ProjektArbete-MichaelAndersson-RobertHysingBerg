@@ -15,7 +15,7 @@ const database = (async () => {
 const addUser = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('INSERT INTO users (level, username, password, fname, lname, email, status) VALUES(?, ?, ?, ?, ?, ?, ?)', [data.level, data.username, data.password, data.fname, data.lname, data.email, data.status]);
+        await dbConnection.run('INSERT INTO users (accessLevel, username, password, fname, lname, email) VALUES(?, ?, ?, ?, ?, ?)', [data.accessLevel, data.username, data.password, data.fname, data.lname, data.email]);
         return { status: '200' };
     }
     catch (error) {

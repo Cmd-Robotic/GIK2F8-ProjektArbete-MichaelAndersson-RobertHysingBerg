@@ -257,26 +257,19 @@ routes.post('/user/', async (req, res) => {
             res.status(400).json(userInput[1]);
         }
         else {
-            data.password = await generatePass(data.password);
+            //data.password = await generatePass(data.password);
             //console.log("Hash password: ", data.password);
-            let dbRes = await database.getUsername(data.username);
+            let dbRes = await database.getUserByUsername(data.username);
             if (dbRes.status=='200') {
-                if (dbRes.content[0].status == 'banned') {
-                    console.log(`| ERROR | Banned user |`);
-                    logSave(`| ERROR | Banned user |`);
-                    res.status(400).json(`User is banned`);
-                }
-                else {
-                    console.log(`| ERROR | Duplicate username |`);
-                    logSave(`| ERROR | Duplicate username |`);
-                    res.status(400).json(`User with username | ${data.username} | already exist`);
-                }
+                console.log(`| ERROR | Duplicate username |`);
+                logSave(`| ERROR | Duplicate username |`);
+                res.status(400).json(`User with username | ${data.username} | already exist`);
             }
             else {
                 dbRes = await database.addUser(data);
                 if (dbRes.status == "200") {
-                    dbRes = await database.getUsername(data.username);
-                    const user = dbRes.content[0];
+                    dbRes = await database.getUserByUsername(data.username);
+                    const user = dbRes.user;
                     console.log(`| SUCCESS | User saved |`);
                     logSave(`| SUCCESS | User saved | ID: ${user.id}|`);
                     res.status(200).json(`User with username ${user.username} saved`);
@@ -581,13 +574,6 @@ async function inputControl(scope, data) {
     errorLog.push("Following fields contain faults:");
     let inputTest = false;
     if (scope == 'user') {
-        let dbRes = await database.getUserLevel(data.level);
-        if (dbRes.status != '200') {
-            console.log(`| ERROR | Userlevel not found |`);
-            logSave(`| ERROR | Userlevel not found |`);
-            inputTest = true;
-            errorLog.push("-Userlevel not found");
-        }
         if (data.username.length > 16 || data.username.length == 0) {
             console.log(`| ERROR | Username length |`);
             logSave(`| ERROR | Username length |`);
@@ -629,13 +615,6 @@ async function inputControl(scope, data) {
             logSave(`| ERROR | Invalid email |`);
             inputTest = true;
             errorLog.push("-Invalid email adress");
-        }
-        dbRes = await database.getUserStatus(data.status);
-        if (dbRes.status != '200') {
-            console.log(`| ERROR | Userstatus not found |`);
-            logSave(`| ERROR | Userstatus not found |`);
-            inputTest = true;
-            errorLog.push("-Userstatus not found");
         }
     }
     else if (scope == 'query') {
