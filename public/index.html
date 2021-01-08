@@ -318,7 +318,7 @@
                     loggedIn: false,
                     admin: false,
                     contributor: false,
-                    user: false,
+                    consumer: false,
                     emailUsername: "",
                     newUsername: "",
                     newEmail: "",
@@ -353,6 +353,7 @@
                     },
                     logOutUser() {
                         this.loggedIn = false;
+                        this.contributor = false;
                         this.admin = false;
                         this.user = [];
                         this.username = 'Not logged in';
@@ -365,23 +366,26 @@
                             this.user = JSON.parse(sessionStorage.getItem('user'));
                             this.username = this.user.username;
                             this.loggedIn = true;
-                            if (this.user.accesslevel < 1) {
+                            if (this.user.accessLevel < 1) {
                                 this.banned = true;
                             }
                             else {
-                                if (this.user.accesslevel < 2) {
-                                    this.user = true;
+                                this.consumer = true;
+                                if (this.user.accessLevel < 2) {
                                     this.userlevel = "User";
                                 }
                                 else {
-                                    if (this.user.accesslevel < 3) {
-                                        this.contributor = true;
+                                    this.contributor = true;
+                                    if (this.user.accessLevel < 3) {
                                         this.userlevel = "Contributor";
                                     }
                                     else {
-                                        if (this.user.accesslevel == 3) {
-                                            this.admin = true;
+                                        this.admin = true;
+                                        if (this.user.accessLevel == 3) {
                                             this.userlevel = "Super Admin";
+                                        }
+                                        else {
+                                            this.userlevel = "wat";
                                         }
                                     }
                                 }
