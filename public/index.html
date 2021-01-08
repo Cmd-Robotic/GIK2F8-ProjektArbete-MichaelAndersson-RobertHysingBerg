@@ -36,7 +36,7 @@
                                 Menu
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="#">Ask a Q</a>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#queryModal">Ask a Q</a>
                                 <a class="dropdown-item" href="#">See your Qs and As</a>
                                 <a class="dropdown-item" href="#">Frequently asked Qs</a>
                                 <div class="dropdown-divider"></div>
@@ -60,9 +60,9 @@
                                 <span v-show="loggedIn">
                                     <div class="dropdown-divider"></div>
                                 </span>
-                                <span v-show="loggedIn"><a class="dropdown-item" href="admin-site.html">Admin</a></span>
-                                <span v-show="loggedIn"><a class="dropdown-item" href="user-profile.html">Settings</a></span>
-                                <span v-show="!loggedIn"><a class="dropdown-item" href="user-profile.html">Register</a></span>
+                                <span v-show="loggedIn"><a class="dropdown-item" href="adminSite.html">Admin</a></span>
+                                <span v-show="loggedIn"><a class="dropdown-item" href="userProfile.html">Settings</a></span>
+                                <span v-show="!loggedIn"><a class="dropdown-item" href="userProfile.html">Register</a></span>
                                 <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
                                         data-target="#loginModal">Log in</a></span>
                                 <span v-show="loggedIn"><a class="dropdown-item" href="#" v-on:click="logOutUser()">Log
@@ -102,6 +102,31 @@
                 </div>
             </div>
 
+            <!-- LAST ASKED -->
+            <!-- LAST ASKED -->
+            <div class="container-fluid" id="lastAskedQs">
+                <div class="container-fluid border border-primary site-container">
+                    <div class="row row-cols-1 row-cols-md-3">
+                        <div class="col mb-4" v-for="item in freqAskedQ" :key="item.id">
+                            <div class="card h-100 border rounded">
+                                <img v-bind:src="item.picture" class="card-img-top" alt="...">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ item.title }}</h5>
+                                    <div>Asked by: {{ item.userid }}</div>
+                                    <div>Answers: {{ item.answers }}</div>
+                                    <p class="card-text">{{ item.description }}</p>
+                                    <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-card" data-toggle="modal" data-target="#cardModal"
+                                    v-on:click="selectItem(item)">
+                                    More info
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <!------------------------------------------------------------------------------------------------------------------------------>
             <!-- MODALS -->
@@ -121,9 +146,9 @@
                         <div class="modal-body">
                             <form>
                                 <div class="form-group modalColor">
-                                    <label for="inputEmail">Email address</label>
+                                    <label for="inputEmail">Email address or username</label>
                                     <input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp"
-                                        placeholder="Enter email" email="email" v-model="email">
+                                        placeholder="Enter email or username" email="email" v-model="email">
                                     <small id="emailHelp" class="form-text text-muted">We will never share your email with anyone
                                         else.</small>
                                 </div>
@@ -132,14 +157,46 @@
                                     <input type="password" class="form-control" id="inputPassword" placeholder="Password"
                                         password="password" v-model="password">
                                 </div>
-                                <div class="form-check modalColor">
-                                    <input type="checkbox" class="form-check-input" id="check">
-                                </div>
-                                <button type="button" class="btn btn-primary" v-on:click="loginUser(email, password)"
-                                    data-dismiss="modal">Submit</button>
                             </form>
                         </div>
                         <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" v-on:click="loginUser(email, password)"
+                                data-dismiss="modal">Submit</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUERY MODAL -->
+            <!-- QUERY MODAL -->
+            <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="queryModalLabel">Ask a query</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group modalColor">
+                                    <label for="inputTitle">Title</label>
+                                    <input type="text" class="form-control" id="inputTitle"
+                                        placeholder="Enter title" title="title" v-model="title">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputDescription">Description</label>
+                                    <textarea class="form-control" id="inputDescription" 
+                                        placeholder="Description" rows="4" description="description" 
+                                        v-model="inputDescription"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" v-on:click="sendQuery(title, description)"
+                                data-dismiss="modal">Submit</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         </div>
                     </div>
@@ -188,6 +245,109 @@
             crossorigin="anonymous"></script>
         <!-- development version, includes helpful console warnings -->
         <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+        <script>
+            new Vue({
+                el: '#app',
+                data: {
+                    queries: [],
+                    answers: [],
+                    frequentlyAskeQs: [],
+                    item: '',
+                    selectedItem: '',
+                    email: '',
+                    password: '',
+                    user: [],
+                    username: 'Not logged in',
+                    loggedIn: false
+                },
+                methods: {
+                    async loginUser(email, password) {
+                        var userLogin = { 'email': email, 'password': password };
+                        await $.ajax({
+                            url: '/login/',
+                            type: 'POST',
+                            data: userLogin,
+                            success: function (response) {
+                                var self = this;
+                                self.user = response[0];
+                                self.username = self.user.username;
+                                self.loggedIn = true;
+                                var parsed = JSON.stringify(this.user)
+                                sessionStorage.setItem('user', parsed)
+                                alert(`User ${response[0].username} logged in`);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                alert(`Error!\n${jqXHR.responseText}\nUnable to login`);
+                            }
+                        });
+                        this.checkLoggedIn();
+                    },
+                    logOutUser() {
+                        this.loggedIn = false;
+                        this.admin = false;
+                        this.user = [];
+                        this.username = 'Not logged in';
+                        sessionStorage.removeItem('user');
+                        alert("User logged out");
+                    },
+                    checkLoggedIn() {
+                        if (sessionStorage.getItem('user')) {
+                            this.user = [];
+                            this.user = JSON.parse(sessionStorage.getItem('user'));
+                            this.username = this.user.username;
+                            this.loggedIn = true;
+                            if (this.user.username == "admin") {
+                                this.admin = true;
+                            }
+                        }
+                    },
+                    updateCart() {
+                        if (localStorage.getItem('cart')) {
+                            this.cart = JSON.parse(localStorage.getItem('cart'))
+                        }
+                        this.total = 0;
+                        this.totalQty = 0;
+                        for (i in this.cart) {
+                            this.total += (this.cart[i].price * this.cart[i].qty);
+                            this.totalQty += this.cart[i].qty;
+                        };
+                    },
+
+                    updateLocalStorage() {
+                        var parsed = JSON.stringify(this.queries)
+                        localStorage.setItem('cart', parsed)
+                    },
+
+                    async updateQueries() {
+                        var self = this;
+                        var queries = [];
+                        await $.getJSON('/queries/', function (jsondata) {
+                            self.queries = jsondata;
+                        });
+                    },
+                    selectItem(item) {
+                        this.selectedItem = item;
+                    },
+                    unselectItem() {
+                        this.selectedItem = '';
+                    },
+                    
+                },
+                async mounted() {
+                    var self = this;
+                    await $.getJSON('/frequentlyAsked/', function (jsondata) {
+                        self.frequentlyAskeQs = jsondata;
+                    });
+                    this.checkLoggedIn();
+                    if (loggedIn) {
+                        this.updateQueries();
+                    }
+                }
+            });
+        </script>
+
     </body>
 
 </html>
