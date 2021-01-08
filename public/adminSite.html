@@ -235,11 +235,6 @@
                                     v-bind:value="selectedItem.username">
                             </div>
                             <div class="form-group modalColor">
-                                <label for="updatePassword">Password</label>
-                                <input type="text" class="form-control" name="updatePassword" id="updatePassword"
-                                    v-bind:value="selectedItem.password">
-                            </div>
-                            <div class="form-group modalColor">
                                 <label for="updateFname">Firstname</label>
                                 <input type="text" class="form-control" name="updateFname" id="updateFname"
                                     v-bind:value="selectedItem.fname">
@@ -499,7 +494,7 @@
                         id: $('#updateUserModal #updateId').val(),
                         accessLevel: $('#updateUserModal #updateAccessLevel').val(),
                         username: $('#updateUserModal #updateUsername').val(),
-                        password: $('#updateUserModal #updatePassword').val(),
+                        //password: $('#updateUserModal #updatePassword').val(),
                         fname: $('#updateUserModal #updateFname').val(),
                         lname: $('#updateUserModal #updateLname').val(),
                         email: $('#updateUserModal #updateEmail').val()
@@ -560,10 +555,11 @@
                     $('#updateUserModal #updateId').val("");
                     $('#updateUserModal #updateAccessLevel').val("");
                     $('#updateUserModal #updateUsername').val("");
-                    $('#updateUserModal #updatePassword').val("");
+                    //$('#updateUserModal #updatePassword').val("");
                     $('#updateUserModal #updateFname').val("");
                     $('#updateUserModal #updateLname').val("");
                     $('#updateUserModal #updateEmail').val("");
+                    this.updateUsers()
                 },
             },
             async mounted() {

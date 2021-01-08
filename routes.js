@@ -195,9 +195,9 @@ routes.get('/user/', async (req, res) => {
         }
         let dbRes = await database.getUser(data);
         if (dbRes.status=='200') {
-            for (i of dbRes.content) {
-                i.password = 'xxxx';
-            }
+            //for (i of dbRes.content) {
+            //    i.password = 'xxxx';
+            //}
             res.json(dbRes.content);
         }
         else {
@@ -381,15 +381,16 @@ routes.put('/user/', async (req, res) => {
         console.log(`| Handling UPDATE-request for user id: ${data.id} |`);
         logSave(`| UPDATE | USER ID: ${data.id} |`);
         let err = false;
-        let pass = false;
+        //let pass = false;
+        let pass = true;
         let noUser = false;
         let dbRes = await database.getUser(data.id);
         if (dbRes.status=='200') {
             //const inPass = prompt("Please enter password");
             const user = dbRes.content[0];
-            const inPass = data.password;
-            const hash = user.password;
-            pass = await comparePass(inPass, hash);
+            //const inPass = data.password;
+            //const hash = user.password;
+            //pass = await comparePass(inPass, hash);
             if (pass) {
                 const userInput = await inputControl('user', data);
                 if (userInput[0]) {
