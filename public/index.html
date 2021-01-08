@@ -174,7 +174,7 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="queryModalLabel">Ask a query</h5>
+                            <h5 class="modal-title" id="queryModalLabel">Make a query</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -189,7 +189,7 @@
                                 <div class="form-group modalColor">
                                     <label for="inputDescription">Description</label>
                                     <textarea class="form-control" id="inputDescription" 
-                                        placeholder="Description" rows="4" description="description" 
+                                        placeholder="Description" rows="6" description="description" 
                                         v-model="inputDescription"></textarea>
                                 </div>
                             </form>
@@ -197,7 +197,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" v-on:click="sendQuery(title, description)"
                                 data-dismiss="modal">Submit</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetQueryModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -252,7 +252,8 @@
                 data: {
                     queries: [],
                     answers: [],
-                    frequentlyAskeQs: [],
+                    frequentlyAsked: [],
+                    lastAsked: [],
                     item: '',
                     selectedItem: '',
                     email: '',
@@ -303,17 +304,6 @@
                             }
                         }
                     },
-                    updateCart() {
-                        if (localStorage.getItem('cart')) {
-                            this.cart = JSON.parse(localStorage.getItem('cart'))
-                        }
-                        this.total = 0;
-                        this.totalQty = 0;
-                        for (i in this.cart) {
-                            this.total += (this.cart[i].price * this.cart[i].qty);
-                            this.totalQty += this.cart[i].qty;
-                        };
-                    },
 
                     updateLocalStorage() {
                         var parsed = JSON.stringify(this.queries)
@@ -333,12 +323,18 @@
                     unselectItem() {
                         this.selectedItem = '';
                     },
-                    
+                    resetQueryModal() {
+                        $('#queryModal #inputTitle').val("");
+                        $('#queryModal #inputDescription').val("");
+                    },
+
                 },
                 async mounted() {
                     var self = this;
                     await $.getJSON('/frequentlyAsked/', function (jsondata) {
-                        self.frequentlyAskeQs = jsondata;
+                        self.frequentlyAsked = jsondata;
+                    }); await $.getJSON('/lastAsked/', function (jsondata) {
+                        self.lastAsked = jsondata;
                     });
                     this.checkLoggedIn();
                     if (loggedIn) {
