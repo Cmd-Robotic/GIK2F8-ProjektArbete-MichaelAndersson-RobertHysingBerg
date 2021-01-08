@@ -324,17 +324,17 @@
                     async loginUser(emailUsername, password) {
                         var userLogin = { 'emailUsername': emailUsername, 'password': password };
                         await $.ajax({
-                            url: '/login/',
+                            url: 'http://127.0.0.1:5000/login/',
                             type: 'POST',
                             data: userLogin,
                             success: function (response) {
                                 var self = this;
-                                self.user = response[0];
+                                self.user = response;
                                 self.username = self.user.username;
                                 self.loggedIn = true;
                                 var parsed = JSON.stringify(this.user)
                                 sessionStorage.setItem('user', parsed)
-                                alert(`User ${response[0].username} logged in`);
+                                alert(`User ${response.username} logged in`);
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
