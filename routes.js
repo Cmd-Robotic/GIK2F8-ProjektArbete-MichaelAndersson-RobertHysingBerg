@@ -7,8 +7,10 @@ const multer = require('multer');
 const upload = multer({ dest: 'upload/' });
 const file = require("fs").promises;
 const fs = require('fs');
+const dv = require('./dataValidation');
 //routes.use(cors());
 const bcrypt = require('bcrypt');
+const dataValidation = require('./dataValidation');
 //const { PerformanceObserver } = require('perf_hooks');
 const saltRounds = 10;
 
@@ -27,6 +29,78 @@ async function comparePass(password, hash) {
 //###############################################################
 //############################ LOGIN ############################
 routes.post('/login/', async (req, res) => {
+    if (!req.body.emailUsername) {
+        res.status(400).json({errorMessage:'No email or username sent to server'});
+    }
+    else {
+        if (!req.body.password) {
+            res.status(400).json({errorMessage:'No password sent to server'});
+        }
+        else {
+            const email = await dv.validEmail(req.body.emailUsername);
+            const username = await dv.validUsername(req.body.emailUsername);
+            if (!email && !username) {
+                res.status(400).json({errorMessage:'Invalid username or email sent to server'});
+            }
+            else {
+                const password = await dv.validPassword(req.body.password);
+                if (!password) {
+                    res.status(400).json({errorMessage:'Invalid password sent to server'});
+                }
+                else {
+                    if (email) {
+                        console.log(`| Handling LOGIN-request for user email: ${email} |`);
+                        logSave(`| LOGIN | EMAIL: ${email} |`);
+                        const dbRes = await database.getUserByEmail(email);
+                        if (dbRes.errorMessage) {
+                            // error time
+                            dbErrorLog(dbRes);
+                            res.status(404).json({errorMessage:`Could not find a user with email ${email}`});
+                        }
+                        else {
+                            // go further
+                            const user = dbRes.user;
+                            // const pass = await comparePass(password, user.password);
+                            const pass = (password == user.password);
+                            if (!pass) {
+                                res.status(400).json({errorMessage:'Passwords do not match'});
+                            }
+                            else {
+                                const dbRes = await database.getUser(user.id);
+                                res.status(200).json(dbRes.user);
+                            }
+                        }
+                    }
+                    else if (username) {
+                        // login by username here
+                        console.log(`| Handling LOGIN-request for user: ${username} |`);
+                        logSave(`| LOGIN | USERNAME: ${username} |`);
+                        const dbRes = await database.getUserByUsername(username);
+                        if (dbRes.errorMessage) {
+                            // error time
+                            dbErrorLog(dbRes);
+                            res.status(400).json({errorMessage:`Could not find user with username ${username}`});
+                        }
+                        else {
+                            // go further
+                            const user = dbRes.user;
+                            // const pass = await comparePass(password, user.password);
+                            const pass = (password == user.password);
+                            if (!pass) {
+                                res.status(400).json({errorMessage:'Passwords do not match'});
+                            }
+                            else {
+                                const dbRes = await database.getUser(user.id);
+                                res.status(200).json(dbRes.user);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
     try {
         const data = req.body;
         console.log(`| Handling LOGIN-request for user email: ${data.email} |`);
@@ -60,8 +134,8 @@ routes.post('/login/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json('ERROR! Could not handle request');
     }
+*/
 });
-
 
 
 //#############################################################
@@ -767,6 +841,12 @@ routes.post('/query/file/:id', upload.array('file'), async (req, res) => {
 });
 
 
+//#####################################################################
+//############################ ERROR LOGGING ##########################
+const dbErrorLog = async (dbRes) => {
+    console.log(`| ERROR | ${dbRes.status + ', bruh, ' + dbRes.errorMessage} |`);
+    logSave(`| ERROR | ${dbRes.status + ', bruh, ' + dbRes.errorMessage} |`);
+};
 
 //#####################################################################
 //############################ LOG TO FILE ############################

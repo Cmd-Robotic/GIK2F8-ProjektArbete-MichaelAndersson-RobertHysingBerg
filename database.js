@@ -84,15 +84,15 @@ const addQueryPic = async (data) => {
 
 //##############################################################
 //############################ GET ############################
-const getLogin = async (email) => {
+const getUserByEmail = async (email) => {
     try {
         const dbConnection = await database;
-        const user = await dbConnection.all('SELECT id, password FROM users WHERE email = (?)', [email]);
-        if (user.length > 0) {
-            return { status: '200', content: user };
+        const user = await dbConnection.get('SELECT id, password FROM users WHERE email = (?)', [email]);
+        if (user) {
+            return { status: '200', user: user };
         }
         else {
-            return { status: '404', content: 'User not found' };
+            return { status: '404', errorMessage: 'User not found' };
         }
     }
     catch (error) {
@@ -122,12 +122,12 @@ const getUsers = async () => {
 const getUser = async (id) => {
     try {
         const dbConnection = await database;
-        const user = await dbConnection.all('SELECT id, level, username, fname, lname, email, picture FROM users WHERE id = (?)', [id]);
-        if (user.length > 0) {
-            return { status: '200', content: user };
+        const user = await dbConnection.get('SELECT accessLevel, username, fname, lname, email, picture FROM users WHERE id = (?)', [id]);
+        if (user) {
+            return { status: '200', user: user };
         }
         else {
-            return { status: '404', content: 'User not found' };
+            return { status: '404', errorMessage: 'User not found' };
         }
     }
     catch (error) {
@@ -137,15 +137,15 @@ const getUser = async (id) => {
         //throw new Error('Något gick fel vid kommunikation med databasen');
     }
 };
-const getUsername = async (username) => {
+const getUserByUsername = async (username) => {
     try {
         const dbConnection = await database;
-        const user = await dbConnection.all('SELECT id, level, username, password, fname, lname, email, status, picture FROM users WHERE username = (?)', [username]);
-        if (user.length > 0) {
-            return { status: '200', content: user };
+        const user = await dbConnection.get('SELECT id, password FROM users WHERE username = (?)', [username]);
+        if (user) {
+            return { status: '200', user: user };
         }
         else {
-            return { status: '404', content: 'User not found' };
+            return { status: '404', errorMessage: 'User not found' };
         }
     }
     catch (error) {
@@ -366,10 +366,10 @@ async function logSave(entry) {
 //##############################################################
 //############################ EXPORT ############################
 module.exports = {
-    getLogin: getLogin,
+    getUserByEmail: getUserByEmail,
     getUsers : getUsers,
     getUser : getUser,
-    getUsername : getUsername,
+    getUserByUsername : getUserByUsername,
     getUserLevel : getUserLevel,
     getUserStatus : getUserStatus,
     getQueries : getQueries,
