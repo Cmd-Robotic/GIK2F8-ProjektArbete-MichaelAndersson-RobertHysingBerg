@@ -57,6 +57,8 @@
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <span v-show="loggedIn"><a class="dropdown-item disabled" href="#" tabindex="-1"
                                         aria-disabled="true">{{ username }}</a></span>
+                                <span v-show="loggedIn"><a class="dropdown-item disabled" href="#" tabindex="-1" 
+                                        aria-disabled="true">{{ userlevel }}</a></span>
                                 <span v-show="loggedIn">
                                     <div class="dropdown-divider"></div>
                                 </span>
@@ -147,9 +149,9 @@
                         <div class="modal-body">
                             <form>
                                 <div class="form-group modalColor">
-                                    <label for="inputEmail">Email address or username</label>
-                                    <input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp"
-                                        placeholder="Enter email or username" email="email" v-model="email">
+                                    <label for="inputEmailUsername">Email address or username</label>
+                                    <input type="text" class="form-control" id="inputEmail" aria-describedby="emailHelp"
+                                        placeholder="Enter email or username" emailusername="emailUsername" v-model="emailUsername">
                                     <small id="emailHelp" class="form-text text-muted">We will never share your email with anyone
                                         else.</small>
                                 </div>
@@ -161,7 +163,7 @@
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" v-on:click="loginUser(email, password)"
+                            <button type="button" class="btn btn-primary" v-on:click="loginUser(emailUsername, password)"
                                 data-dismiss="modal">Submit</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         </div>
@@ -312,11 +314,15 @@
                     password: '',
                     user: [],
                     username: 'Not logged in',
-                    loggedIn: false
+                    userlevel: "",
+                    loggedIn: false,
+                    admin: false,
+                    contributor: false,
+                    user: false
                 },
                 methods: {
-                    async loginUser(email, password) {
-                        var userLogin = { 'emailUsername': email, 'password': password };
+                    async loginUser(emailUsername, password) {
+                        var userLogin = { 'emailUsername': emailUsername, 'password': password };
                         await $.ajax({
                             url: '/login/',
                             type: 'POST',
@@ -351,8 +357,26 @@
                             this.user = JSON.parse(sessionStorage.getItem('user'));
                             this.username = this.user.username;
                             this.loggedIn = true;
-                            if (this.user.username == "admin") {
-                                this.admin = true;
+                            if (this.user.accesslevel < 1) {
+                                this.banned = true;
+                            }
+                            else {
+                                if (this.user.accesslevel < 2) {
+                                    this.user = true;
+                                    this.userlevel = "User";
+                                }
+                                else {
+                                    if (this.user.accesslevel < 3) {
+                                        this.contributor = true;
+                                        this.userlevel = "Contributor";
+                                    }
+                                    else {
+                                        if (this.user.accesslevel == 3) {
+                                            this.admin = true;
+                                            this.userlevel = "Super Admin";
+                                        }
+                                    }
+                                }
                             }
                         }
                     },
