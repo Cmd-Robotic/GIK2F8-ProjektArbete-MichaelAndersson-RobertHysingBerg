@@ -102,6 +102,12 @@ div.dropdown-menu > :first-child {
     color: whitesmoke;
     margin-left: 40px;
 }
+.query-actions {
+    width: 246px;
+}
+.user-actions {
+    width: 301px;
+}
 
 
 /* FORM */

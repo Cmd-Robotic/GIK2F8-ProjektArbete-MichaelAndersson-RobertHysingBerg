@@ -28,7 +28,7 @@ const addUser = async (data) => {
 const addQuery = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('INSERT INTO queries (title, category, userId, description) VALUES(?, ?, ?, ?)', [data.title, data.category, data.userId, data.description]);
+        await dbConnection.run('INSERT INTO queries (title, category, userId, username, description) VALUES(?, ?, ?, ?, ?)', [data.title, data.category, data.userId, data.username, data.description]);
         const query = await dbConnection.get('SELECT * FROM queries ORDER BY id DESC LIMIT 1');
         return { status: '200', content: query };
     }
@@ -197,10 +197,10 @@ const getQueries = async (data) => {
         let queries = []
         const dbConnection = await database;
         if (data.accessLevel == 3) {
-            queries = await dbConnection.all('SELECT id, time, userid, title, category, description FROM queries ORDER BY id ASC');
+            queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries ORDER BY id ASC');
         }
         else {
-            queries = await dbConnection.all('SELECT id, time, userid, title, category, description FROM queries WHERE userId = (?) ORDER BY id ASC', [data.userId]);
+            queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries WHERE userId = (?) ORDER BY id ASC', [data.userId]);
         }
         if (queries) {
             return { status: '200', content: queries };

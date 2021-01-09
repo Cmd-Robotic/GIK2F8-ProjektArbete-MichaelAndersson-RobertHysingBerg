@@ -30,11 +30,13 @@ CREATE TABLE IF NOT EXISTS queries (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     userId INTEGER NOT NULL,
+    username VARCHAR(32),
     title VARCHAR(32) NOT NULL,
     category INTEGER(16) NOT NULL,
     description VARCHAR(512) NOT NULL,
     picture VARCHAR(256) NULL,
-    duplicate INTEGER DEFAULT NULL, -- points to the id of the query it is a duplicate of
+    answers INTEGER DEFAULT 0,
+    duplicate INTEGER DEFAULT 0, -- points to the id of the query it is a duplicate of
     FOREIGN KEY (category) REFERENCES queryCategory(id),
     FOREIGN KEY (userId) REFERENCES users(id));
 
@@ -63,9 +65,10 @@ INSERT INTO queryCategory (category) VALUES("Telephony");
 -- DELETE FROM answers WHERE id = 1;
 -- DELETE FROM categories WHERE id = 1;
 
+-- DROP TABLE tokens;
 -- DROP TABLE answers;
 -- DROP TABLE queries;
--- DROP TABLE querycat;
+-- DROP TABLE queryCategory;
 -- DROP TABLE users;
 -- DROP TABLE userstatus;
 -- DROP TABLE userlevel;

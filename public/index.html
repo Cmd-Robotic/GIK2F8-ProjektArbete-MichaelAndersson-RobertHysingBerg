@@ -36,7 +36,7 @@
                                 Menu
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#queryModal">Ask a Q</a>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#addQueryModal">Ask a Q</a>
                                 <a class="dropdown-item" href="#">See your Qs and As</a>
                                 <a class="dropdown-item" href="#">Frequently asked Qs</a>
                                 <div class="dropdown-divider"></div>
@@ -223,13 +223,13 @@
                 </div>
             </div>
 
-            <!-- QUERY MODAL -->
-            <!-- QUERY MODAL -->
-            <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
+            <!-- ADD QUERY MODAL -->
+            <!-- ADD QUERY MODAL -->
+            <div class="modal fade" id="addQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="queryModalLabel">Make a query</h5>
+                            <h5 class="modal-title" id="addQueryModalLabel">Make a query</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -261,7 +261,53 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" v-on:click="sendQuery()"
                                 data-dismiss="modal">Submit</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetQueryModal()">Close</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetAddQueryModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPDATE QUERY MODAL -->
+            <!-- UPDATE QUERY MODAL -->
+            <div class="modal fade" id="updateQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true"
+                :item="item">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateQueryModalLabel">Update query</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="form-group modalColor">
+                                    <label for="inputTitle">Title</label>
+                                    <input type="text" class="form-control" name="updateTitle" id="updateTitle"
+                                        v-bind:value="selectedItem.title">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputCategory">Category</label>
+                                    <select class="form-control" name="inputCategory" id="updateCategory"
+                                        v-bind:value="selectedItem.category">
+                                        <option type="text">Computer</option>
+                                        <option type="text">Cellphone</option>
+                                        <option type="text">Broadband</option>
+                                        <option type="text">Telephony</option>
+                                    </select>
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="inputDescription">Description</label>
+                                    <textarea class="form-control" name="updateDescription" id="updateDescription" rows="6"
+                                        v-bind:value="selectedItem.description"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" v-on:click="updateQuery()"
+                                data-dismiss="modal">Submit</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="resetUpdateQueryModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -409,14 +455,10 @@
                             url: 'http://127.0.0.1:5000/queries/',
                             type: 'POST',
                             data: user,
-                            success: function (response) {
+                            success: (response) => {
                                 var self = this;
-                                if (response) {
-                                    self.queries = response;
-                                }
-                                else {
-                                    self.queries = []
-                                }
+                                self.queries = response;
+                                //alert(`User ${response.username} logged in`);
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
@@ -433,10 +475,11 @@
                     async sendQuery() {
                         var message;
                         var query = {
-                            title: $('#queryModal #inputTitle').val(),
-                            category: $('#queryModal #inputCategory').val(),
-                            description: $('#queryModal #inputDescription').val(),
-                            userId: this.user.id
+                            title: $('#addQueryModal #inputTitle').val(),
+                            category: $('#addQueryModal #inputCategory').val(),
+                            description: $('#addQueryModal #inputDescription').val(),
+                            userId: this.user.id,
+                            username: this.user.username
                         }
                         console.log(query);
                         await $.ajax({
@@ -454,12 +497,19 @@
                                 alert(message);
                             }
                         });
+                        this.unselectItem();
                         this.updateQueries();
                     },
-                    resetQueryModal() {
-                        $('#queryModal #inputTitle').val("");
-                        $('#queryModal #inputCategory').val("");
-                        $('#queryModal #inputDescription').val("");
+                    resetAddQueryModal() {
+                        $('#addQueryModal #inputTitle').val("");
+                        $('#addQueryModal #inputCategory').val("");
+                        $('#addQueryModal #inputDescription').val("");
+                    },
+                    resetUpdateQueryModal() {
+                        $('#updateQueryModal #updateTitle').val("");
+                        $('#updateQueryModal #updateCategory').val("");
+                        $('#updateQueryModal #updateDescription').val("");
+                        this.updateQueries()
                     },
                     resetRegisterModal() {
                         $('#registerModal #inputNewUsername').val("");

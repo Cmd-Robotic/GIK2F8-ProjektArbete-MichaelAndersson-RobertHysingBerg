@@ -107,7 +107,7 @@
                         <th scope="col">Lastname</th>
                         <th scope="col">Email</th>
                         <th scope="col">Last login</th>
-                        <th scope="col">Actions</th>
+                        <th scope="col" class="user-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -141,7 +141,7 @@
         <!-- QUERIES -->
         <div class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
-                data-target="#queryModal">New Query</button>
+                data-target="#addQueryModal">New Query</button>
             <label class="table-label" for="queriesTableTable">QUERIES</label>
             <table class="table table-image" id="queriesTable">
                 <thead>
@@ -149,11 +149,13 @@
                         <th scope="col">Id</th>
                         <th scope="col">Posted</th>
                         <th scope="col">Posted by ID</th>
+                        <th scope="col">Posted by user</th>
                         <th scope="col">Title</th>
                         <th scope="col">Category</th>
                         <th scope="col">Description</th>
+                        <th scope="col">Answers</th>
                         <th scope="col">Duplicate</th>
-                        <th scope="col">Actions</th>
+                        <th scope="col" class="query-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -161,18 +163,20 @@
                         <td>{{ item.id }}</td>
                         <td>{{ item.time }}</td>
                         <td>{{ item.userId }}</td>
+                        <td>{{ item.username }}</td>
                         <td>{{ item.title }}</td>
                         <td>{{ item.category }}</td>
                         <td>{{ item.description}}</td>
+                        <td>{{ item.answers}}</td>
                         <td>{{ item.duplicate}}</td>
                         <td>
                             <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
                                 data-target="#updateQueryModal" v-on:click="selectItem(item)">
                                 Update
                             </button>
-                            <button type="button" class="btn btn-warning btn-card" data-toggle="modal"
-                                v-on:click="flagQuery(item)">
-                                Flag
+                            <button type="button" class="btn btn-info btn-card" data-toggle="modal"
+                                data-target="#queryInfoModal" v-on:click="flagQuery(item)">
+                                More
                             </button>
                             <button type="button" class="btn btn-danger btn-card" data-toggle="modal"
                                 v-on:click="deleteQuery(item)">
@@ -309,13 +313,13 @@
             </div>
         </div>
 
-        <!-- QUERY MODAL -->
-        <!-- QUERY MODAL -->
-        <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
+        <!-- ADD QUERY MODAL -->
+        <!-- ADD QUERY MODAL -->
+        <div class="modal fade" id="addQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="queryModalLabel">Make a query</h5>
+                        <h5 class="modal-title" id="addQueryModalLabel">Make a query</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -347,7 +351,51 @@
                         <button type="button" class="btn btn-primary" v-on:click="sendQuery()"
                             data-dismiss="modal">Submit</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                            v-on:click="resetQueryModal()">Close</button>
+                            v-on:click="resetAddQueryModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UPDATE QUERY MODAL -->
+        <!-- UPDATE QUERY MODAL -->
+        <div class="modal fade" id="updateQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true"
+            :item="item">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateQueryModalLabel">Update query</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group modalColor">
+                                <label for="inputTitle">Title</label>
+                                <input type="text" class="form-control" name="updateTitle" id="updateTitle" v-bind:value="selectedItem.title">
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="inputCategory">Category</label>
+                                <select class="form-control" name="inputCategory" id="updateCategory" v-bind:value="selectedItem.category">
+                                    <option type="text">Computer</option>
+                                    <option type="text">Cellphone</option>
+                                    <option type="text">Broadband</option>
+                                    <option type="text">Telephony</option>
+                                </select>
+                            </div>
+                            <div class="form-group modalColor">
+                                <label for="inputDescription">Description</label>
+                                <textarea class="form-control" name="updateDescription" id="updateDescription" rows="6"
+                                    v-bind:value="selectedItem.description"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" v-on:click="updateQuery()"
+                            data-dismiss="modal">Submit</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            v-on:click="resetUpdateQueryModal()">Close</button>
                     </div>
                 </div>
             </div>
@@ -538,6 +586,7 @@
                             alert(message);
                         }
                     });
+                    this.unselectItem();
                 },
                 updateUser() {
                     var message;
@@ -567,6 +616,7 @@
                             alert(message);
                         }
                     });
+                    this.unselectItem();
                 },
                 deleteUser(item) {
                     //var password = prompt("Please type password");
@@ -580,8 +630,6 @@
                         data: userData,
                         success: (response) => {
                             var self = this;
-                            self.unselectItem();
-                            self.updateUsers();
                             alert(response);
                         },
                         error: function (jqXHR, textStatus, error) {
@@ -590,6 +638,8 @@
                             alert(message);
                         }
                     });
+                    this.unselectItem();
+                    this.updateUsers();
                 },
                 async updateQueries() {
                     var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
@@ -611,10 +661,11 @@
                 async sendQuery() {
                     var message;
                     var query = {
-                        title: $('#queryModal #inputTitle').val(),
-                        category: $('#queryModal #inputCategory').val(),
-                        description: $('#queryModal #inputDescription').val(),
-                        userId: this.user.id
+                        title: $('#addQueryModal #inputTitle').val(),
+                        category: $('#addQueryModal #inputCategory').val(),
+                        description: $('#addQueryModal #inputDescription').val(),
+                        userId: this.user.id,
+                        username: this.user.username
                     }
                     console.log(query);
                     await $.ajax({
@@ -632,6 +683,7 @@
                             alert(message);
                         }
                     });
+                    this.unselectItem();
                     this.updateQueries();
                 },
                 deleteQuery(item) {
@@ -656,11 +708,18 @@
                             alert(message);
                         }
                     });
+                    this.unselectItem();
                 },
-                resetQueryModal() {
-                    $('#queryModal #inputTitle').val("");
-                    $('#queryModal #inputCategory').val("");
-                    $('#queryModal #inputDescription').val("");
+                resetAddQueryModal() {
+                    $('#addQueryModal #inputTitle').val("");
+                    $('#addQueryModal #inputCategory').val("");
+                    $('#addQueryModal #inputDescription').val("");
+                },
+                resetUpdateQueryModal() {
+                    $('#updateQueryModal #updateTitle').val("");
+                    $('#updateQueryModal #updateCategory').val("");
+                    $('#updateQueryModal #updateDescription').val("");
+                    this.updateQueries()
                 },
                 resetAddUserModal() {
                     $('#addUserModal #newAccessLevel').val("");
