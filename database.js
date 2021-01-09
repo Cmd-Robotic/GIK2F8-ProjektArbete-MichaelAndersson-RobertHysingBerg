@@ -319,10 +319,11 @@ const getLastQueries = async () => {
         const dbConnection = await database;
         queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries ORDER BY time DESC LIMIT 6');
         if (queries.length > 0) {
-            return { status: '200', content: queries };
+            return { status: '200', queries: queries };
         }
-        else
-            return { status: '200' };
+        else {
+            return { status: '404', errorMessage: 'ERROR! Could not find queries' };
+        }
     }
     catch (error) {
         console.log(`| ERROR | ${error} |`);

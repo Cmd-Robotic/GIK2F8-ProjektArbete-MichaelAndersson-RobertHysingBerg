@@ -279,6 +279,17 @@ routes.get('/queries/user/', async (req, res) => {
     */
 });
 routes.get('/frequentlyasked/', async (req, res) => {
+    console.log(`| Handling GET-request for frequently asked queries |`);
+    logSave("| GET | frequently asked queries |");
+    const dbRes = await database.getFrequentQueries();
+    if (dbRes.errorMessage) {
+        errorLog(dbRes.status, dbRes.errorMessage);
+        res.status(dbRes.status).send(dbRes.errorMessage);
+    }
+    else {
+        res.status(dbRes.status).json(dbRes.queries);
+    }
+    /*
     try {
         console.log(`| Handling GET-request for frequently asked queries |`);
         logSave("| GET | frequently asked queries |");
@@ -300,8 +311,20 @@ routes.get('/frequentlyasked/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 routes.get('/lastasked/', async (req, res) => {
+    console.log(`| Handling GET-request for last asked queries |`);
+    logSave("| GET | last asked queries |");
+    const dbRes = await database.getLastQueries();
+    if (dbRes.errorMessage) {
+        errorLog(dbRes.status, dbRes.errorMessage);
+        res.status(dbRes.status).send(dbRes.errorMessage);
+    }
+    else {
+        res.status(dbRes.status).json(dbRes.queries);
+    }
+    /*
     try {
         console.log(`| Handling GET-request for last asked queries |`);
         logSave("| GET | last asked queries |");
@@ -323,6 +346,7 @@ routes.get('/lastasked/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 routes.post('/answers/', async (req, res) => {
     try {
