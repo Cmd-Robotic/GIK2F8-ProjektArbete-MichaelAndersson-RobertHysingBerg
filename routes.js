@@ -239,7 +239,7 @@ routes.get('/queries/', async (req, res) => {
         res.status(dbRes.status).send(dbRes.errorMessage);
     }
     else {
-        res.status(dbRes.status).json(dbRes.users);
+        res.status(dbRes.status).json(dbRes.queries);
     }
 /*
     try {
