@@ -17,7 +17,7 @@ const addUser = async (data) => {
     try {
         const dbConnection = await database;
         await dbConnection.run('INSERT INTO users (accessLevel, username, password, fname, lname, email) VALUES(?, ?, ?, ?, ?, ?)', [data.accessLevel, data.username, data.password, data.fname, data.lname, data.email]);
-        return { status: '200' };
+        return { status: '200', message: 'User created succesfully' };
     }
     catch (error) {
         console.log(`| ERROR | ${error} |`);
@@ -445,7 +445,7 @@ const getCategoryByName = async (category) => {
 const updateUser = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('UPDATE users SET level = (?), username = (?), fname = (?), lname = (?), email = (?) WHERE id = (?)', [data.userLevel, data.username, data.fname, data.lname, data.email, data.id]);
+        await dbConnection.run('UPDATE users SET accessLevel = (?), username = (?), fname = (?), lname = (?), email = (?) WHERE id = (?)', [data.accessLevel, data.username, data.fname, data.lname, data.email, data.id]);
         return { status: '200', message: 'User updated' };
     }
     catch {
@@ -460,7 +460,10 @@ const updateUser = async (data) => {
 const updateQuery = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('UPDATE queries SET name = (?), category = (?), price = (?), description = (?) = (?) WHERE id = (?)', [data.name, data.category, data.price, data.description, data.id]);
+        await dbConnection.run('UPDATE queries SET title = ?, category = ?, description = ?, duplicateOf = ? WHERE id = ?', [data.title, data.category, data.description, data.duplicateOf, data.id]);
+        if (data.duplicateOf > -1) {
+            await dbConnection.run('UPDATE queries SET duplicates = (duplicates + 1) WHERE id=?',[data.id]);
+        }
         return { status: '200', message: 'Query updated' };
     }
     catch {
@@ -470,6 +473,23 @@ const updateQuery = async (data) => {
         //throw new Error('Något gick fel vid kommunikation med databasen');
     }
 };
+
+const updateQueryDupeCount = async (id, amount) => {
+    try {
+        const dbConnection = await database;
+        await dbConnection.run('UPDATE queries SET duplicates = (duplicates + ?) WHERE id = ?', [amount, id]);
+        if (data.duplicateOf > -1) {
+            await dbConnection.run('UPDATE queries SET duplicates = (duplicates + 1) WHERE id=?',[data.id]);
+        }
+        return { status: '200', message: 'Query updated' };
+    }
+    catch {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', errorMessage: 'ERROR! Database failure' };
+        //throw new Error('Något gick fel vid kommunikation med databasen');
+    }
+}
 
 const updateAnswer = async (data) => {
     try {
@@ -629,6 +649,7 @@ module.exports = {
     addQuery : addQuery,
     // addQueryPic : addQueryPic,
     updateQuery : updateQuery,
+    updateQueryDupeCount: updateQueryDupeCount,
     deleteQuery : deleteQuery,
     getFrequentQueries : getFrequentQueries,
     getFrequentQueriesByCategory : getFrequentQueriesByCategory,

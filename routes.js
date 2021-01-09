@@ -75,10 +75,15 @@ routes.post('/login/', async (req, res) => {
                             }
                             else {
                                 const dbRes = await database.getUser(user.id);
-                                req.session.userId = user.id;
-                                req.session.accessLevel = dbRes.user.accessLevel;
-                                req.session.username = dbRes.user.username;
-                                res.status(200).json(dbRes.user);
+                                if (dbRes.user.accessLevel < 1) {
+                                    res.status(400).send('ERROR! You have been hit by the MIGHTY BANHAMMER!');
+                                }
+                                else {
+                                    req.session.userId = user.id;
+                                    req.session.accessLevel = dbRes.user.accessLevel;
+                                    req.session.username = dbRes.user.username;
+                                    res.status(200).json(dbRes.user);
+                                }
                             }
                         }
                     }
@@ -104,10 +109,15 @@ routes.post('/login/', async (req, res) => {
                             }
                             else {
                                 const dbRes = await database.getUser(user.id);
-                                req.session.userId = user.id;
-                                req.session.accessLevel = dbRes.user.accessLevel;
-                                req.session.username = dbRes.user.username;
-                                res.status(200).json(dbRes.user);
+                                if (dbRes.user.accessLevel < 1) {
+                                    res.status(400).send('ERROR! You have been hit by the MIGHTY BANHAMMER!');
+                                }
+                                else {
+                                    req.session.userId = user.id;
+                                    req.session.accessLevel = dbRes.user.accessLevel;
+                                    req.session.username = dbRes.user.username;
+                                    res.status(200).json(dbRes.user);
+                                }
                             }
                         }
                     }
@@ -466,6 +476,36 @@ routes.get('/query/', async (req, res) => {
 //##############################################################
 //############################ POST ############################
 routes.post('/user/', async (req, res) => {
+    if (!req.body.username || !req.body.accessLevel || !req.body.password || !req.body.fname || !req.body.lname || !req.body.email) {
+        // bye bye
+    }
+    else {
+        if (req.body.accessLevel > 1 || req.session.accessLevel < 3) {
+            // bye bye
+        }
+        else {
+            console.log(`| Handling POST-request for NEW USER | username: ${req.body.username} |`);
+            logSave(`| POST | USERCREATION | Username: ${req.body.username} |`);
+            const password = await generatePass(req.body.password);
+            const user = {
+                accessLevel: req.body.accessLevel,
+                username: req.body.username,
+                password: password,
+                fname: req.body.fname,
+                lname: req.body.lname,
+                email: req.body.email
+            }
+            const dbRes = await database.addUser(user);
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).send(dbRes.message);
+            }
+        }
+    }
+    /*
     try {
         const data = req.body;
         console.log(`| Handling POST-request for username: ${data.username} |`);
@@ -507,6 +547,7 @@ routes.post('/user/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
 routes.post('/query/', async (req, res) => {
@@ -593,13 +634,31 @@ routes.post('/answer/', async (req, res) => {
             // bye bye
         }
         else {
-            
+            if (!req.body.queryId || !req.body.description) {
+                // bye bye
+            }
+            else {
+                console.log(`| Handling POST-request for answer for query id: ${req.body.queryId} |`);
+                logSave(`| POST | ANSWER for query id: ${req.body.queryId} |`);
+                const answer = {
+                    queryId: req.body.queryId,
+                    userId: req.session.userId,
+                    description: req.body.description
+                }
+                const dbRes = await database.addAnswer(answer);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
+                }
+                else {
+                    res.status(dbRes.status).json(dbRes.answer);
+                }
+            }
         }
     }
+    /*
     try {
         const data = req.body;
-        console.log(`| Handling POST-request for answer for query id: ${data.queryid} |`);
-        logSave(`| POST | ANSWER for query id: ${data.queryid} |`);
         let userInput = await inputControl('answer', data);
         if (userInput[0]) {
             console.log(`| ERROR | ${userInput[1]} |`);
@@ -635,6 +694,7 @@ routes.post('/answer/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
 
@@ -642,10 +702,37 @@ routes.post('/answer/', async (req, res) => {
 //################################################################
 //############################ UPDATE ############################
 routes.put('/user/', async (req, res) => {
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to be logged in');
+    }
+    else {
+        if (!req.body.fname || !req.body.lname || !req.body.email) {
+            res.status(400).send('ERROR! Invalid update data sent to server');
+        }
+        else {
+            console.log(`| Handling UPDATE-request for user id: ${req.session.userId} |`);
+            logSave(`| UPDATE | USER ID: ${req.session.userId} |`);
+            const user = {
+                accessLevel = req.session.accessLevel,
+                username: req.session.username,
+                fname: req.body.fname,
+                lname: req.body.lname,
+                email: req.body.email,
+                id: req.session.userId
+            }
+            const dbRes = await database.updateUser(user)
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status, dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).send(dbRes.message);
+            }
+        }
+    }
+/*
     try {
         const data = req.body;
-        console.log(`| Handling UPDATE-request for user id: ${data.id} |`);
-        logSave(`| UPDATE | USER ID: ${data.id} |`);
         let err = false;
         //let pass = false;
         let pass = true;
@@ -701,9 +788,135 @@ routes.put('/user/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
+routes.put('/user/admin/', async (req, res) => {
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to be logged in');
+    }
+    else {
+        if (!req.body.fname || !req.body.lname || !req.body.email || !req.body.accessLevel || !req.body.id || !req.body.username) {
+            res.status(400).send('ERROR! Invalid update data sent to server');
+        }
+        else {
+            if (req.session.accessLevel < 3) {
+                res.status(400).send('ERROR! You do not have access to this');
+            }
+            else {
+                console.log(`| Handling ADMIN-UPDATE-request for user id: ${data.id} |`);
+                logSave(`| ADMIN-UPDATE | USER ID: ${data.id} |`);
+                const user = {
+                    accessLevel = req.session.accessLevel,
+                    username: req.session.username,
+                    fname: req.body.fname,
+                    lname: req.body.lname,
+                    email: req.body.email,
+                    id: req.session.userId
+                }
+                const dbRes = await database.updateUser(user)
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status, dbRes.errorMessage);
+                }
+                else {
+                    res.status(dbRes.status).send(dbRes.message);
+                }
+            }
+        }
+    }
+});
+
+// updates queries, takes duplicateOf as an optional parameter if you're a contributor or admin
 routes.put('/query/', async (req, res) => {
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to be logged in');
+    }
+    else {
+        if (!req.body.title || !req.body.category || !req.body.description || !req.body.id) {
+            res.status(400).send('ERROR! Incomplete data sent to server');
+        }
+        else {
+            console.log(`| Handling UPDATE-request for query id: ${req.body.id} |`);
+            logSave(`| UPDATE | QUERY ID: ${req.body.id} |`);
+            let queryDBRes = await database.getQuery(req.body.id);
+            if (queryDBRes.errorMessage) {
+                errorLog(queryDBRes.status, queryDBRes.errorMessage);
+                res.status(queryDBRes.status).send(queryDBRes.errorMessage);
+            }
+            else {
+                if ((queryDBRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
+                    res.status(400).send('ERROR! You do not have access');
+                }
+                else {
+                    let duplicateOf = -1;
+                    if (req.session.accessLevel > 1 && req.body.duplicateOf) {
+                        if (queryDBRes.query.duplicateOf > -1) {
+                            const dbRes = await database.updateQueryDupeCount(req.body.duplicateOf, -1);
+                            if (dbRes.errorMessage) {
+                                errorLog(dbRes.status, dbRes.errorMessage);
+                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            }
+                            else {
+                                duplicateOf = req.body.duplicateOf;
+                                const query = {
+                                    title: req.body.title,
+                                    category: req.body.category,
+                                    description: req.body.description,
+                                    id: req.body.id,
+                                    duplicateOf: duplicateOf
+                                }
+                                const dbRes = await database.updateQuery(query);
+                                if (dbRes.errorMessage) {
+                                    errorLog(dbRes.status, dbRes.errorMessage);
+                                    res.status(dbRes.status).send(dbRes.errorMessage);
+                                }
+                                else {
+                                    res.status(dbRes.status).send(dbRes.message);
+                                }
+                            }
+                        }
+                        else {
+                            duplicateOf = req.body.duplicateOf;
+                            const query = {
+                                title: req.body.title,
+                                category: req.body.category,
+                                description: req.body.description,
+                                id: req.body.id,
+                                duplicateOf: duplicateOf
+                            }
+                            const dbRes = await database.updateQuery(query);
+                            if (dbRes.errorMessage) {
+                                errorLog(dbRes.status, dbRes.errorMessage);
+                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            }
+                            else {
+                                res.status(dbRes.status).send(dbRes.message);
+                            }
+                        }
+                    }
+                    else {
+                        const query = {
+                            title: req.body.title,
+                            category: req.body.category,
+                            description: req.body.description,
+                            id: req.body.id,
+                            duplicateOf: duplicateOf
+                        }
+                        const dbRes = await database.updateQuery(query);
+                        if (dbRes.errorMessage) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        }
+                        else {
+                            res.status(dbRes.status).send(dbRes.message);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /*
     try {
         const data = req.body;
         console.log(`| Handling UPDATE-request for query id: ${data.id} |`);
@@ -737,6 +950,7 @@ routes.put('/query/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
 
