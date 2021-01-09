@@ -157,10 +157,11 @@ routes.post('/login/', async (req, res) => {
 //########################## LOGOUT ###########################
 routes.delete('/logout/', async (req, res) => {
     if (!req.session) {
-        // bye bye
+        res.status(400).send('ERROR! You do not have a session');
     }
     else {
-
+        req.session.regenerate();
+        res.status(200).send('bye bye!');
     }
 });
 //#############################################################
