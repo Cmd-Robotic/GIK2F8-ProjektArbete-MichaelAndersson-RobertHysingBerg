@@ -176,8 +176,8 @@ routes.delete('/logout/', async (req, res) => {
             res.status(400).send('ERROR! You must login first to logoff');
         }
         else {
-            console.log(`| User ${req.session.userId} Logging off |`);
-            logSave(`| LOGOFF | USER: ${req.session.userId} |`);
+            console.log(`| User ${req.session.username} Logging off |`);
+            logSave(`| LOGOFF | USERID: ${req.session.userId} |`);
             req.session.destroy();
             res.status(200).send('bye bye!');
         }
