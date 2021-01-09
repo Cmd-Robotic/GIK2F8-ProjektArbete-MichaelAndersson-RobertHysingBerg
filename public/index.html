@@ -38,7 +38,7 @@
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal" data-target="#addQueryModal">Ask a Q</a>
                                 <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal" data-target="#personalQueryModal">See your Q&As</a>
-                                <a v-show="loggedIn" class="dropdown-item" href="#">See all Q&As</a>
+                                <a v-show="loggedIn" class="dropdown-item" href="allQueries.html">See all Q&As</a>
                                 <div v-show="loggedIn" class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#">About Us</a>
                                 <a class="dropdown-item" href="#">Contact</a>
@@ -64,7 +64,7 @@
                                 </span>
                                 <span v-show="admin"><a class="dropdown-item" href="adminSite.html">Admin</a></span>
                                 <span v-show="loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
-                                        data-target="#settingsModal">Settings</a></span>
+                                        data-target="#updateUserModal" v-on:click="selectItem(user)">Settings</a></span>
                                 <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
                                         data-target="#registerModal">Register</a></span>
                                 <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
@@ -194,6 +194,67 @@
                                 data-dismiss="modal">Submit</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 v-on:click="resetLoginModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPDATE USER MODAL -->
+            <!-- UPDATE USER MODAL -->
+            <div class="modal fade" id="updateUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
+                :item="item">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateUserLabel">Update user</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
+                        <div class="modal-body">
+                            <form id="formUpdateUser">
+                                <div class="form-group modalColor">
+                                    <label for="updateId">ID</label>
+                                    <input type="text" class="form-control" name="updateId" id="updateId"
+                                        v-bind:value="selectedItem.id" readonly>
+                                </div>
+                                <div class="form-group modalColor" v-on:show="admin">
+                                    <label for="updateAccessLevel">Access level</label>
+                                    <select class="form-control" name="updateAccessLevel" id="updateAccessLevel"
+                                        v-bind:value="selectedItem.accessLevel">
+                                        <option type="number">1</option>
+                                        <option type="number">2</option>
+                                        <option type="number">3</option>
+                                    </select>
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="updateUsername">Username</label>
+                                    <input type="text" class="form-control" name="updateUsername" id="updateUsername"
+                                        v-bind:value="selectedItem.username">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="updateFname">Firstname</label>
+                                    <input type="text" class="form-control" name="updateFname" id="updateFname"
+                                        v-bind:value="selectedItem.fname">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="updateLname">Lastname</label>
+                                    <input type="text" class="form-control" name="updateLname" id="updateLname"
+                                        v-bind:value="selectedItem.lname">
+                                </div>
+                                <div class="form-group modalColor">
+                                    <label for="updateEmail">Email</label>
+                                    <input type="email" class="form-control" name="updateEmail" id="updateEmail"
+                                        v-bind:value="selectedItem.email">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer modalColor">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="resetUpdateUserModal()">Close</button>
+                            <button type="button" class="btn btn-primary" v-on:click="updateUser()" data-dismiss="modal">Save
+                                changes</button>
                         </div>
                     </div>
                 </div>
@@ -600,7 +661,38 @@
                                     }
                                 }
                             }
+                            this.updateQueries();
                         }
+                    },
+                    updateUser() {
+                        var message;
+                        var user = {
+                            id: $('#updateUserModal #updateId').val(),
+                            accessLevel: this.user.accessLevel,
+                            username: $('#updateUserModal #updateUsername').val(),
+                            //password: $('#updateUserModal #updatePassword').val(),
+                            fname: $('#updateUserModal #updateFname').val(),
+                            lname: $('#updateUserModal #updateLname').val(),
+                            email: $('#updateUserModal #updateEmail').val()
+                        }
+                        console.log(user);
+                        $.ajax({
+                            url: '/user/',
+                            type: 'PUT',
+                            data: user,
+                            success: (response) => {
+                                var self = this;
+                                self.updateUsers();
+                                message = response;
+                                alert(message);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to update user`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectItem();
                     },
                     async updateQueries() {
                         var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
@@ -733,6 +825,16 @@
                     resetLoginModal() {
                         $('#loginModal #inputEmailUsername').val("");
                         $('#loginModal #inputPassword').val("");
+                    },
+                    resetUpdateUserModal() {
+                        $('#updateUserModal #updateId').val("");
+                        $('#updateUserModal #updateAccessLevel').val("");
+                        $('#updateUserModal #updateUsername').val("");
+                        //$('#updateUserModal #updatePassword').val("");
+                        $('#updateUserModal #updateFname').val("");
+                        $('#updateUserModal #updateLname').val("");
+                        $('#updateUserModal #updateEmail').val("");
+                        this.checkLoggedIn();
                     },
                     resetAddQueryModal() {
                         $('#addQueryModal #inputTitle').val("");
