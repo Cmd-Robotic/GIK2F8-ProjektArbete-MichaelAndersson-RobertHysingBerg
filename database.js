@@ -267,9 +267,9 @@ const getAnswersToQuery = async (id) => {
     try {
         let answers = []
         const dbConnection = await database;
-        answers = await dbConnection.all('SELECT id, time, userid, queryId, answer, FROM answers WHERE queryId = (?) ORDER BY time DESC', [id]);
-        if (queries) {
-            return { status: '200', content: queries };
+        answers = await dbConnection.all('SELECT id, time, userid, queryId, answer FROM answers WHERE queryId = (?) ORDER BY time DESC', [id]);
+        if (answers) {
+            return { status: '200', content: answers };
         }
         else
             return { status: '200' };

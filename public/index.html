@@ -564,14 +564,15 @@
                         });
                     },
                     async populateAnswers() {
-                        var queryId = selectedItem.id;
+                        self.answers = [];
+                        var queryId = this.selectedItem.id;
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/answers/',
                             type: 'POST',
                             data: queryId,
                             success: (response) => {
                                 var self = this;
-                                self.lastAsked = response;
+                                self.answers = response;
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);

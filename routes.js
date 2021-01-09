@@ -256,7 +256,7 @@ routes.get('/lastasked/', async (req, res) => {
         res.status(400).json(`ERROR! Could not handle request`);
     }
 });
-routes.get('/answers/', async (req, res) => {
+routes.post('/answers/', async (req, res) => {
     try {
         const id = req.body;
         console.log(`| Handling GET-request for answers to query |`);
