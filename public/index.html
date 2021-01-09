@@ -394,10 +394,14 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" 
-                                v-on:show="contributor" data-toggle="modal" data-target="#answerModal">Reply</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                                v-on:click="unselectItem()">Close</button>
+                            <div v-on:show="contributor">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal" 
+                                    data-toggle="modal" data-target="#answerModal">Reply</button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                    v-on:click="unselectItem()">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -626,6 +630,7 @@
                         this.loggedIn = false;
                         this.contributor = false;
                         this.admin = false;
+                        this.consumer = false;
                         this.user = [];
                         this.username = 'Not logged in';
                         sessionStorage.removeItem('user');
@@ -845,11 +850,10 @@
                     },
                     async populateAnswers() {
                         this.answers = [];
-                        var queryId = this.selectedItem.id;
+                        var id = this.selectedItem.id;
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/answers/',
-                            type: 'POST',
-                            data: queryId,
+                            url: 'http://127.0.0.1:5000/answers/:id',
+                            type: 'GET',
                             success: (response) => {
                                 var self = this;
                                 self.answers = response;
