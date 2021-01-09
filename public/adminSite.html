@@ -88,7 +88,7 @@
         <!-- PAGE HEADER -->
         <!-- PAGE HEADER -->
         <div class="container container-pg-head">
-            <h1 class="h1-pg">Admin Site</h1>
+            <h1 class="h1-pg text-center">Admin Site</h1>
         </div>
 
         <!-- USERS -->
@@ -120,14 +120,14 @@
                         <td>{{ item.email}}</td>
                         <td>{{ item.lastLogin}}</td>
                         <td>
-                            <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
+                            <button type="button" class="btn btn-primary" data-toggle="modal"
                                 data-target="#updateUserModal" v-on:click="selectItem(item)">
                                 Update info
                             </button>
-                            <button type="button" class="btn btn-warning btn-card" data-toggle="modal" v-on:click="banUser(item)">
+                            <button type="button" class="btn btn-warning" data-toggle="modal" v-on:click="banUser(item)">
                                 Ban user
                             </button>
-                            <button type="button" class="btn btn-danger btn-card" data-toggle="modal"
+                            <button type="button" class="btn btn-danger" data-toggle="modal"
                                 v-on:click="deleteUser(item)">
                                 Delete
                             </button>
@@ -142,7 +142,7 @@
         <div class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
                 data-target="#addQueryModal">New Query</button>
-            <label class="table-label" for="queriesTableTable">QUERIES</label>
+            <label class="table-label" for="queriesTable">QUERIES</label>
             <table class="table table-image" id="queriesTable">
                 <thead>
                     <tr class="admin-table">
@@ -170,15 +170,15 @@
                         <td>{{ item.answers}}</td>
                         <td>{{ item.duplicate}}</td>
                         <td>
-                            <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
+                            <button type="button" class="btn btn-primary" data-toggle="modal"
                                 data-target="#updateQueryModal" v-on:click="selectItem(item)">
                                 Update
                             </button>
-                            <button type="button" class="btn btn-info btn-card" data-toggle="modal"
+                            <button type="button" class="btn btn-info" data-toggle="modal"
                                 data-target="#queryInfoModal" v-on:click="flagQuery(item)">
                                 More
                             </button>
-                            <button type="button" class="btn btn-danger btn-card" data-toggle="modal"
+                            <button type="button" class="btn btn-danger" data-toggle="modal"
                                 v-on:click="deleteQuery(item)">
                                 Delete
                             </button>

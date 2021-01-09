@@ -56,13 +56,13 @@ div.dropdown-menu > :first-child {
     margin-left: 10px;
     margin-right: 10px;
 }
-
-/* QUERY MODAL */
-.btn-query {
-    height: 25px!important;
-    width: 25px!important;
-    padding: 0!important;
+.modal-personal {
+    width: auto;
+    height: auto;
+    max-width: 1200px;
 }
+
+
 
 
 /* CONTAINERS */
@@ -101,6 +101,9 @@ div.dropdown-menu > :first-child {
 .table-label {
     color: whitesmoke;
     margin-left: 40px;
+}
+.table-content {
+    max-height: 100px;
 }
 .query-actions {
     width: 246px;
