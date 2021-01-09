@@ -421,7 +421,7 @@ const getCategory = async (id) => {
         return { status: '400', errorMessage: 'ERROR! Database failure' };
     }
 }
-const getCategory = async (category) => {
+const getCategoryByName = async (category) => {
     try {
         const dbConnection = await database;
         const categories = await dbConnection.get('SELECT id, category, description FROM queryCategories WHERE category=?', [category]);
