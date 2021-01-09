@@ -604,6 +604,28 @@
                     });
                     this.unselectItem();
                 },
+                banUser(item) {
+                    var message;
+                    var user = item;
+                    item.accessLevel=0;
+                    console.log(user);
+                    $.ajax({
+                        url: '/user/',
+                        type: 'PUT',
+                        data: user,
+                        success: () => {
+                            var self = this;
+                            self.updateUsers();
+                            alert(`User with ID: ${item.id} has been banned`);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to ban user`);
+                            alert(message);
+                        }
+                    });
+                    this.unselectItem();
+                },
                 deleteUser(item) {
                     //var password = prompt("Please type password");
                     var message;
