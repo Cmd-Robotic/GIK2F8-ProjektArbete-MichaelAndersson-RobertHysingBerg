@@ -172,7 +172,7 @@ routes.delete('/logout/', async (req, res) => {
         res.status(400).send('ERROR! You do not have a session');
     }
     else {
-        req.session.regenerate();
+        req.session.destroy();
         res.status(200).send('bye bye!');
     }
 });
