@@ -741,8 +741,8 @@
                             data: query,
                             success: (response) => {
                                 var self = this;
-                                message = response;
-                                alert(message);
+                                message = JSON.parse(JSON.stringify(response));
+                                alert('Your question has been created and given an id of ' + message.id + '.');
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);

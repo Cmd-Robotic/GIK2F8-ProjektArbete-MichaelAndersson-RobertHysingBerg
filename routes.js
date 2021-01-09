@@ -157,6 +157,9 @@ routes.post('/login/', async (req, res) => {
 //########################## LOGOUT ###########################
 routes.delete('/logout/', async (req, res) => {
     if (!req.session) {
+        // bye bye
+    }
+    else {
 
     }
 });
@@ -169,7 +172,7 @@ routes.get('/users/', async (req, res) => {
     const dbRes = await database.getUsers();
     if (dbRes.errorMessage) {
         errorLog(dbRes.status, dbRes.errorMessage);
-        res.status(dbRes.status).json(dbRes.errorMessage);
+        res.status(dbRes.status).send(dbRes.errorMessage);
     }
     else {
         res.status(dbRes.status).json(dbRes.users);
@@ -203,7 +206,7 @@ routes.get('/queries/', async (req, res) => {
     const dbRes = await database.getQueries();
     if (dbRes.errorMessage) {
         errorLog(dbRes.status, dbRes.errorMessage);
-        res.status(dbRes.status).json(dbRes.errorMessage);
+        res.status(dbRes.status).send(dbRes.errorMessage);
     }
     else {
         res.status(dbRes.status).json(dbRes.users);

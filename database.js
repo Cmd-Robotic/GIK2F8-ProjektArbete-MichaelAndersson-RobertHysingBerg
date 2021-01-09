@@ -30,7 +30,7 @@ const addQuery = async (data) => {
     try {
         const dbConnection = await database;
         await dbConnection.run('INSERT INTO queries (title, category, userId, username, description) VALUES(?, ?, ?, ?, ?)', [data.title, data.category, data.userId, data.username, data.description]);
-        const query = await dbConnection.get('SELECT * FROM queries ORDER BY id DESC LIMIT 1');
+        const query = await dbConnection.get('SELECT id, time, username, title, category, description FROM queries ORDER BY id DESC LIMIT 1');
         if (!query) {
             return {status: '404', errorMessage: 'ERROR! Could not find Query'};
         }
