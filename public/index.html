@@ -622,14 +622,24 @@
                         });
                         this.checkLoggedIn();
                     },
-                    logOutUser() {
+                    async logOutUser() {
                         this.loggedIn = false;
                         this.contributor = false;
                         this.admin = false;
                         this.user = [];
                         this.username = 'Not logged in';
                         sessionStorage.removeItem('user');
-                        alert("User logged out");
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/logout/',
+                            type: 'DELETE',
+                            success: function () {
+                                alert("User logged out");
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                alert(`Error!\n${jqXHR.responseText}\nUnable to logout from server`);
+                            }
+                        });
                     },
                     checkLoggedIn() {
                         if (sessionStorage.getItem('user')) {
@@ -846,7 +856,7 @@
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
-                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                                alert(`${jqXHR.responseText}\nNo answers to the selected query`);
                             }
                         });
                     },
