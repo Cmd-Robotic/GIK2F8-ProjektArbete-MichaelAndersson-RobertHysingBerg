@@ -715,7 +715,7 @@ routes.put('/user/', async (req, res) => {
             console.log(`| Handling UPDATE-request for user id: ${req.session.userId} |`);
             logSave(`| UPDATE | USER ID: ${req.session.userId} |`);
             const user = {
-                accessLevel = req.session.accessLevel,
+                accessLevel: req.session.accessLevel,
                 username: req.session.username,
                 fname: req.body.fname,
                 lname: req.body.lname,
@@ -809,7 +809,7 @@ routes.put('/user/admin/', async (req, res) => {
                 console.log(`| Handling ADMIN-UPDATE-request for user id: ${data.id} |`);
                 logSave(`| ADMIN-UPDATE | USER ID: ${data.id} |`);
                 const user = {
-                    accessLevel = req.session.accessLevel,
+                    accessLevel: req.session.accessLevel,
                     username: req.session.username,
                     fname: req.body.fname,
                     lname: req.body.lname,
