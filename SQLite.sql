@@ -17,11 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(256) NOT NULL,
     fname VARCHAR(32) NOT NULL,
     lname VARCHAR(32) NOT NULL,
-    email VARCHAR(64) UNIQUE NOT NULL,
-    lastLogin DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    picture VARCHAR(256));
+    email VARCHAR(64) UNIQUE NOT NULL);
 
-CREATE TABLE IF NOT EXISTS queryCategory (
+CREATE TABLE IF NOT EXISTS queryCategories (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     category VARCHAR(32) NOT NULL,
     description VARCHAR(512));
@@ -34,10 +32,10 @@ CREATE TABLE IF NOT EXISTS queries (
     title VARCHAR(32) NOT NULL,
     category INTEGER(16) NOT NULL,
     description VARCHAR(512) NOT NULL,
-    picture VARCHAR(256) NULL,
     answers INTEGER DEFAULT 0,
-    duplicate INTEGER DEFAULT 0, -- points to the id of the query it is a duplicate of
-    FOREIGN KEY (category) REFERENCES queryCategory(id),
+    duplicateOf INTEGER DEFAULT -1, -- points to the id of the query it is a duplicate of
+    duplicates INTEGER DEFAULT 0, -- how many duplicates a query has
+    FOREIGN KEY (category) REFERENCES queryCategories(id),
     FOREIGN KEY (userId) REFERENCES users(id));
 
 CREATE TABLE IF NOT EXISTS answers (
@@ -46,6 +44,7 @@ CREATE TABLE IF NOT EXISTS answers (
     queryId INTEGER NOT NULL,
     userId INTEGER NOT NULL,
     answer VARCHAR(512) NOT NULL,
+    vote INTEGER NOT NULL DEFAULT 0, -- 0 by default, -1 for downvote, 1 for upvote
     FOREIGN KEY (queryId) REFERENCES queries(id),
     FOREIGN KEY (userId) REFERENCES users(id));
 
@@ -55,10 +54,10 @@ CREATE TABLE IF NOT EXISTS tokens (
     validUntil DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userId) REFERENCES users(id));
 
-INSERT INTO queryCategory (category) VALUES("Computer");
-INSERT INTO queryCategory (category) VALUES("Cellphone");
-INSERT INTO queryCategory (category) VALUES("Broadband");
-INSERT INTO queryCategory (category) VALUES("Telephony");
+INSERT INTO queryCategories (category) VALUES("Computer");
+INSERT INTO queryCategories (category) VALUES("Cellphone");
+INSERT INTO queryCategories (category) VALUES("Broadband");
+INSERT INTO queryCategories (category) VALUES("Telephony");
 
 -- DELETE FROM users WHERE id = 2;
 -- DELETE FROM queries WHERE id = 1;
@@ -68,7 +67,7 @@ INSERT INTO queryCategory (category) VALUES("Telephony");
 -- DROP TABLE tokens;
 -- DROP TABLE answers;
 -- DROP TABLE queries;
--- DROP TABLE queryCategory;
+-- DROP TABLE queryCategories;
 -- DROP TABLE users;
 -- DROP TABLE userstatus;
 -- DROP TABLE userlevel;

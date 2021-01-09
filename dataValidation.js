@@ -65,7 +65,7 @@ const validPassword = async (pwd) => {
 
 // quotation marks handling to be implemented
 const validDescription = async (desc) => {
-    if (desc.length && typeof(desc) == 'string') {
+    if (desc.length && typeof(desc) == 'string' && desc.length < 513) {
         const match = desc.match(/(?:[a-zåäöA-ZÅÄÖ0-9 _-.,\\\/!?]{32,512})/);
         if (match && match[0] === match['input']) {
                 return desc;

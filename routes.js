@@ -11,6 +11,7 @@ const dv = require('./dataValidation');
 //routes.use(cors());
 const bcrypt = require('bcrypt');
 const dataValidation = require('./dataValidation');
+const session = require('express-session');
 //const { PerformanceObserver } = require('perf_hooks');
 const saltRounds = 10;
 
@@ -24,7 +25,11 @@ async function comparePass(password, hash) {
     return match;
 };
 
-
+routes.use(session({
+    secret: 'DeimosIsReal',
+    saveUninitialized: false,
+    resave: false
+}));
 
 //###############################################################
 //############################ LOGIN ############################
@@ -54,7 +59,7 @@ routes.post('/login/', async (req, res) => {
                         const dbRes = await database.getUserByEmail(email);
                         if (dbRes.errorMessage) {
                             // error time
-                            dbErrorLog(dbRes);
+                            errorLog(dbRes.status, dbRes.errorMessage);
                             res.status(404).json({errorMessage:`Could not find a user with email ${email}`});
                         }
                         else {
@@ -63,10 +68,15 @@ routes.post('/login/', async (req, res) => {
                             // const pass = await comparePass(password, user.password);
                             const pass = (password == user.password);
                             if (!pass) {
-                                res.status(400).json({errorMessage:'Passwords do not match'});
+                                const errorMessage = 'Passwords do not match';
+                                errorLog(400, errorMessage);
+                                res.status(400).json({errorMessage: errorMessage});
                             }
                             else {
                                 const dbRes = await database.getUser(user.id);
+                                req.session.userId = user.id;
+                                req.session.accessLevel = dbRes.user.accessLevel;
+                                req.session.username = dbRes.user.username;
                                 res.status(200).json(dbRes.user);
                             }
                         }
@@ -78,8 +88,8 @@ routes.post('/login/', async (req, res) => {
                         const dbRes = await database.getUserByUsername(username);
                         if (dbRes.errorMessage) {
                             // error time
-                            dbErrorLog(dbRes);
-                            res.status(400).json({errorMessage:`Could not find user with username ${username}`});
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(404).json({errorMessage:`Could not find user with username ${username}`});
                         }
                         else {
                             // go further
@@ -87,10 +97,15 @@ routes.post('/login/', async (req, res) => {
                             // const pass = await comparePass(password, user.password);
                             const pass = (password == user.password);
                             if (!pass) {
-                                res.status(400).json({errorMessage:'Passwords do not match'});
+                                const errorMessage = 'Passwords do not match';
+                                errorLog(400, errorMessage);
+                                res.status(400).json({errorMessage: errorMessage});
                             }
                             else {
                                 const dbRes = await database.getUser(user.id);
+                                req.session.userId = user.id;
+                                req.session.accessLevel = dbRes.user.accessLevel;
+                                req.session.username = dbRes.user.username;
                                 res.status(200).json(dbRes.user);
                             }
                         }
@@ -142,6 +157,17 @@ routes.post('/login/', async (req, res) => {
 //############################ GET ############################
 
 routes.get('/users/', async (req, res) => {
+    console.log('| Handling GET-request for all users |');
+    logSave('| GET | all users |');
+    const dbRes = await database.getUsers();
+    if (dbRes.errorMessage) {
+        errorLog(dbRes.status, dbRes.errorMessage);
+        res.status(dbRes.status).json(dbRes.errorMessage);
+    }
+    else {
+        res.status(dbRes.status).json(dbRes.users);
+    }
+    /*
     try {
         console.log('| Handling GET-request for all users |');
         logSave('| GET | all users |');
@@ -161,9 +187,21 @@ routes.get('/users/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
 routes.get('/queries/', async (req, res) => {
+    console.log(`| Handling GET-request for all queries |`);
+    logSave("| GET | all queries |");
+    const dbRes = await database.getQueries();
+    if (dbRes.errorMessage) {
+        errorLog(dbRes.status, dbRes.errorMessage);
+        res.status(dbRes.status).json(dbRes.errorMessage);
+    }
+    else {
+        res.status(dbRes.status).json(dbRes.users);
+    }
+/*
     try {
         console.log(`| Handling GET-request for all queries |`);
         logSave("| GET | all queries |");
@@ -185,8 +223,26 @@ routes.get('/queries/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+*/
 });
-routes.post('/queries/', async (req, res) => {
+routes.get('/queries/user/', async (req, res) => {
+    if (!req.session.userId) {
+        // bye bye, login first
+        res.status(400).send('Please login first');
+    }
+    else {
+        console.log(`| Handling GET-request for User queries | User ID: ${req.session.userId}`);
+        logSave(`| GET | UserId: ${req.session.userId} | queries |`);
+        const dbRes = await database.getQueriesByUserId(req.session.userId);
+        if (dbRes.errorMessage) {
+            errorLog(dbRes.status, dbRes.errorMessage);
+            res.status(dbRes.status).send(dbRes.errorMessage);
+        }
+        else {
+            res.status(dbRes.status).json(dbRes.queries);
+        }
+    }
+    /*
     try {
         const data = req.body;
         console.log(`| Handling GET-request for queries | User ID: ${data.userId}`);
@@ -209,6 +265,7 @@ routes.post('/queries/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 routes.get('/frequentlyasked/', async (req, res) => {
     try {
@@ -800,6 +857,7 @@ async function inputControl(scope, data) {
 
 //##########################################################################
 //############################ SAVE FILE UPLOAD ############################
+/*
 routes.post('/user/file/:id', upload.array('file'), async (req, res) => {
     try {
         let dbRes = await database.getUser(req.params.id);
@@ -923,13 +981,13 @@ routes.post('/query/file/:id', upload.array('file'), async (req, res) => {
         res.status(400).json(`ERROR! Could not save file`);
     }
 });
-
+*/
 
 //#####################################################################
 //############################ ERROR LOGGING ##########################
-const dbErrorLog = async (dbRes) => {
-    console.log(`| ERROR | ${dbRes.status + ', bruh, ' + dbRes.errorMessage} |`);
-    logSave(`| ERROR | ${dbRes.status + ', bruh, ' + dbRes.errorMessage} |`);
+const errorLog = async (status, errorMessage) => {
+    console.log(`| ERROR | ${status + ', bruh, ' + errorMessage} |`);
+    logSave(`| ERROR | ${status + ', bruh, ' + errorMessage} |`);
 };
 
 //#####################################################################
