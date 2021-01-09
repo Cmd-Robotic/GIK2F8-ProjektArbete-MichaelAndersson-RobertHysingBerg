@@ -47,10 +47,6 @@ div.dropdown-menu > :first-child {
     color: whitesmoke;
 }
 
-.category-select {
-    display: flex;
-    width: 300px;
-}
 .category-select > h5 {
     margin: 4px 10px 0 20px;
 }
@@ -91,6 +87,10 @@ div.dropdown-menu > :first-child {
     width: max-content;
     align-self: center;
     margin-bottom: 5px;
+}
+.query-description {
+    overflow: hidden;
+    height: 50px;
 }
 
 

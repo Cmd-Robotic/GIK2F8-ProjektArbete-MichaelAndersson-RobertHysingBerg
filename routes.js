@@ -708,7 +708,7 @@ routes.put('/user/', async (req, res) => {
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
-        if (!req.body.fname || !req.body.lname || !req.body.email) {
+        if (!req.body.username || !req.body.fname || !req.body.lname || !req.body.email) {
             res.status(400).send('ERROR! Invalid update data sent to server');
         }
         else {

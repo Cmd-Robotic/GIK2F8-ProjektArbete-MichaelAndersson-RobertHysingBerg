@@ -76,7 +76,7 @@
                     </ul>
                     <form class="form-inline my-2 my-lg-0">
                         <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="button">Search</button>
                     </form>
                 </div>
             </nav>
@@ -90,7 +90,7 @@
             </div>
             
             <div>
-                <form class="category-select">
+                <form class="category-select form-inline">
                     <h5>Category</h5>
                     <select class="form-control" name="selectCategory" id="selectCategory" v-bind:value="selectedCategory">
                         <option type="number">All</option>
@@ -106,18 +106,18 @@
             <!-- FREQUENTLY ASKED -->
             <!-- FREQUENTLY ASKED -->
             <div class="container-fluid" id="frequentlyAskedQs">
-                <div class="container-fluid border border-primary site-container">
+                <div class="container-fluid border border-primary rounded site-container">
                     <h4>Frequently asked questions | Category: {{ selectedCategory }}</h4>
-                    <div class="row row-cols-1 row-cols-md-3">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                         <div class="col mb-4" v-for="item in frequentlyAsked" :key="item.id">
                             <div class="card h-100 border rounded">
                                 <div class="card-header">
                                     <h5 class="card-title">{{ item.title }}</h5>
-                                    <div>Asked by: {{ item.username }}</div>
+                                    <div>Asked by: {{ item.username }} | Category: {{ item.category }}</div>
                                     <div>Answers: {{ item.answers }}</div>
                                 </div>
                                 <div class="card-body">
-                                    <p class="card-text">{{ item.description }}</p>
+                                    <p class="card-text query-description">{{ item.description }}</p>
                                     <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
                                 </div>
                                 <button type="button" class="btn btn-primary btn-card" data-toggle="modal" data-target="#queryModal"
@@ -133,18 +133,18 @@
             <!-- LAST ASKED -->
             <!-- LAST ASKED -->
             <div class="container-fluid" id="lastAskedQs">
-                <div class="container-fluid border border-primary site-container">
+                <div class="container-fluid border border-primary rounded site-container">
                     <h4>Last asked questions | Category: {{ selectedCategory }}</h4>
-                    <div class="row row-cols-1 row-cols-md-3">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4">
                         <div class="col mb-4" v-for="item in lastAsked" :key="item.id">
                             <div class="card h-100 border rounded">
                                 <div class="card-header">
                                     <h5 class="card-title">{{ item.title }}</h5>
-                                    <div>Asked by: {{ item.username }}</div>
+                                    <div>Asked by: {{ item.username }} | Category: {{ item.category }}</div>
                                     <div>Answers: {{ item.answers }}</div>
                                 </div>
                                 <div class="card-body">
-                                    <p class="card-text">{{ item.description }}</p>
+                                    <p class="card-text query-description">{{ item.description }}</p>
                                     <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
                                 </div>
                                 <button type="button" class="btn btn-primary btn-card" data-toggle="modal" data-target="#queryModal"
@@ -251,6 +251,8 @@
                             </form>
                         </div>
                         <div class="modal-footer modalColor">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal" 
+                                v-on:click="deleteUser()">Delete account</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 v-on:click="resetUpdateUserModal()">Close</button>
                             <button type="button" class="btn btn-primary" v-on:click="updateUser()" data-dismiss="modal">Save
@@ -380,6 +382,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
+                            <p>Asked by: {{ selectedItem.username }} | Category: {{ selectedItem.category }}</p>
                             {{ selectedItem.description }}
                         </div>
                         <span></span>
@@ -395,7 +398,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <div v-on:show="contributor">
+                            <div v-show="contributor">
                                 <button type="button" class="btn btn-primary" data-dismiss="modal" 
                                     data-toggle="modal" data-target="#answerModal">Reply</button>
                             </div>
@@ -420,6 +423,7 @@
                             </button>
                         </div>
                         <div class="modal-body">
+                            <p>Asked by: {{ selectedItem.username }}</p>
                             {{ selectedItem.description }}
                         </div>
                         <span></span>
@@ -694,8 +698,6 @@
                             type: 'POST',
                             data: user,
                             success: (response) => {
-                                var self = this;
-                                self.updateUsers();
                                 message = response;
                                 alert(message);
                             },
@@ -706,6 +708,8 @@
                             }
                         });
                         this.unselectItem();
+                        this.resetAddUserModal()
+                        this.updateUsers();
                     },
                     updateUser() {
                         var message;
@@ -724,8 +728,6 @@
                             type: 'PUT',
                             data: user,
                             success: (response) => {
-                                var self = this;
-                                self.updateUsers();
                                 message = response;
                                 alert(message);
                             },
@@ -736,6 +738,8 @@
                             }
                         });
                         this.unselectItem();
+                        this.resetAddUserModal()
+                        this.updateUsers();
                     },
                     async updateQueries() {
                         //var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
@@ -783,7 +787,6 @@
                             type: 'POST',
                             data: query,
                             success: (response) => {
-                                var self = this;
                                 message = JSON.parse(JSON.stringify(response));
                                 alert('Your question has been created and given an id of ' + message.id + '.');
                             },
@@ -794,7 +797,10 @@
                             }
                         });
                         this.unselectItem();
+                        this.resetAddQueryModal()
                         this.updateQueries();
+                        this.populateFrequentlyAsked();
+                        this.populateLastAsked();
                     },
                     deleteQuery(item) {
                         //var password = prompt("Please type password");
@@ -807,9 +813,6 @@
                             type: 'DELETE',
                             data: queryData,
                             success: (response) => {
-                                var self = this;
-                                self.unselectItem();
-                                self.updateQueries();
                                 alert(response);
                             },
                             error: function (jqXHR, textStatus, error) {
@@ -819,6 +822,9 @@
                             }
                         });
                         this.unselectItem();
+                        this.updateQueries();
+                        this.populateFrequentlyAsked();
+                        this.populateLastAsked();
                     },
                     async sendAnswer() {
                         var message;
@@ -835,7 +841,6 @@
                             type: 'POST',
                             data: query,
                             success: (response) => {
-                                var self = this;
                                 message = response;
                                 alert(message);
                             },
@@ -846,6 +851,7 @@
                             }
                         });
                         this.unselectItem();
+                        this.resetAnswerModal();
                         this.updateQueries();
                     },
                     async populateFrequentlyAsked() {
@@ -921,7 +927,7 @@
                         $('#updateQueryModal #updateDescription').val("");
                         this.updateQueries()
                     },
-                    resetRegisterModal() {
+                    resetAddUserModal() {
                         $('#registerModal #inputNewUsername').val("");
                         $('#registerModal #inputNewEmail').val("");
                         $('#registerModal #inputNewPassword').val("");

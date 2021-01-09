@@ -561,8 +561,6 @@
                         type: 'POST',
                         data: user,
                         success: (response) => {
-                            var self = this;
-                            self.updateUsers();
                             message = response;
                             alert(message);
                         },
@@ -573,6 +571,8 @@
                         }
                     });
                     this.unselectItem();
+                    this.resetAddUserModal();
+                    this.updateUsers();
                 },
                 updateUser() {
                     var message;
@@ -591,8 +591,6 @@
                         type: 'PUT',
                         data: user,
                         success: (response) => {
-                            var self = this;
-                            self.updateUsers();
                             message = response;
                             alert(message);
                         },
@@ -603,6 +601,8 @@
                         }
                     });
                     this.unselectItem();
+                    this.resetUpdateUserModal();
+                    this.updateUsers();
                 },
                 banUser(item) {
                     var message;
@@ -614,8 +614,6 @@
                         type: 'PUT',
                         data: user,
                         success: () => {
-                            var self = this;
-                            self.updateUsers();
                             alert(`User with ID: ${item.id} has been banned`);
                         },
                         error: function (jqXHR, textStatus, error) {
@@ -625,6 +623,7 @@
                         }
                     });
                     this.unselectItem();
+                    this.updateUsers();
                 },
                 deleteUser(item) {
                     //var password = prompt("Please type password");
@@ -637,7 +636,6 @@
                         type: 'DELETE',
                         data: userData,
                         success: (response) => {
-                            var self = this;
                             alert(response);
                         },
                         error: function (jqXHR, textStatus, error) {
@@ -689,6 +687,8 @@
                         }
                     });
                     this.unselectItem();
+                    this.resetAddQueryModal();
+                    this.resetUpdateQueryModal();
                     this.updateQueries();
                 },
                 deleteQuery(item) {
@@ -702,9 +702,6 @@
                         type: 'DELETE',
                         data: queryData,
                         success: (response) => {
-                            var self = this;
-                            self.unselectItem();
-                            self.updateQueries();
                             alert(response);
                         },
                         error: function (jqXHR, textStatus, error) {
@@ -714,6 +711,7 @@
                         }
                     });
                     this.unselectItem();
+                    this.updateQueries();
                 },
                 resetAddQueryModal() {
                     $('#addQueryModal #inputTitle').val("");
@@ -733,6 +731,7 @@
                     $('#addUserModal #newFname').val("");
                     $('#addUserModal #newLname').val("");
                     $('#addUserModal #newEmail').val("");
+                    this.updateUsers()
                 },
                 resetUpdateUserModal() {
                     $('#updateUserModal #updateId').val("");
