@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS queryCategories (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-    category VARCHAR(32) NOT NULL,
+    category VARCHAR(32) UNIQUE NOT NULL,
     description VARCHAR(512));
 
 CREATE TABLE IF NOT EXISTS queries (
@@ -30,12 +30,12 @@ CREATE TABLE IF NOT EXISTS queries (
     userId INTEGER NOT NULL,
     username VARCHAR(32),
     title VARCHAR(32) NOT NULL,
-    category INTEGER(16) NOT NULL,
+    category VARCHAR(32) NOT NULL,
     description VARCHAR(512) NOT NULL,
     answers INTEGER DEFAULT 0,
     duplicateOf INTEGER DEFAULT -1, -- points to the id of the query it is a duplicate of
     duplicates INTEGER DEFAULT 0, -- how many duplicates a query has
-    FOREIGN KEY (category) REFERENCES queryCategories(id),
+    FOREIGN KEY (category) REFERENCES queryCategories(category),
     FOREIGN KEY (userId) REFERENCES users(id));
 
 CREATE TABLE IF NOT EXISTS answers (
@@ -46,12 +46,6 @@ CREATE TABLE IF NOT EXISTS answers (
     answer VARCHAR(512) NOT NULL,
     vote INTEGER NOT NULL DEFAULT 0, -- 0 by default, -1 for downvote, 1 for upvote
     FOREIGN KEY (queryId) REFERENCES queries(id),
-    FOREIGN KEY (userId) REFERENCES users(id));
-
-CREATE TABLE IF NOT EXISTS tokens (
-    userId INTEGER UNIQUE NOT NULL,
-    token VARCHAR(64) UNIQUE NOT NULL,  -- remember to check if the token was saved
-    validUntil DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userId) REFERENCES users(id));
 
 INSERT INTO queryCategories (category) VALUES("Computer");

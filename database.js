@@ -421,6 +421,23 @@ const getCategory = async (id) => {
         return { status: '400', errorMessage: 'ERROR! Database failure' };
     }
 }
+const getCategory = async (category) => {
+    try {
+        const dbConnection = await database;
+        const categories = await dbConnection.get('SELECT id, category, description FROM queryCategories WHERE category=?', [category]);
+        if (category) {
+            return { status: '200', categories: categories };
+        }
+        else {
+            return { status: '404', errorMessage: 'ERROR! Could not find category' };
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', errorMessage: 'ERROR! Database failure' };
+    }
+}
 
 //##############################################################
 //############################ UPDATE ############################
@@ -625,6 +642,7 @@ module.exports = {
     // categories
     getCategories : getCategories,
     getCategory : getCategory,
+    getCategoryByName : getCategoryByName,
     addCategory : addCategory,
     updateCategory : updateCategory,
     deleteCategory : deleteCategory

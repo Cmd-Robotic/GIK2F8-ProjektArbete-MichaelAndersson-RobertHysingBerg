@@ -12,6 +12,7 @@ const dv = require('./dataValidation');
 const bcrypt = require('bcrypt');
 const dataValidation = require('./dataValidation');
 const session = require('express-session');
+const { doesNotReject } = require('assert');
 //const { PerformanceObserver } = require('perf_hooks');
 const saltRounds = 10;
 
@@ -152,7 +153,13 @@ routes.post('/login/', async (req, res) => {
 */
 });
 
+//#############################################################
+//########################## LOGOUT ###########################
+routes.delete('/logout/', async (req, res) => {
+    if (!req.session) {
 
+    }
+});
 //#############################################################
 //############################ GET ############################
 
@@ -446,6 +453,40 @@ routes.post('/user/', async (req, res) => {
 });
 
 routes.post('/query/', async (req, res) => {
+    if (!req.session.userId || !req.session.username) {
+        res.status(400).send('ERROR! You should log in first');
+    }
+    else {
+        if (!req.body.title || !req.body.category || !req.body.description) {
+            res.status(400).send('ERROR! Missing data for query');
+        }
+        else {
+            const category = await database.getCategoryByName(req.body.category);
+            if (!category) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                console.log(`| Handling POST-request for query: ${req.body.title} |`);
+                logSave(`| POST | QUERY: ${req.body.title} |`);
+                const dbRes = await database.addQuery({
+                    'title': req.body.title,
+                    'category': req.body.category,
+                    'userId': req.session.userId,
+                    'username': req.session.username,
+                    'description': req.body.description
+                });
+                if (!dbRes) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
+                }
+                else {
+                    res.status(dbRes.status).json(dbRes.query);
+                }
+            }
+        }
+    }
+    /*
     try {
         const data = req.body;
         //data.userId = parseInt(data.userId);
@@ -484,6 +525,7 @@ routes.post('/query/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 routes.post('/answer/', async (req, res) => {
     try {
