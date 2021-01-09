@@ -38,6 +38,7 @@
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#addQueryModal">Ask a Q</a>
                                 <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal" data-target="#personalQueryModal">See your Q&As</a>
+                                <a v-show="loggedIn" class="dropdown-item" href="#">See all Q&As</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#">About Us</a>
                                 <a class="dropdown-item" href="#">Contact</a>
@@ -261,9 +262,9 @@
                                     <td>{{ item.time }}</td>
                                     <td>{{ item.userId }}</td>
                                     <td>{{ item.username }}</td>
-                                    <td>{{ item.title }}</td>
+                                    <td class="table-row-height">{{ item.title }}</td>
                                     <td>{{ item.category }}</td>
-                                    <td>{{ item.description}}</td>
+                                    <td class="table-row-height">{{ item.description}}</td>
                                     <td>{{ item.answers}}</td>
                                     <td>{{ item.duplicate}}</td>
                                     <td>

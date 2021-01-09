@@ -63,11 +63,10 @@ div.dropdown-menu > :first-child {
 }
 
 
-
-
 /* CONTAINERS */
 .site-container {
     margin: 20px 0 20px 0;
+    padding-top: 10px;
     color: whitesmoke;
 }
 
@@ -91,8 +90,10 @@ div.dropdown-menu > :first-child {
 .table > tbody > .admin-table > td{
     color: whitesmoke;
 }
-.table > tbody > .admin-table > td > img{
-    color: black;
+.table-row-height {
+    display: block;
+    overflow: hidden;
+    height: 60px;
 }
 .admin-tables {
     padding-top: 20px;
