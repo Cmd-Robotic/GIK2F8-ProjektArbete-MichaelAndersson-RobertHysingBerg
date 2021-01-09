@@ -306,7 +306,7 @@
                             {{ selectedItem.description }}
                         </div>
                         <span></span>
-                        <div class="col " v-for="item in answers" :key="item.id">
+                        <div class="col" v-for="item in answers" :key="item.id">
                             <div class="card h-100 border rounded">
                                 <div class="card-body">
                                     <p class="card-text">{{ item.description }}</p>
@@ -315,8 +315,42 @@
                             </div>
                         </div>
                         <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" 
+                                v-on:show="contributor" data-toggle="modal" data-target="#answerModal">Reply</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 v-on:click="unselectItem()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANSWER MODAL -->
+            <!-- ANSWER MODAL -->
+            <div class="modal fade" id="answerModal" tabindex="-1" aria-labelledby="answerModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="answerModalLabel">{{ selectedItem.title }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            {{ selectedItem.description }}
+                        </div>
+                        <span></span>
+                        <form class="modal-body">
+                            <div class="form-group modalColor">
+                                <label for="inputAnswer">Answer</label>
+                                <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6" answer="answer"
+                                    v-model="answer"></textarea>
+                            </div>
+                        </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:show="contributor"
+                                v-on:click="sendAnswer()">Reply</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="resetAnswerModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -461,6 +495,7 @@
                 data: {
                     queries: [],
                     answers: [],
+                    answer: "",
                     frequentlyAsked: [],
                     lastAsked: [],
                     item: '',
@@ -675,6 +710,10 @@
                         $('#addQueryModal #inputTitle').val("");
                         $('#addQueryModal #inputCategory').val("");
                         $('#addQueryModal #inputDescription').val("");
+                    },
+                    resetAnswerModal() {
+                        $('#answerModal #inputAnswer').val("");
+                        this.answer = "";
                     },
                     resetUpdateQueryModal() {
                         $('#updateQueryModal #updateTitle').val("");
