@@ -13,6 +13,8 @@ const bcrypt = require('bcrypt');
 const dataValidation = require('./dataValidation');
 const session = require('express-session');
 const { doesNotReject } = require('assert');
+const { send } = require('process');
+const { EROFS } = require('constants');
 //const { PerformanceObserver } = require('perf_hooks');
 const saltRounds = 10;
 
@@ -36,22 +38,22 @@ routes.use(session({
 //############################ LOGIN ############################
 routes.post('/login/', async (req, res) => {
     if (!req.body.emailUsername) {
-        res.status(400).json({errorMessage:'No email or username sent to server'});
+        res.status(400).send('No email or username sent to server');
     }
     else {
         if (!req.body.password) {
-            res.status(400).json({errorMessage:'No password sent to server'});
+            res.status(400).send('No password sent to server');
         }
         else {
             const email = await dv.validEmail(req.body.emailUsername);
             const username = await dv.validUsername(req.body.emailUsername);
             if (!email && !username) {
-                res.status(400).json({errorMessage:'Invalid username or email sent to server'});
+                res.status(400).send('Invalid username or email sent to server');
             }
             else {
                 const password = await dv.validPassword(req.body.password);
                 if (!password) {
-                    res.status(400).json({errorMessage:'Invalid password sent to server'});
+                    res.status(400).send('Invalid password sent to server');
                 }
                 else {
                     if (email) {
@@ -61,7 +63,7 @@ routes.post('/login/', async (req, res) => {
                         if (dbRes.errorMessage) {
                             // error time
                             errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(404).json({errorMessage:`Could not find a user with email ${email}`});
+                            res.status(404).send(`Could not find a user with email ${email}`);
                         }
                         else {
                             // go further
@@ -71,7 +73,7 @@ routes.post('/login/', async (req, res) => {
                             if (!pass) {
                                 const errorMessage = 'Passwords do not match';
                                 errorLog(400, errorMessage);
-                                res.status(400).json({errorMessage: errorMessage});
+                                res.status(400).send(errorMessage);
                             }
                             else {
                                 const dbRes = await database.getUser(user.id);
@@ -95,7 +97,7 @@ routes.post('/login/', async (req, res) => {
                         if (dbRes.errorMessage) {
                             // error time
                             errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(404).json({errorMessage:`Could not find user with username ${username}`});
+                            res.status(404).send(`Could not find user with username ${username}`);
                         }
                         else {
                             // go further
@@ -105,7 +107,7 @@ routes.post('/login/', async (req, res) => {
                             if (!pass) {
                                 const errorMessage = 'Passwords do not match';
                                 errorLog(400, errorMessage);
-                                res.status(400).json({errorMessage: errorMessage});
+                                res.status(400).send(errorMessage);
                             }
                             else {
                                 const dbRes = await database.getUser(user.id);
@@ -477,11 +479,11 @@ routes.get('/query/', async (req, res) => {
 //############################ POST ############################
 routes.post('/user/', async (req, res) => {
     if (!req.body.username || !req.body.accessLevel || !req.body.password || !req.body.fname || !req.body.lname || !req.body.email) {
-        // bye bye
+        res.status(400).send('ERROR! Incomplete data sent to server');
     }
     else {
-        if (req.body.accessLevel > 1 || req.session.accessLevel < 3) {
-            // bye bye
+        if (req.body.accessLevel > 1 && (!req.secure.accessLevel || req.session.accessLevel < 3)) {
+            res.status(400).send('ERROR! You do not have access to create an elevated user');
         }
         else {
             console.log(`| Handling POST-request for NEW USER | username: ${req.body.username} |`);
@@ -958,6 +960,32 @@ routes.put('/query/', async (req, res) => {
 //################################################################
 //############################ DELETE ############################
 routes.delete('/user/', async (req, res) => {
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to be logged in');
+    }
+    else {
+        if (req.session.accessLevel < 3) {
+            res.status(400).send('ERROR! You do not have access to this');
+        }
+        else {
+            if (!req.body.userId) {
+                res.status(400).send('ERROR! No userId sent to server');
+            }
+            else {
+                console.log(`| Handling DELETE-request for user id: ${req.body.userId} | REQUESTED BY ADMIN ${req.session.userId} |`);
+                logSave(`| DELETE | USER ID: ${req.body.userId} | ADMIN ID: ${req.session.userId} |`);
+                const dbRes = await database.deleteUser(req.body.userId);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
+                }
+                else {
+                    res.status(dbRes.status).send(dbRes.message);
+                }
+            }
+        }
+    }
+    /*
     try {
         const data = req.body;
         console.log(`| Handling DELETE-request for user id: ${data.id} |`);
@@ -1013,9 +1041,41 @@ routes.delete('/user/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
 routes.delete('/query/', async (req, res) => {
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to login first');
+    }
+    else {
+        if (!req.body.id) {
+            res.status(400).send('ERROR! No id sent to server');
+        }
+        else {
+            const dbRes = await database.getQuery(req.body.id);
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                if (req.session.accessLevel < 3 && res.session.userId != dbRes.query.userId) {
+                    res.status(400).send('ERROR! You do not have access to this query');
+                }
+                else {
+                    const dbRes = await database.deleteQuery(req.body.id);
+                    if (dbRes.errorMessage) {
+                        errorLog(dbRes.status, dbRes.errorMessage);
+                        res.status(dbRes.status).send(dbRes.errorMessage);
+                    }
+                    else {
+                        res.status(dbRes.status).send(dbRes.message);
+                    }
+                }
+            }
+        }
+    }
+    /*
     try {
         const data = req.body;
         console.log(`| Handling DELETE-request for query id: ${data.id} |`);
@@ -1044,12 +1104,14 @@ routes.delete('/query/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
 
 
 //#######################################################################
 //############################ INPUT CONTROL ############################
+/*
 async function inputControl(scope, data) {
     let errorLog = [];
     let inputTest = false;
@@ -1176,6 +1238,7 @@ async function inputControl(scope, data) {
     test.push(errorLog);
     return test;
 };
+*/
 
 
 

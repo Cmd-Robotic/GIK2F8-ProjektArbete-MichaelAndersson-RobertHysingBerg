@@ -525,7 +525,7 @@ const deleteUser = async (id) => {
     try {
         const dbConnection = await database;
         await dbConnection.run('DELETE FROM users WHERE id = (?)', [id]);
-        return { status: '200', message: 'User deleted' };
+        return { status: '200', message: `User ${id} deleted` };
     }
     catch {
         console.log(`| ERROR | ${error} |`);
@@ -539,7 +539,7 @@ const deleteQuery = async (id) => {
     try {
         const dbConnection = await database;
         await dbConnection.run('DELETE FROM queries WHERE id = (?)', [id]);
-        return { status: '200', message: 'Query deleted' };
+        return { status: '200', message: `Query ${id} deleted` };
     }
     catch {
         console.log(`| ERROR | ${error} |`);
