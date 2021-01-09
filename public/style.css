@@ -47,6 +47,13 @@ div.dropdown-menu > :first-child {
     color: whitesmoke;
 }
 
+.category-select {
+    display: flex;
+    width: 300px;
+}
+.category-select > h5 {
+    margin: 4px 10px 0 20px;
+}
 
 /* MODALS */
 .modalColor {
@@ -62,12 +69,16 @@ div.dropdown-menu > :first-child {
     max-width: 1200px;
 }
 
-
 /* CONTAINERS */
 .site-container {
     margin: 20px 0 20px 0;
     padding-top: 10px;
     color: whitesmoke;
+}
+
+/* BUTTONS */
+.btn-margin {
+    margin: 0 10px;
 }
 
 /* CARDS */

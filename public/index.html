@@ -89,6 +89,20 @@
                 <h1 class="h1-pg text-center">The Answers You Need</h1>
             </div>
             
+            <div>
+                <form class="category-select">
+                    <h5>Category</h5>
+                    <select class="form-control" name="selectCategory" id="selectCategory" v-bind:value="selectedCategory">
+                        <option type="number">All</option>
+                        <option type="number">Computer</option>
+                        <option type="number">Cellphone</option>
+                        <option type="number">Broadband</option>
+                        <option type="number">Telephony</option>
+                    </select>
+                    <button type="button" class="btn btn-primary btn-margin" v-on:click="selectCategory()">Select</button>
+                </form>
+            </div>
+
             <!-- FREQUENTLY ASKED -->
             <!-- FREQUENTLY ASKED -->
             <div class="container-fluid" id="frequentlyAskedQs">
@@ -604,6 +618,11 @@
                             }
                         });
                     },
+                    selectCategory() {
+                        this.selectedCategory = $('#selectCategory').val();
+                        this.populateFrequentlyAsked();
+                        this.populateLastAsked();
+                    },
                     selectItem(item) {
                         this.selectedItem = item;
                     },
@@ -667,36 +686,32 @@
                         this.unselectItem();
                     },
                     async populateFrequentlyAsked() {
-                        if (this.selectedCategory == "ALL") {
-                            await $.ajax({
-                                url: 'http://127.0.0.1:5000/frequentlyasked/',
-                                type: 'GET',
-                                success: (response) => {
-                                    var self = this;
-                                    self.frequentlyAsked = response;
-                                },
-                                error: function (jqXHR, textStatus, error) {
-                                    console.log(jqXHR.status, error, jqXHR.responseText);
-                                    alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
-                                }
-                            });
-                        }
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/frequentlyasked/',
+                            type: 'GET',
+                            success: (response) => {
+                                var self = this;
+                                self.frequentlyAsked = response;
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                            }
+                        });
                     },
                     async populateLastAsked() {
-                        if (this.selectedCategory == "ALL") {
-                            await $.ajax({
-                                url: 'http://127.0.0.1:5000/lastasked/',
-                                type: 'GET',
-                                success: (response) => {
-                                    var self = this;
-                                    self.lastAsked = response;
-                                },
-                                error: function (jqXHR, textStatus, error) {
-                                    console.log(jqXHR.status, error, jqXHR.responseText);
-                                    alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
-                                }
-                            });
-                        }
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/lastasked/',
+                            type: 'GET',
+                            success: (response) => {
+                                var self = this;
+                                self.lastAsked = response;
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                            }
+                        });
                     },
                     async populateAnswers() {
                         this.answers = [];
