@@ -36,10 +36,10 @@
                                 Menu
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#addQueryModal">Ask a Q</a>
+                                <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal" data-target="#addQueryModal">Ask a Q</a>
                                 <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal" data-target="#personalQueryModal">See your Q&As</a>
                                 <a v-show="loggedIn" class="dropdown-item" href="#">See all Q&As</a>
-                                <div class="dropdown-divider"></div>
+                                <div v-show="loggedIn" class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#">About Us</a>
                                 <a class="dropdown-item" href="#">Contact</a>
                             </div>
@@ -163,7 +163,7 @@
                             <form>
                                 <div class="form-group modalColor">
                                     <label for="inputEmailUsername">Email address or username</label>
-                                    <input type="text" class="form-control" id="inputEmail" aria-describedby="emailHelp"
+                                    <input type="text" class="form-control" id="inputEmailUsername" aria-describedby="emailHelp"
                                         placeholder="Enter email or username" emailusername="emailUsername" v-model="emailUsername">
                                     <small id="emailHelp" class="form-text text-muted">We will never share your email with anyone
                                         else.</small>
@@ -178,7 +178,8 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" v-on:click="loginUser(emailUsername, password)"
                                 data-dismiss="modal">Submit</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="resetLoginModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -705,6 +706,10 @@
                                 alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
                             }
                         });
+                    },
+                    resetLoginModal() {
+                        $('#loginModal #inputEmailUsername').val("");
+                        $('#loginModal #inputPassword').val("");
                     },
                     resetAddQueryModal() {
                         $('#addQueryModal #inputTitle').val("");
