@@ -163,13 +163,106 @@ routes.get('/users/', async (req, res) => {
     }
 });
 
+routes.get('/queries/', async (req, res) => {
+    try {
+        console.log(`| Handling GET-request for all queries |`);
+        logSave("| GET | all queries |");
+        const dbRes = await database.getQueries();
+        if (dbRes.status == '200') {
+            if (dbRes.content) {
+                res.status(200).json(dbRes.content);
+            }
+            else {
+                res.status(200);
+            }
+        }
+        else {
+            res.status(400).json(dbRes.content);
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        res.status(400).json(`ERROR! Could not handle request`);
+    }
+});
 routes.post('/queries/', async (req, res) => {
     try {
         const data = req.body;
-        console.log(`| Handling GET-request for all queries |`);
+        console.log(`| Handling GET-request for queries | User ID: ${data.userId}`);
         logSave("| GET | all queries |");
-        const dbRes = await database.getQueries(data);
+        const dbRes = await database.getQueriesById(data.userId);
         if (dbRes.status=='200') {
+            if (dbRes.content) {
+                res.status(200).json(dbRes.content);
+            }
+            else {
+                res.status(200);
+            }
+        }
+        else {
+            res.status(400).json(dbRes.content);
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        res.status(400).json(`ERROR! Could not handle request`);
+    }
+});
+routes.get('/frequentlyasked/', async (req, res) => {
+    try {
+        console.log(`| Handling GET-request for frequently asked queries |`);
+        logSave("| GET | frequently asked queries |");
+        const dbRes = await database.getFrequentQueries();
+        if (dbRes.status == '200') {
+            if (dbRes.content) {
+                res.status(200).json(dbRes.content);
+            }
+            else {
+                res.status(200);
+            }
+        }
+        else {
+            res.status(400).json(dbRes.content);
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        res.status(400).json(`ERROR! Could not handle request`);
+    }
+});
+routes.get('/lastasked/', async (req, res) => {
+    try {
+        console.log(`| Handling GET-request for last asked queries |`);
+        logSave("| GET | last asked queries |");
+        const dbRes = await database.getLastQueries();
+        if (dbRes.status == '200') {
+            if (dbRes.content) {
+                res.status(200).json(dbRes.content);
+            }
+            else {
+                res.status(200);
+            }
+        }
+        else {
+            res.status(400).json(dbRes.content);
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        res.status(400).json(`ERROR! Could not handle request`);
+    }
+});
+routes.get('/answers/', async (req, res) => {
+    try {
+        const id = req.body;
+        console.log(`| Handling GET-request for answers to query |`);
+        logSave("| GET | answers to query |");
+        const dbRes = await database.getAnswersToQuery(id);
+        if (dbRes.status == '200') {
             if (dbRes.content) {
                 res.status(200).json(dbRes.content);
             }

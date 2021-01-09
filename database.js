@@ -191,17 +191,83 @@ const getUserStatus = async (data) => {
         //throw new Error('Något gick fel vid kommunikation med databasen');
     }
 };
-
-const getQueries = async (data) => {
+const getQueries = async () => {
     try {
         let queries = []
         const dbConnection = await database;
-        if (data.accessLevel == 3) {
-            queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries ORDER BY id ASC');
+        queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries ORDER BY time DESC');
+        if (queries) {
+            return { status: '200', content: queries };
         }
-        else {
-            queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries WHERE userId = (?) ORDER BY id ASC', [data.userId]);
+        else
+            return { status: '200' };
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', content: 'ERROR! Database failure' };
+        //throw new Error('Något gick fel vid kommunikation med databasen');
+    }
+};
+const getQueriesById = async (id) => {
+    try {
+        let queries = []
+        const dbConnection = await database;
+        queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries WHERE userId = (?) ORDER BY id ASC', [id]);
+        if (queries) {
+            return { status: '200', content: queries };
         }
+        else
+            return { status: '200' };
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', content: 'ERROR! Database failure' };
+        //throw new Error('Något gick fel vid kommunikation med databasen');
+    }
+};
+const getFrequentQueries = async () => {
+    try {
+        let queries = []
+        const dbConnection = await database;
+        queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries ORDER BY duplicate DESC LIMIT 6');
+        if (queries) {
+            return { status: '200', content: queries };
+        }
+        else
+            return { status: '200' };
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', content: 'ERROR! Database failure' };
+        //throw new Error('Något gick fel vid kommunikation med databasen');
+    }
+};
+const getLastQueries = async () => {
+    try {
+        let queries = []
+        const dbConnection = await database;
+        queries = await dbConnection.all('SELECT id, time, userid, username, title, category, description, answers, duplicate FROM queries ORDER BY time DESC LIMIT 6');
+        if (queries) {
+            return { status: '200', content: queries };
+        }
+        else
+            return { status: '200' };
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', content: 'ERROR! Database failure' };
+        //throw new Error('Något gick fel vid kommunikation med databasen');
+    }
+};
+const getAnswersToQuery = async (id) => {
+    try {
+        let answers = []
+        const dbConnection = await database;
+        answers = await dbConnection.all('SELECT id, time, userid, queryId, answer, FROM answers WHERE queryId = (?) ORDER BY time DESC', [id]);
         if (queries) {
             return { status: '200', content: queries };
         }
@@ -379,13 +445,17 @@ module.exports = {
     getUserLevel : getUserLevel,
     getUserStatus : getUserStatus,
     getQueries : getQueries,
+    getQueriesById : getQueriesById,
+    getFrequentQueries : getFrequentQueries,
+    getLastQueries : getLastQueries,
+    getAnswersToQuery : getAnswersToQuery,
     getQuery : getQuery,
-    getCategory: getCategory,
+    getCategory : getCategory,
     addUser : addUser,
     addQuery : addQuery,
     addAnswer : addAnswer,
-    addUserPic: addUserPic,
-    addQueryPic: addQueryPic,
+    addUserPic : addUserPic,
+    addQueryPic : addQueryPic,
     updateUser : updateUser,
     updateQuery : updateQuery,
     deleteUser : deleteUser,

@@ -68,10 +68,10 @@ div.dropdown-menu > :first-child {
 /* CONTAINERS */
 .site-container {
     margin: 20px 0 20px 0;
+    color: whitesmoke;
 }
 
 /* CARDS */
-
 .card {
     margin: 10px;
     background-color: #0000009f!important;

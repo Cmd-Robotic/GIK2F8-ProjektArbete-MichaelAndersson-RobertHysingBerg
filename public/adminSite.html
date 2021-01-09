@@ -642,15 +642,12 @@
                     this.updateUsers();
                 },
                 async updateQueries() {
-                    var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
                     await $.ajax({
                         url: 'http://127.0.0.1:5000/queries/',
-                        type: 'POST',
-                        data: user,
+                        type: 'GET',
                         success: (response) => {
                             var self = this;
                             self.queries = response;
-                            //alert(`User ${response.username} logged in`);
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
