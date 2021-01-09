@@ -168,15 +168,25 @@ routes.delete('/logout/', async (req, res) => {
 //############################ GET ############################
 
 routes.get('/users/', async (req, res) => {
-    console.log('| Handling GET-request for all users |');
-    logSave('| GET | all users |');
-    const dbRes = await database.getUsers();
-    if (dbRes.errorMessage) {
-        errorLog(dbRes.status, dbRes.errorMessage);
-        res.status(dbRes.status).send(dbRes.errorMessage);
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to be logged in');
     }
     else {
-        res.status(dbRes.status).json(dbRes.users);
+        if (req.session.accessLevel < 3) {
+            res.status(400).send('ERROR! You do not have permission to access this');
+        }
+        else {
+            console.log('| Handling GET-request for all users |');
+            logSave('| GET | all users |');
+            const dbRes = await database.getUsers();
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).json(dbRes.users);
+            }
+        }
     }
     /*
     try {
@@ -348,7 +358,23 @@ routes.get('/lastasked/', async (req, res) => {
     }
     */
 });
-routes.post('/answers/', async (req, res) => {
+routes.get('/answers/:id', async (req, res) => {
+    if (!req.params.id) {
+        res.status(400).send('ERROR! No id sent to server');
+    }
+    else {
+        console.log(`| Handling GET-request for answers to query |`);
+        logSave("| GET | answers to query |");
+        const dbRes = await database.getAnswersToQuery(req.params.id);
+        if (dbRes.errorMessage) {
+            errorLog(dbRes.status, dbRes.errorMessage);
+            res.status(dbRes.status).send(dbRes.errorMessage);
+        }
+        else {
+            res.status(dbRes.status).json(dbRes.answers);
+        }
+    }
+    /*
     try {
         const id = req.body;
         console.log(`| Handling GET-request for answers to query |`);
@@ -371,8 +397,10 @@ routes.post('/answers/', async (req, res) => {
         logSave(`| ERROR | ${error} |`);
         res.status(400).json(`ERROR! Could not handle request`);
     }
+    */
 });
 
+/*
 routes.get('/user/', async (req, res) => {
     try {
         const data = req.body;
@@ -403,7 +431,8 @@ routes.get('/user/', async (req, res) => {
         res.status(400).json(`ERROR! Could not handle request`);
     }
 });
-
+*/
+/*
 routes.get('/query/', async (req, res) => {
     try {
         const data = req.body;
@@ -431,7 +460,7 @@ routes.get('/query/', async (req, res) => {
         res.status(400).json(`ERROR! Could not handle request`);
     }
 });
-
+*/
 
 
 //##############################################################
@@ -556,6 +585,17 @@ routes.post('/query/', async (req, res) => {
     */
 });
 routes.post('/answer/', async (req, res) => {
+    if (!req.session.userId || !req.session.username) {
+        // bye bye
+    }
+    else {
+        if (req.session.accessLevel < 2) {
+            // bye bye
+        }
+        else {
+            
+        }
+    }
     try {
         const data = req.body;
         console.log(`| Handling POST-request for answer for query id: ${data.queryid} |`);
