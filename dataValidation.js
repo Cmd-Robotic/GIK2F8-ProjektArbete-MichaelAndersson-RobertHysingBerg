@@ -10,7 +10,7 @@ Titles:
 Passwords:
 /(?:[a-zA-Z0-9_-]{8,64})/
 Descriptions:
-/(?:[a-zåäöA-ZÅÄÖ0-9 _-.,\\\/!?]{32,512})/
+/(?:[a-zåäöA-ZÅÄÖ0-9 _\-.,\\\/!?]{32,512})/
 Id:
 /(?:[0-9]{1,15})/
 Token:
@@ -80,9 +80,9 @@ const validPassword = async (pwd) => {
 // quotation marks handling to be implemented
 const validDescription = async (desc) => {
     if (desc.length && typeof(desc) == 'string' && desc.length < 513) {
-        const match = desc.match(/(?:[a-zåäöA-ZÅÄÖ0-9 _-.,\\\/!?]{32,512})/);
+        const match = desc.match(/(?:[a-zåäöA-ZÅÄÖ0-9 _\-.,\\\/!?]{1,512})/);
         if (match && match[0] === match['input']) {
-                return desc;
+            return desc;
         }
     }
     return;

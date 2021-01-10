@@ -355,7 +355,7 @@ routes.post('/query/', async (req, res) => {
         }
         else {
             const title = await dataValidation.validTitle(req.body.title);
-            const description = await dataValidation.validDescription();
+            const description = await dataValidation.validDescription(req.body.description);
             if (!title || !description) {
                 res.status(400).send('ERROR! Invalid data sent to server');
             }
