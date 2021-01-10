@@ -962,7 +962,7 @@
                         var query = {
                             queryId: item.id,
                             answer: item.answer,
-                            vote: item.vote += 1
+                            vote: item.vote = 1
                         }
                         console.log(query);
                         await $.ajax({
@@ -987,7 +987,7 @@
                         var query = {
                             queryId: item.id,
                             answer: item.answer,
-                            vote: item.vote -= 1
+                            vote: item.vote = -1
                         }
                         console.log(query);
                         await $.ajax({
