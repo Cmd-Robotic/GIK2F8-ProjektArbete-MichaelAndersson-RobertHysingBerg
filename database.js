@@ -514,7 +514,7 @@ const updateAnswer = async (data) => {
     try {
         const dbConnection = await database;
         if (data.vote) {
-            await dbConnection.run('UPDATE answers SET answer = ?, vote = ? WHERE id = ?', [data.answer, data.vote, data.id]);
+            await dbConnection.run('UPDATE answers SET vote = ? WHERE id = ?', [data.vote, data.id]);
         }
         else {
             await dbConnection.run('UPDATE answers SET answer = ? WHERE id = ?', [data.answer, data.id]);
