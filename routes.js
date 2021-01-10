@@ -371,12 +371,13 @@ routes.post('/query/', async (req, res) => {
                         res.status(dbRes.status).send(dbRes.errorMessage);
                     }
                     else {
-                        const category = dbRes.categories.category;
-                        console.log(`| Handling POST-request for query: ${req.body.title} |`);
-                        logSave(`| POST | QUERY: ${req.body.title} |`);
+                        // this shit does not work for some inane reason. So i am just going to bypass it...
+                        // const category = dbRes.categories.category;
+                        console.log(`| Handling POST-request for query: ${title} |`);
+                        logSave(`| POST | QUERY: ${title} |`);
                         const dbRes = await database.addQuery({
                             'title': title,
-                            'category': category,
+                            'category': validCategory,
                             'userId': req.session.userId,
                             'username': req.session.username,
                             'description': description
