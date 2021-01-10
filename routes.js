@@ -307,10 +307,17 @@ routes.get('/queries/user/', async (req, res) => {
     }
     */
 });
-routes.get('/frequentlyasked/', async (req, res) => {
+routes.get('/frequentlyasked/:category', async (req, res) => {
     console.log(`| Handling GET-request for frequently asked queries |`);
     logSave("| GET | frequently asked queries |");
-    const dbRes = await database.getFrequentQueries();
+    const category = req.params.category;
+    let dbRes = "";
+    if (category == "All" || !req.params.category) {
+        dbRes = await database.getFrequentQueries();
+    }
+    else {
+        dbRes = await database.getFrequentQueriesByCategory(category);
+    }
     if (dbRes.errorMessage) {
         errorLog(dbRes.status, dbRes.errorMessage);
         res.status(dbRes.status).send(dbRes.errorMessage);
@@ -342,10 +349,17 @@ routes.get('/frequentlyasked/', async (req, res) => {
     }
     */
 });
-routes.get('/lastasked/', async (req, res) => {
+routes.get('/lastasked/:category', async (req, res) => {
     console.log(`| Handling GET-request for last asked queries |`);
     logSave("| GET | last asked queries |");
-    const dbRes = await database.getLastQueries();
+    const category = req.params.category;
+    let dbRes = "";
+    if (category == "All" || !req.params.category) {
+        dbRes = await database.getLastQueries();
+    }
+    else {
+        dbRes = await database.getLastQueriesByCategory(category);
+    }
     if (dbRes.errorMessage) {
         errorLog(dbRes.status, dbRes.errorMessage);
         res.status(dbRes.status).send(dbRes.errorMessage);

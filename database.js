@@ -280,7 +280,7 @@ const getFrequentQueries = async () => {
     try {
         let queries = []
         const dbConnection = await database;
-        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers FROM queries ORDER BY duplicates DESC LIMIT 6');
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries ORDER BY duplicates DESC LIMIT 6');
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
@@ -298,7 +298,7 @@ const getFrequentQueriesByCategory = async (category) => {
     try {
         let queries = []
         const dbConnection = await database;
-        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers FROM queries WHERE category = ? ORDER BY duplicates DESC LIMIT 6', [category]);
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries WHERE category = ? ORDER BY duplicates DESC LIMIT 6', [category]);
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
@@ -318,6 +318,25 @@ const getLastQueries = async () => {
         let queries = []
         const dbConnection = await database;
         queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries ORDER BY time DESC LIMIT 6');
+        if (queries.length > 0) {
+            return { status: '200', queries: queries };
+        }
+        else {
+            return { status: '404', errorMessage: 'ERROR! Could not find queries' };
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', content: 'ERROR! Database failure' };
+        //throw new Error('Något gick fel vid kommunikation med databasen');
+    }
+};
+const getLastQueriesByCategory = async (category) => {
+    try {
+        let queries = []
+        const dbConnection = await database;
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries WHERE category = ? ORDER BY time DESC LIMIT 6', [category]);
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
@@ -654,6 +673,7 @@ module.exports = {
     getFrequentQueries : getFrequentQueries,
     getFrequentQueriesByCategory : getFrequentQueriesByCategory,
     getLastQueries : getLastQueries,
+    getLastQueriesByCategory : getLastQueriesByCategory,
     getQueriesByUserId : getQueriesByUserId,
     getQueriesByCategory : getQueriesByCategory,
     // answers

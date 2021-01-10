@@ -161,7 +161,7 @@
                                 Update
                             </button>
                             <button type="button" class="btn btn-info" data-toggle="modal"
-                                data-target="#queryModal" v-on:click="openQuery(item)">More</button>
+                                data-target="#queryModal" v-on:click="openQuery(item)">Show</button>
                             <button type="button" class="btn btn-danger" data-toggle="modal"
                                 v-on:click="deleteQuery(item)">
                                 Delete
@@ -315,9 +315,10 @@
                     <div class="col" v-for="item in answers" :key="item.id">
                         <div class="card h-100 border rounded">
                             <div class="card-body">
+                                <p class="card-text">Reply by: {{ item.userId }}</p>
                                 <p class="card-text">{{ item.answer }}</p>
                                 <p class="card-text">Quality: {{ item.vote }}</p>
-                                <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
+                                <p class="card-text"><small>Posted: {{ item.time }}</small></p>
                                 <button type="button" class="btn btn-primary" v-on:click="upvoteAnswer(item)">Good</button>
                                 <button type="button" class="btn btn-danger" v-on:click="downvoteAnswer(item)">Bad</button>
                             </div>
@@ -327,6 +328,10 @@
                         <div v-show="contributor">
                             <button type="button" class="btn btn-primary" data-dismiss="modal" data-toggle="modal"
                                 data-target="#answerModal">Reply</button>
+                        </div>
+                        <div v-show="contributor">
+                            <button type="button" class="btn btn-info" data-dismiss="modal"
+                                v-on:click="markDupicate()">Mark duplicate</button>
                         </div>
                         <div>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -839,7 +844,6 @@
                     $('#updateQueryModal #updateTitle').val("");
                     $('#updateQueryModal #updateCategory').val("");
                     $('#updateQueryModal #updateDescription').val("");
-                    this.updateQueries()
                 },
                 resetAnswerModal() {
                     $('#answerModal #inputAnswer').val("");
@@ -852,7 +856,6 @@
                     $('#addUserModal #newFname').val("");
                     $('#addUserModal #newLname').val("");
                     $('#addUserModal #newEmail').val("");
-                    this.updateUsers()
                 },
                 resetUpdateUserModal() {
                     $('#updateUserModal #updateId').val("");
@@ -862,7 +865,6 @@
                     $('#updateUserModal #updateFname').val("");
                     $('#updateUserModal #updateLname').val("");
                     $('#updateUserModal #updateEmail').val("");
-                    this.updateUsers()
                 },
             },
             mounted() {

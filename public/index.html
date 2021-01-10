@@ -219,7 +219,7 @@
                                     <input type="text" class="form-control" name="updateId" id="updateId"
                                         v-bind:value="selectedItem.id" readonly>
                                 </div>
-                                <div class="form-group modalColor" v-on:show="admin">
+                                <div class="form-group modalColor" v-show="admin">
                                     <label for="updateAccessLevel">Access level</label>
                                     <select class="form-control" name="updateAccessLevel" id="updateAccessLevel"
                                         v-bind:value="selectedItem.accessLevel">
@@ -351,7 +351,7 @@
                                         </button>
                                         <button type="button" class="btn btn-info btn-card" data-toggle="modal" data-target="#queryModal"
                                             v-on:click="openQuery(item)">
-                                            More
+                                            Show
                                         </button>
                                         <button type="button" class="btn btn-danger btn-card" data-toggle="modal"
                                             v-on:click="deleteQuery(item)">
@@ -387,9 +387,10 @@
                         <div class="col" v-for="item in answers" :key="item.id">
                             <div class="card h-100 border rounded">
                                 <div class="card-body">
+                                    <p class="card-text">Reply by: {{ item.userId }}</p>
                                     <p class="card-text">{{ item.answer }}</p>
                                     <p class="card-text">Quality: {{ item.vote }}</p>
-                                    <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
+                                    <p class="card-text"><small>Posted: {{ item.time }}</small></p>
                                     <button type="button" class="btn btn-primary" v-on:click="upvoteAnswer(item)">Good</button>
                                     <button type="button" class="btn btn-danger" v-on:click="downvoteAnswer(item)">Bad</button>
                                 </div>
@@ -397,8 +398,12 @@
                         </div>
                         <div class="modal-footer">
                             <div v-show="contributor">
-                                <button type="button" class="btn btn-primary" data-dismiss="modal" 
-                                    data-toggle="modal" data-target="#answerModal">Reply</button>
+                                <button type="button" class="btn btn-primary" data-dismiss="modal" data-toggle="modal"
+                                    data-target="#answerModal">Reply</button>
+                            </div>
+                            <div v-show="contributor">
+                                <button type="button" class="btn btn-info" data-dismiss="modal" v-on:click="markDupicate()">Mark
+                                    duplicate</button>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -739,6 +744,31 @@
                         this.resetAddUserModal()
                         this.updateUsers();
                     },
+                    deleteUser(item) {
+                        //var password = prompt("Please type password");
+                        var message;
+                        var user = item;
+                        //var userData = { "id": user.id, "password": password };
+                        var userData = { "userId": item.id };
+                        $.ajax({
+                            url: '/user/',
+                            type: 'DELETE',
+                            data: userData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
+                                alert(message);
+                            }
+                        });
+                        if (item.id == this.user.id) {
+                            this.logOutUser();
+                        }
+                        this.unselectItem();
+                        this.updateUsers();
+                    },
                     async updateQueries() {
                         //var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
                         await $.ajax({
@@ -757,8 +787,8 @@
                     },
                     selectCategory() {
                         this.selectedCategory = $('#selectCategory').val();
-                        this.populateFrequentlyAsked();
-                        this.populateLastAsked();
+                        this.populateFrequentlyAsked(this.selectedCategory);
+                        this.populateLastAsked(this.selectedCategory);
                     },
                     selectItem(item) {
                         this.selectedItem = item;
@@ -850,9 +880,9 @@
                         this.resetAnswerModal();
                         this.updateQueries();
                     },
-                    async populateFrequentlyAsked() {
+                    async populateFrequentlyAsked(category) {
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/frequentlyasked/',
+                            url: `http://127.0.0.1:5000/frequentlyasked/${category}`,
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
@@ -864,9 +894,9 @@
                             }
                         });
                     },
-                    async populateLastAsked() {
+                    async populateLastAsked(category) {
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/lastasked/',
+                            url: `http://127.0.0.1:5000/lastasked/${category}`,
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
@@ -932,8 +962,8 @@
                     },
                 },
                 mounted() {
-                    this.populateFrequentlyAsked();
-                    this.populateLastAsked();
+                    this.populateFrequentlyAsked("All");
+                    this.populateLastAsked("All");
                     this.checkLoggedIn();
                     if (this.loggedIn) {
                         this.updateQueries();
