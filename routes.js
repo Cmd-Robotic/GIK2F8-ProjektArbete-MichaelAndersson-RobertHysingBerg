@@ -308,22 +308,38 @@ routes.get('/queries/user/', async (req, res) => {
     */
 });
 routes.get('/frequentlyasked/:category', async (req, res) => {
-    console.log(`| Handling GET-request for frequently asked queries |`);
-    logSave("| GET | frequently asked queries |");
-    const category = req.params.category;
-    let dbRes = "";
-    if (category == "All" || !req.params.category) {
-        dbRes = await database.getFrequentQueries();
+    if (!req.params.category) {
+        // get all
+        console.log(`| Handling GET-request for frequently asked queries |`);
+        logSave("| GET | frequently asked queries |");
+        const dbRes = await database.getFrequentQueries();
+        if (dbRes.errorMessage) {
+            errorLog(dbRes.status, dbRes.errorMessage);
+            res.status(dbRes.status).send(dbRes.errorMessage);
+        }
+        else {
+            res.status(dbRes.status).json(dbRes.queries);
+        }
     }
     else {
-        dbRes = await database.getFrequentQueriesByCategory(category);
-    }
-    if (dbRes.errorMessage) {
-        errorLog(dbRes.status, dbRes.errorMessage);
-        res.status(dbRes.status).send(dbRes.errorMessage);
-    }
-    else {
-        res.status(dbRes.status).json(dbRes.queries);
+        // get specific category
+        const category = await dataValidation.validName(req.params.category);
+        if (!category) {
+            // bye bye
+            res.status(400).send('ERROR! Invalid category sent to server');
+        }
+        else {
+            console.log(`| Handling GET-request for frequently asked queries |`);
+            logSave("| GET | frequently asked queries |");
+            const dbRes = await database.getFrequentQueriesByCategory(category);
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).json(dbRes.queries);
+            }
+        }
     }
     /*
     try {
