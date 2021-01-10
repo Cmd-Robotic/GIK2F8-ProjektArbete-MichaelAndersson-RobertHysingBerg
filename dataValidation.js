@@ -5,6 +5,8 @@ Names:
 /(?:[a-zåäöA-ZÅÄÖ]{1,32})/
 Usernames:
 /(?:[a-zåäöA-ZÅÄÖ0-9_-]{1,32})/
+Titles:
+/(?:[a-zåäöA-ZÅÄÖ0-9_- ]{4,32})/
 Passwords:
 /(?:[a-zA-Z0-9_-]{8,64})/
 Descriptions:
@@ -41,6 +43,18 @@ const validUsername = async (name) => {
     if (name.length) {
         if (typeof(name) == 'string') {
             const match = name.match(/(?:[a-zåäöA-ZÅÄÖ0-9_-]{1,32})/);
+            if (match && match[0] === match['input']) {
+                return name;
+            }
+        }
+    }
+    return;
+}
+
+const validTitle = async (name) => {
+    if (name.length) {
+        if (typeof(name) == 'string') {
+            const match = name.match(/(?:[a-zåäöA-ZÅÄÖ0-9_- ]{4,32})/);
             if (match && match[0] === match['input']) {
                 return name;
             }
@@ -130,6 +144,7 @@ const validToken = async (tok) => {
 module.exports = {
     validName: validName,
     validEmail: validEmail,
+    validTitle: validTitle,
     validPassword: validPassword,
     validDescription: validDescription,
     validId: validId,
