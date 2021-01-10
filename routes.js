@@ -306,12 +306,12 @@ routes.post('/user/', async (req, res) => {
         res.status(400).send('ERROR! Incomplete data sent to server');
     }
     else {
-        const username = dataValidation.validUsername(req.body.username);
-        const accessLevel = dataValidation.validAccessLevel(req.body.accessLevel);
-        const passwordIn = dataValidation.validPassword(req.body.password);
-        const fname = dataValidation.validName(req.body.fname);
-        const lname = dataValidation.validName(req.body.lname);
-        const email = dataValidation.validEmail(req.body.email);
+        const username = await dataValidation.validUsername(req.body.username);
+        const accessLevel = await dataValidation.validAccessLevel(req.body.accessLevel);
+        const passwordIn = await dataValidation.validPassword(req.body.password);
+        const fname = await dataValidation.validName(req.body.fname);
+        const lname = await dataValidation.validName(req.body.lname);
+        const email = await dataValidation.validEmail(req.body.email);
         if (!username || !accessLevel || !passwordIn || !fname || !lname || !email) {
             // bye bye
             res.status(400).send('ERROR! Invalid data sent to server');
