@@ -64,7 +64,7 @@
                                 </span>
                                 <span v-show="admin"><a class="dropdown-item" href="adminSite.html">Admin</a></span>
                                 <span v-show="loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
-                                        data-target="#updateUserModal" v-on:click="selectItem(user)">Settings</a></span>
+                                        data-target="#updateUserModal">Settings</a></span>
                                 <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
                                         data-target="#addUserModal">Register</a></span>
                                 <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
@@ -217,12 +217,12 @@
                                 <div class="form-group modalColor">
                                     <label for="updateId">ID</label>
                                     <input type="text" class="form-control" name="updateId" id="updateId"
-                                        v-bind:value="selectedItem.id" readonly>
+                                        v-bind:value="user.id" readonly>
                                 </div>
                                 <div class="form-group modalColor" v-show="admin">
                                     <label for="updateAccessLevel">Access level</label>
                                     <select class="form-control" name="updateAccessLevel" id="updateAccessLevel"
-                                        v-bind:value="selectedItem.accessLevel">
+                                        v-bind:value="user.accessLevel">
                                         <option type="number">1</option>
                                         <option type="number">2</option>
                                         <option type="number">3</option>
@@ -231,22 +231,22 @@
                                 <div class="form-group modalColor">
                                     <label for="updateUsername">Username</label>
                                     <input type="text" class="form-control" name="updateUsername" id="updateUsername"
-                                        v-bind:value="selectedItem.username">
+                                        v-bind:value="user.username">
                                 </div>
                                 <div class="form-group modalColor">
                                     <label for="updateFname">Firstname</label>
                                     <input type="text" class="form-control" name="updateFname" id="updateFname"
-                                        v-bind:value="selectedItem.fname">
+                                        v-bind:value="user.fname">
                                 </div>
                                 <div class="form-group modalColor">
                                     <label for="updateLname">Lastname</label>
                                     <input type="text" class="form-control" name="updateLname" id="updateLname"
-                                        v-bind:value="selectedItem.lname">
+                                        v-bind:value="user.lname">
                                 </div>
                                 <div class="form-group modalColor">
                                     <label for="updateEmail">Email</label>
                                     <input type="email" class="form-control" name="updateEmail" id="updateEmail"
-                                        v-bind:value="selectedItem.email">
+                                        v-bind:value="user.email">
                                 </div>
                             </form>
                         </div>
@@ -839,7 +839,7 @@
                             }
                         });
                         this.unselectItem();
-                        this.resetUpdateUserModal()
+                        //this.resetUpdateUserModal()
                         this.checkLoggedIn();
                         //this.updateUsers();
                     },
@@ -1141,13 +1141,13 @@
                         $('#loginModal #inputPassword').val("");
                     },
                     resetUpdateUserModal() {
-                        $('#updateUserModal #updateId').val("");
-                        $('#updateUserModal #updateAccessLevel').val("");
-                        $('#updateUserModal #updateUsername').val("");
+                        $('#updateUserModal #updateId').val(this.user.id);
+                        $('#updateUserModal #updateAccessLevel').val(this.user.accessLevel);
+                        $('#updateUserModal #updateUsername').val(this.user.username);
                         //$('#updateUserModal #updatePassword').val("");
-                        $('#updateUserModal #updateFname').val("");
-                        $('#updateUserModal #updateLname').val("");
-                        $('#updateUserModal #updateEmail').val("");
+                        $('#updateUserModal #updateFname').val(this.user.fname);
+                        $('#updateUserModal #updateLname').val(this.user.lname);
+                        $('#updateUserModal #updateEmail').val(this.user.email);
                     },
                     resetAddUserModal() {
                         $('#registerModal #inputNewUsername').val("");
