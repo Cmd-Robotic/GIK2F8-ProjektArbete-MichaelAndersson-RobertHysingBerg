@@ -799,8 +799,10 @@
                             type: 'PUT',
                             data: user,
                             success: (response) => {
+                                var self=this;
                                 message = response;
                                 alert(message);
+                                loginUser(user.email, self.user.password)
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
@@ -809,8 +811,9 @@
                             }
                         });
                         this.unselectItem();
-                        this.resetAddUserModal()
-                        this.updateUsers();
+                        this.resetUpdateUserModal()
+                        this.checkLoggedIn();
+                        //this.updateUsers();
                     },
                     async deleteUser(item) {
                         var message;
