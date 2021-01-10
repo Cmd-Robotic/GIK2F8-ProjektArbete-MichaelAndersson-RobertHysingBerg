@@ -851,8 +851,8 @@
                         this.unselectItem();
                         this.resetAddQueryModal()
                         this.updateQueries();
-                        this.populateFrequentlyAsked();
-                        this.populateLastAsked();
+                        this.populateFrequentlyAsked("All");
+                        this.populateLastAsked("All");
                     },
                     async updateQuery() {
                         var message;
@@ -881,8 +881,8 @@
                         this.unselectItem();
                         this.resetUpdateQueryModal()
                         this.updateQueries();
-                        this.populateFrequentlyAsked();
-                        this.populateLastAsked();
+                        this.populateFrequentlyAsked("All");
+                        this.populateLastAsked("All");
                     },
                     deleteQuery(item) {
                         var message;
@@ -903,8 +903,8 @@
                         });
                         this.unselectItem();
                         this.updateQueries();
-                        this.populateFrequentlyAsked();
-                        this.populateLastAsked();
+                        this.populateFrequentlyAsked("All");
+                        this.populateLastAsked("All");
                     },
                     async markDuplicate(item) {
                         var message;
