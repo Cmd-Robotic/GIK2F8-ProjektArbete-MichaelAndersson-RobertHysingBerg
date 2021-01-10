@@ -393,10 +393,7 @@
                                     <p class="card-text"><small>Posted: {{ item.time }}</small></p>
                                     <button type="button" class="btn btn-primary" v-show="contributor" v-on:click="upvoteAnswer(item)">Good</button>
                                     <button type="button" class="btn btn-danger" v-show="contributor" v-on:click="downvoteAnswer(item)">Bad</button>
-                                    <div v-show="admin">
-                                        <button type="button" class="btn btn-danger" data-dismiss="modal" data-toggle="modal"
-                                            data-target="#answerModal">Delete</button>
-                                    </div>
+                                    <button v-show="admin" type="button" class="btn btn-danger btn-right" data-target="deleteAnswer(item)">Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -938,7 +935,7 @@
                         var message;
                         var query = {
                             queryId: this.selectedItem.id,
-                            answer: $('#answerModal #inputDescription').val(),
+                            answer: $('#answerModal #inputAnswer').val(),
                             userId: this.user.id,
                         }
                         console.log(query);
@@ -986,7 +983,50 @@
                         this.updateQueries();
                     },
                     async downvoteAnswer(item) {
-
+                        var message;
+                        var query = {
+                            queryId: item.id,
+                            answer: item.answer,
+                            vote: item.vote -= 1
+                        }
+                        console.log(query);
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/answer/',
+                            type: 'PUT',
+                            data: query,
+                            success: (response) => {
+                                //message = response;
+                                alert(`Upvote to answer with ID: ${item.id} registered`);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to update query`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectItem();
+                        this.updateQueries();
+                    },
+                    async deleteAnswer(item) {
+                        var message;
+                        var answer = item;
+                        var queryData = { "id": answer.id };
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/answer/',
+                            type: 'DELETE',
+                            data: queryData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                                alert(message);
+                            }
+                        });
+                        //this.unselectItem();
+                        this.updateQueries();
+                        this.populateAnswers();
                     },
                     async populateFrequentlyAsked(category) {
                         await $.ajax({
