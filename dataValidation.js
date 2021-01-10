@@ -142,7 +142,7 @@ const validToken = async (tok) => {
 }
 
 const validVote = async (vote) => {
-    if (vote === 1 || vote === -1) {
+    if (vote == 1 || vote == -1) {
         return vote;
     }
     return;

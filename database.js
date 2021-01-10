@@ -183,6 +183,24 @@ const getUser = async (id) => {
         //throw new Error('Något gick fel vid kommunikation med databasen');
     }
 };
+const getAnswerUser = async (id) => {
+    try {
+        const dbConnection = await database;
+        const answer = await dbConnection.get('SELECT userId FROM answer WHERE id = (?)', [id]);
+        if (answer) {
+            return { status: '200', answer: answer };
+        }
+        else {
+            return { status: '404', errorMessage: 'User not found' };
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', errorMessage: 'ERROR! Database failure' };
+        //throw new Error('Något gick fel vid kommunikation med databasen');
+    }
+};
 /*  is this code needed? it's not used anywhere
 const getUserLevel = async (data) => {
     try {
@@ -684,6 +702,7 @@ module.exports = {
     getQueriesByCategory : getQueriesByCategory,
     // answers
     getAnswersToQuery : getAnswersToQuery,
+    getAnswerUser : getAnswerUser,
     addAnswer : addAnswer,
     updateAnswer : updateAnswer,
     deleteAnswer : deleteAnswer,

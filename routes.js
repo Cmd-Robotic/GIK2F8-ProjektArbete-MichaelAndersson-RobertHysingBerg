@@ -544,40 +544,46 @@ routes.put('/query/', async (req, res) => {
                 res.status.send('ERROR! Invalid data sent to server');
             }
             else {
-                const dbRes = await database.getCategoryByName(req.body.category);
-                if (dbRes.errorMessage) {
-                    errorLog(dbRes.status, dbRes.errorMessage);
-                    res.status(dbRes.status).send(dbRes.errorMessage);
+                const validCategory = await dataValidation.validCategory(req.body.category);
+                if (!validCategory) {
+                    res.status(400).send('ERROR! Invalid data sent to server');
                 }
                 else {
-                    const category = dbRes.categories
-                    console.log(`| Handling UPDATE-request for query id: ${id} |`);
-                    logSave(`| UPDATE | QUERY ID: ${id} |`);
-                    const dbRes = await database.getQuery(id);
+                    const dbRes = await database.getCategoryByName(validCategory);
                     if (dbRes.errorMessage) {
                         errorLog(dbRes.status, dbRes.errorMessage);
                         res.status(dbRes.status).send(dbRes.errorMessage);
                     }
                     else {
-                        const duplicateOf = dbRes.query.duplicateOf;
-                        if ((dbRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
-                            res.status(400).send('ERROR! You do not have access');
+                        // const category = dbRes.categories
+                        console.log(`| Handling UPDATE-request for query id: ${id} |`);
+                        logSave(`| UPDATE | QUERY ID: ${id} |`);
+                        const dbRes = await database.getQuery(id);
+                        if (dbRes.errorMessage) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
                         }
                         else {
-                            const query = {
-                                title: title,
-                                category: category,
-                                description: description,
-                                id: id,
-                                duplicateOf: duplicateOf
-                            }
-                            const dbRes = await database.updateQuery(query);
-                            if (dbRes.errorMessage) {
-                                errorLog(dbRes.status, dbRes.errorMessage);
-                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            const duplicateOf = dbRes.query.duplicateOf;
+                            if ((dbRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
+                                res.status(400).send('ERROR! You do not have access');
                             }
                             else {
-                                res.status(dbRes.status).send(dbRes.message);
+                                const query = {
+                                    title: title,
+                                    category: validCategory,
+                                    description: description,
+                                    id: id,
+                                    duplicateOf: duplicateOf
+                                }
+                                const dbRes = await database.updateQuery(query);
+                                if (dbRes.errorMessage) {
+                                    errorLog(dbRes.status, dbRes.errorMessage);
+                                    res.status(dbRes.status).send(dbRes.errorMessage);
+                                }
+                                else {
+                                    res.status(dbRes.status).send(dbRes.message);
+                                }
                             }
                         }
                     }
@@ -661,30 +667,53 @@ routes.put('/answer/', async (req, res) => {
         res.status(400).send('ERROR! You need to log in first');
     }
     else {
-        if (req.session.accessLevel < 2) {
-            res.status(400).send('ERROR! You do not have access to this');
+        if (!req.body.id) {
+            res.status(400).send('ERROR! Incomplete data sent to server');
         }
         else {
-            if (!req.body.id) {
-                res.status(400).send('ERROR! Incomplete data sent to server');
+            const id = await dataValidation.validId(req.body.id);
+            if (!id) {
+                res.status(400).send('ERROR! Invalid data sent to server');
             }
             else {
-                const id = await dataValidation.validId(req.body.id);
-                if (!id) {
-                    res.status(400).send('ERROR! Invalid data sent to server');
+                const dbRes = await database.getAnswerUser(id);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
                 }
                 else {
-                    if (!req.body.vote) {
-                        if (!req.body.answer) {
-                            res.status(400).send('ERROR! Incomplete data sent to server');
+                    if (req.session.userId != dbRes.answer.userId && req.session.accessLevel < 3) {
+                        res.status(400).send('ERROR! You do not have access to this');
+                    }
+                    else {
+                        if (!req.body.vote) {
+                            if (!req.body.answer) {
+                                res.status(400).send('ERROR! Incomplete data sent to server');
+                            }
+                            else {
+                                const answer = await dataValidation.validDescription(req.body.answer);
+                                if (!answer) {
+                                    res.status(400).send('ERROR! Invalid data sent to server');
+                                }
+                                else {
+                                    const dbRes = await database.updateAnswer({answer: answer, id: id});
+                                    if (dbRes.errorMessage) {
+                                        errorLog(dbRes.status, dbRes.errorMessage);
+                                        res.status(dbRes.status).send(dbRes.errorMessage);
+                                    }
+                                    else {
+                                        res.status(dbRes.status).send(dbRes.message);
+                                    }
+                                }
+                            }
                         }
                         else {
-                            const answer = await dataValidation.validDescription(req.body.answer);
-                            if (!answer) {
+                            const vote = await dataValidation.validVote(req.body.vote);
+                            if (!vote) {
                                 res.status(400).send('ERROR! Invalid data sent to server');
                             }
                             else {
-                                const dbRes = await database.updateAnswer({answer: answer, id: id});
+                                const dbRes = await updateAnswer({vote: vote, id: id});
                                 if (dbRes.errorMessage) {
                                     errorLog(dbRes.status, dbRes.errorMessage);
                                     res.status(dbRes.status).send(dbRes.errorMessage);
@@ -692,22 +721,6 @@ routes.put('/answer/', async (req, res) => {
                                 else {
                                     res.status(dbRes.status).send(dbRes.message);
                                 }
-                            }
-                        }
-                    }
-                    else {
-                        const vote = await dataValidation.validVote(req.body.vote);
-                        if (!vote) {
-                            res.status(400).send('ERROR! Invalid data sent to server');
-                        }
-                        else {
-                            const dbRes = await updateAnswer({vote: vote, id: id});
-                            if (dbRes.errorMessage) {
-                                errorLog(dbRes.status, dbRes.errorMessage);
-                                res.status(dbRes.status).send(dbRes.errorMessage);
-                            }
-                            else {
-                                res.status(dbRes.status).send(dbRes.message);
                             }
                         }
                     }
@@ -778,6 +791,45 @@ routes.delete('/query/', async (req, res) => {
                     }
                     else {
                         const dbRes = await database.deleteQuery(id);
+                        if (dbRes.errorMessage) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        }
+                        else {
+                            res.status(dbRes.status).send(dbRes.message);
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
+
+routes.delete('/answer/', async (req, res) => {
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to log in first');
+    }
+    else {
+        if (!req.body.id) {
+            res.status(400).send('ERROR! Incomplete data sent to server');
+        }
+        else {
+            const id = await dataValidation.validId(req.body.id);
+            if (!id) {
+                res.status(400).send('ERROR! Invalid data sent to server');
+            }
+            else {
+                const dbRes = await database.getAnswerUser(id);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
+                }
+                else {
+                    if (req.session.userId != dbRes.answer.userId && req.session.accessLevel < 3) {
+                        res.status(400).send('ERROR! You do not have access');
+                    }
+                    else {
+                        const dbRes = await database.deleteAnswer(id);
                         if (dbRes.errorMessage) {
                             errorLog(dbRes.status, dbRes.errorMessage);
                             res.status(dbRes.status).send(dbRes.errorMessage);
