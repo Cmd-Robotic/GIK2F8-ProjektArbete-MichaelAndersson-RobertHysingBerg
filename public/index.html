@@ -393,6 +393,10 @@
                                     <p class="card-text"><small>Posted: {{ item.time }}</small></p>
                                     <button type="button" class="btn btn-primary" v-on:click="upvoteAnswer(item)">Good</button>
                                     <button type="button" class="btn btn-danger" v-on:click="downvoteAnswer(item)">Bad</button>
+                                    <div v-show="admin">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal" data-toggle="modal"
+                                            data-target="#answerModal">Delete</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -400,10 +404,6 @@
                             <div v-show="contributor">
                                 <button type="button" class="btn btn-primary" data-dismiss="modal" data-toggle="modal"
                                     data-target="#answerModal">Reply</button>
-                            </div>
-                            <div v-show="contributor">
-                                <button type="button" class="btn btn-info" data-dismiss="modal" v-on:click="markDupicate()">Mark
-                                    duplicate</button>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -687,94 +687,10 @@
                             this.updateQueries();
                         }
                     },
-                    addUser() {
-                        var message;
-                        var user = {
-                            username: $('#addUserModal #newUsername').val(),
-                            password: $('#addUserModal #newPassword').val(),
-                            fname: $('#addUserModal #newFname').val(),
-                            lname: $('#addUserModal #newLname').val(),
-                            email: $('#addUserModal #newEmail').val()
-                        }
-                        $.ajax({
-                            url: '/user/',
-                            type: 'POST',
-                            data: user,
-                            success: (response) => {
-                                message = response;
-                                alert(message);
-                            },
-                            error: function (jqXHR, textStatus, error) {
-                                console.log(jqXHR.status, error, jqXHR.responseText);
-                                message = (`Error!\n${jqXHR.responseText}\nUnable to save user`);
-                                alert(message);
-                            }
-                        });
-                        this.unselectItem();
-                        this.resetAddUserModal()
-                        this.updateUsers();
-                    },
-                    updateUser() {
-                        var message;
-                        var user = {
-                            id: $('#updateUserModal #updateId').val(),
-                            accessLevel: this.user.accessLevel,
-                            username: $('#updateUserModal #updateUsername').val(),
-                            //password: $('#updateUserModal #updatePassword').val(),
-                            fname: $('#updateUserModal #updateFname').val(),
-                            lname: $('#updateUserModal #updateLname').val(),
-                            email: $('#updateUserModal #updateEmail').val()
-                        }
-                        console.log(user);
-                        $.ajax({
-                            url: '/user/',
-                            type: 'PUT',
-                            data: user,
-                            success: (response) => {
-                                message = response;
-                                alert(message);
-                            },
-                            error: function (jqXHR, textStatus, error) {
-                                console.log(jqXHR.status, error, jqXHR.responseText);
-                                message = (`Error!\n${jqXHR.responseText}\nUnable to update user`);
-                                alert(message);
-                            }
-                        });
-                        this.unselectItem();
-                        this.resetAddUserModal()
-                        this.updateUsers();
-                    },
-                    deleteUser(item) {
-                        //var password = prompt("Please type password");
-                        var message;
-                        var user = item;
-                        //var userData = { "id": user.id, "password": password };
-                        var userData = { "userId": item.id };
-                        $.ajax({
-                            url: '/user/',
-                            type: 'DELETE',
-                            data: userData,
-                            success: (response) => {
-                                alert(response);
-                            },
-                            error: function (jqXHR, textStatus, error) {
-                                console.log(jqXHR.status, error, jqXHR.responseText);
-                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
-                                alert(message);
-                            }
-                        });
-                        if (item.id == this.user.id) {
-                            this.logOutUser();
-                        }
-                        this.unselectItem();
-                        this.updateUsers();
-                    },
                     async updateQueries() {
-                        //var user = { 'userId': this.user.id, 'accessLevel': this.user.accessLevel };
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/queries/user/',
                             type: 'GET',
-                            //data: user,
                             success: (response) => {
                                 var self = this;
                                 self.queries = response;
@@ -800,23 +716,100 @@
                         this.selectItem(item);
                         this.populateAnswers();
                     },
+                    async addUser() {
+                        var message;
+                        var user = {
+                            accessLevel: $('#addUserModal #newAccessLevel').val(),
+                            username: $('#addUserModal #newUsername').val(),
+                            password: $('#addUserModal #newPassword').val(),
+                            fname: $('#addUserModal #newFname').val(),
+                            lname: $('#addUserModal #newLname').val(),
+                            email: $('#addUserModal #newEmail').val()
+                        }
+                        await $.ajax({
+                            url: '/user/',
+                            type: 'POST',
+                            data: user,
+                            success: (response) => {
+                                message = response;
+                                alert(message);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to save user`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectItem();
+                        this.resetAddUserModal();
+                        this.updateUsers();
+                    },
+                    async updateUser() {
+                        var message;
+                        var user = {
+                            id: $('#updateUserModal #updateId').val(),
+                            accessLevel: this.user.accessLevel,
+                            username: $('#updateUserModal #updateUsername').val(),
+                            //password: $('#updateUserModal #updatePassword').val(),
+                            fname: $('#updateUserModal #updateFname').val(),
+                            lname: $('#updateUserModal #updateLname').val(),
+                            email: $('#updateUserModal #updateEmail').val()
+                        }
+                        await $.ajax({
+                            url: '/user/',
+                            type: 'PUT',
+                            data: user,
+                            success: (response) => {
+                                message = response;
+                                alert(message);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to update user`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectItem();
+                        this.resetAddUserModal()
+                        this.updateUsers();
+                    },
+                    async deleteUser(item) {
+                        var message;
+                        var user = item;
+                        var userData = { "userId": item.id };
+                        await $.ajax({
+                            url: '/user/',
+                            type: 'DELETE',
+                            data: userData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
+                                alert(message);
+                            }
+                        });
+                        if (item.id == this.user.id) {
+                            this.logOutUser();
+                        }
+                        this.unselectItem();
+                        this.updateUsers();
+                    },
                     async sendQuery() {
                         var message;
                         var query = {
                             title: $('#addQueryModal #inputTitle').val(),
                             category: $('#addQueryModal #inputCategory').val(),
                             description: $('#addQueryModal #inputDescription').val(),
-                            //userId: this.user.id,
-                            //username: this.user.username
                         }
-                        console.log(query);
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/query/',
                             type: 'POST',
                             data: query,
                             success: (response) => {
                                 message = JSON.parse(JSON.stringify(response));
-                                alert('Your question has been created and given an id of ' + message.id + '.');
+                                alert(`Query with ID: ${message.id} saved`);
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
@@ -830,11 +823,39 @@
                         this.populateFrequentlyAsked();
                         this.populateLastAsked();
                     },
+                    async updateQuery() {
+                        var message;
+                        var query = {
+                            id: selectedItem.id,
+                            userId: selectedItem.userId,
+                            title: $('#updateQueryModal #updateTitle').val(),
+                            category: $('#updateQueryModal #updateCategory').val(),
+                            description: $('#updateQueryModal #updateDescription').val(),
+                        }
+                        console.log(query);
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/query/',
+                            type: 'PUT',
+                            data: query,
+                            success: (response) => {
+                                message = JSON.parse(JSON.stringify(response));
+                                alert(`Query with ID: ${message.id} updated`);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectItem();
+                        this.resetUpdateQueryModal()
+                        this.updateQueries();
+                        this.populateFrequentlyAsked();
+                        this.populateLastAsked();
+                    },
                     deleteQuery(item) {
-                        //var password = prompt("Please type password");
                         var message;
                         var query = item;
-                        //var userData = { "id": user.id, "password": password };
                         var queryData = { "id": query.id };
                         $.ajax({
                             url: 'http://127.0.0.1:5000/query/',
@@ -845,7 +866,7 @@
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
-                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
                                 alert(message);
                             }
                         });
@@ -879,6 +900,12 @@
                         this.unselectItem();
                         this.resetAnswerModal();
                         this.updateQueries();
+                    },
+                    upvoteAnswer(item) {
+
+                    },
+                    downvoteAnswer(item) {
+
                     },
                     async populateFrequentlyAsked(category) {
                         await $.ajax({
@@ -936,7 +963,13 @@
                         $('#updateUserModal #updateFname').val("");
                         $('#updateUserModal #updateLname').val("");
                         $('#updateUserModal #updateEmail').val("");
-                        this.checkLoggedIn();
+                    },
+                    resetAddUserModal() {
+                        $('#registerModal #inputNewUsername').val("");
+                        $('#registerModal #inputNewEmail').val("");
+                        $('#registerModal #inputNewPassword').val("");
+                        $('#registerModal #inputNewFname').val("");
+                        $('#registerModal #inputNewLname').val("");
                     },
                     resetAddQueryModal() {
                         $('#addQueryModal #inputTitle').val("");
@@ -951,14 +984,6 @@
                         $('#updateQueryModal #updateTitle').val("");
                         $('#updateQueryModal #updateCategory').val("");
                         $('#updateQueryModal #updateDescription').val("");
-                        this.updateQueries()
-                    },
-                    resetAddUserModal() {
-                        $('#registerModal #inputNewUsername').val("");
-                        $('#registerModal #inputNewEmail').val("");
-                        $('#registerModal #inputNewPassword').val("");
-                        $('#registerModal #inputNewFname').val("");
-                        $('#registerModal #inputNewLname').val("");
                     },
                 },
                 mounted() {
