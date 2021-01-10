@@ -541,10 +541,10 @@ routes.put('/query/', async (req, res) => {
             const description = await dataValidation.validDescription(req.body.description);
             const id = await dataValidation.validId(req.body.id);
             if (!title || !description || !id) {
-                res.status.send('ERROR! Invalid data sent to server');
+                res.status(400).send('ERROR! Invalid data sent to server');
             }
             else {
-                const validCategory = await dataValidation.validCategory(req.body.category);
+                const validCategory = await dataValidation.validTitle(req.body.category);
                 if (!validCategory) {
                     res.status(400).send('ERROR! Invalid data sent to server');
                 }
