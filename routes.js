@@ -68,8 +68,8 @@ routes.post('/login/', async (req, res) => {
                         else {
                             // go further
                             const user = dbRes.user;
-                            // const pass = await comparePass(password, user.password);
-                            const pass = (password == user.password);
+                            const pass = await comparePass(password, user.password);
+                            // const pass = (password == user.password);
                             if (!pass) {
                                 const errorMessage = 'Passwords do not match';
                                 errorLog(400, errorMessage);
@@ -102,8 +102,8 @@ routes.post('/login/', async (req, res) => {
                         else {
                             // go further
                             const user = dbRes.user;
-                            // const pass = await comparePass(password, user.password);
-                            const pass = (password == user.password);
+                            const pass = await comparePass(password, user.password);
+                            // const pass = (password == user.password);
                             if (!pass) {
                                 const errorMessage = 'Passwords do not match';
                                 errorLog(400, errorMessage);
@@ -350,22 +350,38 @@ routes.get('/frequentlyasked/:category', async (req, res) => {
     */
 });
 routes.get('/lastasked/:category', async (req, res) => {
-    console.log(`| Handling GET-request for last asked queries |`);
-    logSave("| GET | last asked queries |");
-    const category = req.params.category;
-    let dbRes = "";
-    if (category == "All" || !req.params.category) {
-        dbRes = await database.getLastQueries();
+    if (!req.params.category) {
+        // get all
+        console.log(`| Handling GET-request for last asked queries |`);
+        logSave("| GET | last asked queries |");
+        const dbRes = await database.getLastQueries();
+        if (dbRes.errorMessage) {
+            errorLog(dbRes.status, dbRes.errorMessage);
+            res.status(dbRes.status).send(dbRes.errorMessage);
+        }
+        else {
+            res.status(dbRes.status).json(dbRes.queries);
+        }
     }
     else {
-        dbRes = await database.getLastQueriesByCategory(category);
-    }
-    if (dbRes.errorMessage) {
-        errorLog(dbRes.status, dbRes.errorMessage);
-        res.status(dbRes.status).send(dbRes.errorMessage);
-    }
-    else {
-        res.status(dbRes.status).json(dbRes.queries);
+        // get specific category
+        const category = await dataValidation.validName(req.params.category);
+        if (!category) {
+            // bye bye
+            res.status(400).send('ERROR! Invalid category sent to server');
+        }
+        else {
+            console.log(`| Handling GET-request for last asked queries BY CATEGORY |`);
+            logSave("| GET | last asked queries | CATEGORY |");
+            const dbRes = await database.getLastQueriesByCategory(category);
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).json(dbRes.queries);
+            }
+        }
     }
     /*
     try {
