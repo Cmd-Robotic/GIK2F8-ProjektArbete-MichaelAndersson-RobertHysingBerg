@@ -445,7 +445,7 @@ const getCategoryByName = async (category) => {
     try {
         const dbConnection = await database;
         const categories = await dbConnection.get('SELECT id, category, description FROM queryCategories WHERE category=?', [category]);
-        if (category) {
+        if (categories) {
             return { status: '200', categories: categories };
         }
         else {
