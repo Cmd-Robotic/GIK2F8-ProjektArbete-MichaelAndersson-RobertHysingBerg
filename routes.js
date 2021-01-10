@@ -428,15 +428,22 @@ routes.get('/answers/:id', async (req, res) => {
         res.status(400).send('ERROR! No id sent to server');
     }
     else {
-        console.log(`| Handling GET-request for answers to query |`);
-        logSave("| GET | answers to query |");
-        const dbRes = await database.getAnswersToQuery(req.params.id);
-        if (dbRes.errorMessage) {
-            errorLog(dbRes.status, dbRes.errorMessage);
-            res.status(dbRes.status).send(dbRes.errorMessage);
+        const id = dataValidation.validId(req.params.id);
+        if (!id) {
+            // bye bye
+            res.status(400).send('ERROR! Invalid id sent to server');
         }
         else {
-            res.status(dbRes.status).json(dbRes.answers);
+            console.log(`| Handling GET-request for answers to query |`);
+            logSave("| GET | answers to query |");
+            const dbRes = await database.getAnswersToQuery(id);
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).json(dbRes.answers);
+            }
         }
     }
     /*
@@ -535,28 +542,40 @@ routes.post('/user/', async (req, res) => {
         res.status(400).send('ERROR! Incomplete data sent to server');
     }
     else {
-        if (req.body.accessLevel > 1 && (!req.secure.accessLevel || req.session.accessLevel < 3)) {
-            res.status(400).send('ERROR! You do not have access to create an elevated user');
+        const username = dataValidation.validUsername(req.body.username);
+        const accessLevel = dataValidation.validAccessLevel(req.body.accessLevel);
+        const passwordIn = dataValidation.validPassword(req.body.password);
+        const fname = dataValidation.validName(req.body.fname);
+        const lname = dataValidation.validName(req.body.lname);
+        const email = dataValidation.validEmail(req.body.email);
+        if (!username || !accessLevel || !passwordIn || !fname || !lname || !email) {
+            // bye bye
+            res.status(400).send('ERROR! Invalid data sent to server');
         }
         else {
-            console.log(`| Handling POST-request for NEW USER | username: ${req.body.username} |`);
-            logSave(`| POST | USERCREATION | Username: ${req.body.username} |`);
-            const password = await generatePass(req.body.password);
-            const user = {
-                accessLevel: req.body.accessLevel,
-                username: req.body.username,
-                password: password,
-                fname: req.body.fname,
-                lname: req.body.lname,
-                email: req.body.email
-            }
-            const dbRes = await database.addUser(user);
-            if (dbRes.errorMessage) {
-                errorLog(dbRes.status, dbRes.errorMessage);
-                res.status(dbRes.status).send(dbRes.errorMessage);
+            if (accessLevel > 1 && (!req.session.accessLevel || req.session.accessLevel < 3)) {
+                res.status(400).send('ERROR! You do not have access to create an elevated user');
             }
             else {
-                res.status(dbRes.status).send(dbRes.message);
+                console.log(`| Handling POST-request for NEW USER | username: ${username} |`);
+                logSave(`| POST | USERCREATION | Username: ${username} |`);
+                const password = await generatePass(passwordIn);
+                const user = {
+                    accessLevel: accessLevel,
+                    username: username,
+                    password: password,
+                    fname: fname,
+                    lname: lname,
+                    email: email
+                }
+                const dbRes = await database.addUser(user);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
+                }
+                else {
+                    res.status(dbRes.status).send(dbRes.message);
+                }
             }
         }
     }
@@ -614,27 +633,41 @@ routes.post('/query/', async (req, res) => {
             res.status(400).send('ERROR! Missing data for query');
         }
         else {
-            const category = await database.getCategoryByName(req.body.category);
-            if (!category) {
-                errorLog(dbRes.status, dbRes.errorMessage);
-                res.status(dbRes.status).send(dbRes.errorMessage);
+            const title = await dataValidation.validName(req.body.title);
+            const description = await dataValidation.validDescription();
+            if (!title || !description) {
+                res.status(400).send('ERROR! Invalid data sent to server');
             }
             else {
-                console.log(`| Handling POST-request for query: ${req.body.title} |`);
-                logSave(`| POST | QUERY: ${req.body.title} |`);
-                const dbRes = await database.addQuery({
-                    'title': req.body.title,
-                    'category': req.body.category,
-                    'userId': req.session.userId,
-                    'username': req.session.username,
-                    'description': req.body.description
-                });
-                if (!dbRes) {
-                    errorLog(dbRes.status, dbRes.errorMessage);
-                    res.status(dbRes.status).send(dbRes.errorMessage);
+                const validCategory = await dataValidation.validUsername(req.body.category);
+                if (!validCategory) {
+                    res.status(400).send('ERROR! Invalid category name sent to server');
                 }
                 else {
-                    res.status(dbRes.status).json(dbRes.query);
+                    const dbRes = await database.getCategoryByName(validCategory);
+                    if (dbRes.errorMessage) {
+                        errorLog(dbRes.status, dbRes.errorMessage);
+                        res.status(dbRes.status).send(dbRes.errorMessage);
+                    }
+                    else {
+                        const category = dbRes.categories;
+                        console.log(`| Handling POST-request for query: ${req.body.title} |`);
+                        logSave(`| POST | QUERY: ${req.body.title} |`);
+                        const dbRes = await database.addQuery({
+                            'title': title,
+                            'category': category,
+                            'userId': req.session.userId,
+                            'username': req.session.username,
+                            'description': description
+                        });
+                        if (!dbRes) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        }
+                        else {
+                            res.status(dbRes.status).json(dbRes.query);
+                        }
+                    }
                 }
             }
         }
@@ -683,30 +716,40 @@ routes.post('/query/', async (req, res) => {
 routes.post('/answer/', async (req, res) => {
     if (!req.session.userId || !req.session.username) {
         // bye bye
+        res.status(400).send('ERROR! You need to be logged in');
     }
     else {
         if (req.session.accessLevel < 2) {
             // bye bye
+            res.status(400).send('ERROR! You do not have access to this');
         }
         else {
             if (!req.body.queryId || !req.body.answer) {
                 // bye bye
+                res.status(400).send('ERROR! Missing data for query');
             }
             else {
-                console.log(`| Handling POST-request for answer for query id: ${req.body.queryId} |`);
-                logSave(`| POST | ANSWER for query id: ${req.body.queryId} |`);
-                const answer = {
-                    queryId: req.body.queryId,
-                    userId: req.session.userId,
-                    answer: req.body.answer
-                }
-                const dbRes = await database.addAnswer(answer);
-                if (dbRes.errorMessage) {
-                    errorLog(dbRes.status, dbRes.errorMessage);
-                    res.status(dbRes.status).send(dbRes.errorMessage);
+                const queryId = await dataValidation.validId(req.body.queryId);
+                const answerText = await dataValidation.validDescription(req.body.answer);
+                if (!queryId || !answerText) {
+                    res.status(400).send('ERROR! Invalid data sent to server');
                 }
                 else {
-                    res.status(dbRes.status).json(dbRes.answer);
+                    console.log(`| Handling POST-request for answer for query id: ${queryId} |`);
+                    logSave(`| POST | ANSWER for query id: ${queryId} |`);
+                    const answer = {
+                        queryId: queryId,
+                        userId: req.session.userId,
+                        answer: answerText
+                    }
+                    const dbRes = await database.addAnswer(answer);
+                    if (dbRes.errorMessage) {
+                        errorLog(dbRes.status, dbRes.errorMessage);
+                        res.status(dbRes.status).send(dbRes.errorMessage);
+                    }
+                    else {
+                        res.status(dbRes.status).json(dbRes.answer);
+                    }
                 }
             }
         }
@@ -765,14 +808,21 @@ routes.put('/user/', async (req, res) => {
             res.status(400).send('ERROR! Invalid update data sent to server');
         }
         else {
+            const username = await dataValidation.validUsername(req.body.username);
+            const fname = await dataValidation.validName(req.body.fname);
+            const lname = await dataValidation.validName(req.body.lname);
+            const email = await dataValidation.validEmail(req.body.email);
+            if (!username || !fname || !lname || !email) {
+                res.status(400).send('ERROR! Invalid data sent to server');
+            }
             console.log(`| Handling UPDATE-request for user id: ${req.session.userId} |`);
             logSave(`| UPDATE | USER ID: ${req.session.userId} |`);
             const user = {
                 accessLevel: req.session.accessLevel,
-                username: req.session.username,
-                fname: req.body.fname,
-                lname: req.body.lname,
-                email: req.body.email,
+                username: username,
+                fname: fname,
+                lname: lname,
+                email: email,
                 id: req.session.userId
             }
             const dbRes = await database.updateUser(user)
@@ -859,23 +909,34 @@ routes.put('/user/admin/', async (req, res) => {
                 res.status(400).send('ERROR! You do not have access to this');
             }
             else {
-                console.log(`| Handling ADMIN-UPDATE-request for user id: ${req.body.id} |`);
-                logSave(`| ADMIN-UPDATE | USER ID: ${req.body.id} |`);
-                const user = {
-                    accessLevel: req.body.accessLevel,
-                    username: req.body.username,
-                    fname: req.body.fname,
-                    lname: req.body.lname,
-                    email: req.body.email,
-                    id: req.body.id
-                }
-                const dbRes = await database.updateUser(user)
-                if (dbRes.errorMessage) {
-                    errorLog(dbRes.status, dbRes.errorMessage);
-                    res.status(dbRes.status, dbRes.errorMessage);
+                const fname = await dataValidation.validName(req.body.fname);
+                const lname = await dataValidation.validName(req.body.lname);
+                const email = await dataValidation.validEmail(req.body.email);
+                const accessLevel = await dataValidation.validAccessLevel(req.body.accessLevel);
+                const id = await dataValidation.validId(req.body.id);
+                const username = await dataValidation.validUsername(req.body.username);
+                if (!fname || !lname || !email || !accessLevel || !id || !username) {
+                    res.status(400).send('ERROR! Invalid data sent to server');
                 }
                 else {
-                    res.status(dbRes.status).send(dbRes.message);
+                    console.log(`| Handling ADMIN-UPDATE-request for user id: ${id} |`);
+                    logSave(`| ADMIN-UPDATE | USER ID: ${id} |`);
+                    const user = {
+                        accessLevel: accessLevel,
+                        username: username,
+                        fname: fname,
+                        lname: lname,
+                        email: email,
+                        id: id
+                    }
+                    const dbRes = await database.updateUser(user)
+                    if (dbRes.errorMessage) {
+                        errorLog(dbRes.status, dbRes.errorMessage);
+                        res.status(dbRes.status, dbRes.errorMessage);
+                    }
+                    else {
+                        res.status(dbRes.status).send(dbRes.message);
+                    }
                 }
             }
         }
@@ -892,33 +953,91 @@ routes.put('/query/', async (req, res) => {
             res.status(400).send('ERROR! Incomplete data sent to server');
         }
         else {
-            console.log(`| Handling UPDATE-request for query id: ${req.body.id} |`);
-            logSave(`| UPDATE | QUERY ID: ${req.body.id} |`);
-            let queryDBRes = await database.getQuery(req.body.id);
-            if (queryDBRes.errorMessage) {
-                errorLog(queryDBRes.status, queryDBRes.errorMessage);
-                res.status(queryDBRes.status).send(queryDBRes.errorMessage);
+            const title = await dataValidation.validUsername(req.body.title);
+            const description = await dataValidation.validDescription(req.body.description);
+            const id = await dataValidation.validId(req.body.id);
+            if (!title || !description || !id) {
+                res.status.send('ERROR! Invalid data sent to server');
             }
             else {
-                if ((queryDBRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
-                    res.status(400).send('ERROR! You do not have access');
+                const dbRes = await database.getCategoryByName(req.body.category);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
                 }
                 else {
-                    let duplicateOf = -1;
-                    if (req.session.accessLevel > 1 && req.body.duplicateOf) {
-                        if (queryDBRes.query.duplicateOf > -1) {
-                            const dbRes = await database.updateQueryDupeCount(req.body.duplicateOf, -1);
-                            if (dbRes.errorMessage) {
-                                errorLog(dbRes.status, dbRes.errorMessage);
-                                res.status(dbRes.status).send(dbRes.errorMessage);
+                    const category = dbRes.categories
+                    console.log(`| Handling UPDATE-request for query id: ${id} |`);
+                    logSave(`| UPDATE | QUERY ID: ${id} |`);
+                    const dbRes = await database.getQuery(id);
+                    if (dbRes.errorMessage) {
+                        errorLog(dbRes.status, dbRes.errorMessage);
+                        res.status(dbRes.status).send(dbRes.errorMessage);
+                    }
+                    else {
+                        const duplicateOf = dbRes.query.duplicateOf;
+                        if ((dbRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
+                            res.status(400).send('ERROR! You do not have access');
+                        }
+                        else {
+                            if (req.session.accessLevel > 1 && req.body.duplicateOf) {
+                                const duplicateOf = await dataValidation.validId(req.body.duplicateOf);
+                                if (!duplicateOf) {
+                                    res.status(400).send('ERROR! Invalid duplicate id sent to server');
+                                }
+                                else {
+                                    if (dbRes.query.duplicateOf > -1) {
+                                        const dbRes = await database.updateQueryDupeCount(dbRes.query.duplicateOf, -1);
+                                        if (dbRes.errorMessage) {
+                                            errorLog(dbRes.status, dbRes.errorMessage);
+                                            res.status(dbRes.status).send(dbRes.errorMessage);
+                                        }
+                                        // change an already flagged duplicate
+                                        else {
+                                            const query = {
+                                                title: title,
+                                                category: category,
+                                                description: description,
+                                                id: id,
+                                                duplicateOf: duplicateOf
+                                            }
+                                            const dbRes = await database.updateQuery(query);
+                                            if (dbRes.errorMessage) {
+                                                errorLog(dbRes.status, dbRes.errorMessage);
+                                                res.status(dbRes.status).send(dbRes.errorMessage);
+                                            }
+                                            else {
+                                                res.status(dbRes.status).send(dbRes.message);
+                                            }
+                                        }
+                                    }
+                                    // flag duplicate
+                                    else {
+                                        const query = {
+                                            title: title,
+                                            category: category,
+                                            description: description,
+                                            id: id,
+                                            duplicateOf: duplicateOf
+                                        }
+                                        const dbRes = await database.updateQuery(query);
+                                        if (dbRes.errorMessage) {
+                                            errorLog(dbRes.status, dbRes.errorMessage);
+                                            res.status(dbRes.status).send(dbRes.errorMessage);
+                                        }
+                                        else {
+                                            res.status(dbRes.status).send(dbRes.message);
+                                        }
+                                    }    
+                                }
                             }
+                            // non flag duplicate
                             else {
-                                duplicateOf = req.body.duplicateOf;
                                 const query = {
-                                    title: req.body.title,
-                                    category: req.body.category,
-                                    description: req.body.description,
-                                    id: req.body.id,
+                                    title: title,
+                                    category: category,
+                                    description: description,
+                                    id: id,
                                     duplicateOf: duplicateOf
                                 }
                                 const dbRes = await database.updateQuery(query);
@@ -930,41 +1049,6 @@ routes.put('/query/', async (req, res) => {
                                     res.status(dbRes.status).send(dbRes.message);
                                 }
                             }
-                        }
-                        else {
-                            duplicateOf = req.body.duplicateOf;
-                            const query = {
-                                title: req.body.title,
-                                category: req.body.category,
-                                description: req.body.description,
-                                id: req.body.id,
-                                duplicateOf: duplicateOf
-                            }
-                            const dbRes = await database.updateQuery(query);
-                            if (dbRes.errorMessage) {
-                                errorLog(dbRes.status, dbRes.errorMessage);
-                                res.status(dbRes.status).send(dbRes.errorMessage);
-                            }
-                            else {
-                                res.status(dbRes.status).send(dbRes.message);
-                            }
-                        }
-                    }
-                    else {
-                        const query = {
-                            title: req.body.title,
-                            category: req.body.category,
-                            description: req.body.description,
-                            id: req.body.id,
-                            duplicateOf: duplicateOf
-                        }
-                        const dbRes = await database.updateQuery(query);
-                        if (dbRes.errorMessage) {
-                            errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(dbRes.status).send(dbRes.errorMessage);
-                        }
-                        else {
-                            res.status(dbRes.status).send(dbRes.message);
                         }
                     }
                 }
@@ -1025,15 +1109,21 @@ routes.delete('/user/', async (req, res) => {
                 res.status(400).send('ERROR! No userId sent to server');
             }
             else {
-                console.log(`| Handling DELETE-request for user id: ${req.body.userId} | REQUESTED BY ADMIN ${req.session.userId} |`);
-                logSave(`| DELETE | USER ID: ${req.body.userId} | ADMIN ID: ${req.session.userId} |`);
-                const dbRes = await database.deleteUser(req.body.userId);
-                if (dbRes.errorMessage) {
-                    errorLog(dbRes.status, dbRes.errorMessage);
-                    res.status(dbRes.status).send(dbRes.errorMessage);
+                const id = await dataValidation.validId(req.body.userId);
+                if (!id) {
+                    res.status(400).send('ERROR! Invalid id sent to server');
                 }
                 else {
-                    res.status(dbRes.status).send(dbRes.message);
+                    console.log(`| Handling DELETE-request for user id: ${id} | REQUESTED BY ADMIN ${req.session.userId} |`);
+                    logSave(`| DELETE | USER ID: ${id} | ADMIN ID: ${req.session.userId} |`);
+                    const dbRes = await database.deleteUser(id);
+                    if (dbRes.errorMessage) {
+                        errorLog(dbRes.status, dbRes.errorMessage);
+                        res.status(dbRes.status).send(dbRes.errorMessage);
+                    }
+                    else {
+                        res.status(dbRes.status).send(dbRes.message);
+                    }
                 }
             }
         }
@@ -1106,23 +1196,29 @@ routes.delete('/query/', async (req, res) => {
             res.status(400).send('ERROR! No id sent to server');
         }
         else {
-            const dbRes = await database.getQuery(req.body.id);
-            if (dbRes.errorMessage) {
-                errorLog(dbRes.status, dbRes.errorMessage);
-                res.status(dbRes.status).send(dbRes.errorMessage);
+            const id = await dataValidation.validId(req.body.id);
+            if (!id) {
+                res.status(400).send('ERROR! Invalid id sent to server');
             }
             else {
-                if (req.session.accessLevel < 3 && res.session.userId != dbRes.query.userId) {
-                    res.status(400).send('ERROR! You do not have access to this query');
+                const dbRes = await database.getQuery(id);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
                 }
                 else {
-                    const dbRes = await database.deleteQuery(req.body.id);
-                    if (dbRes.errorMessage) {
-                        errorLog(dbRes.status, dbRes.errorMessage);
-                        res.status(dbRes.status).send(dbRes.errorMessage);
+                    if (req.session.accessLevel < 3 && res.session.userId != dbRes.query.userId) {
+                        res.status(400).send('ERROR! You do not have access to this query');
                     }
                     else {
-                        res.status(dbRes.status).send(dbRes.message);
+                        const dbRes = await database.deleteQuery(id);
+                        if (dbRes.errorMessage) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        }
+                        else {
+                            res.status(dbRes.status).send(dbRes.message);
+                        }
                     }
                 }
             }
