@@ -172,8 +172,15 @@ routes.delete('/logout/', async (req, res) => {
         res.status(400).send('ERROR! You do not have a session');
     }
     else {
-        req.session.destroy();
-        res.status(200).send('bye bye!');
+        if (!req.session.userId) {
+            res.status(400).send('ERROR! You must login first to logoff');
+        }
+        else {
+            console.log(`| User ${req.session.username} Logging off |`);
+            logSave(`| LOGOFF | USERID: ${req.session.userId} |`);
+            req.session.destroy();
+            res.status(200).send('bye bye!');
+        }
     }
 });
 //#############################################################
