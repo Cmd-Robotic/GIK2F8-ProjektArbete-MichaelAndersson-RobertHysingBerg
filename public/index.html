@@ -391,8 +391,8 @@
                                     <p class="card-text">{{ item.answer }}</p>
                                     <p class="card-text">Quality: {{ item.vote }}</p>
                                     <p class="card-text"><small>Posted: {{ item.time }}</small></p>
-                                    <button type="button" class="btn btn-primary" v-on:click="upvoteAnswer(item)">Good</button>
-                                    <button type="button" class="btn btn-danger" v-on:click="downvoteAnswer(item)">Bad</button>
+                                    <button type="button" class="btn btn-primary" v-show="contributor" v-on:click="upvoteAnswer(item)">Good</button>
+                                    <button type="button" class="btn btn-danger" v-show="contributor" v-on:click="downvoteAnswer(item)">Bad</button>
                                     <div v-show="admin">
                                         <button type="button" class="btn btn-danger" data-dismiss="modal" data-toggle="modal"
                                             data-target="#answerModal">Delete</button>
@@ -404,6 +404,10 @@
                             <div v-show="contributor">
                                 <button type="button" class="btn btn-primary" data-dismiss="modal" data-toggle="modal"
                                     data-target="#answerModal">Reply</button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-toggle="modal"
+                                    v-show="Contributor" data-target="#markDuplicateModal">Mark duplicate</button>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -532,6 +536,36 @@
                                 data-dismiss="modal">Submit</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 v-on:click="resetUpdateQueryModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MARK DUPLICATE MODAL -->
+            <!-- MARK DUPLICATE MODAL -->
+            <div class="modal fade" id="markDuplicateModal" tabindex="-1" aria-labelledby="markDuplicateModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="markDuplicateModalLabel">{{ selectedItem.title }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group modalColor">
+                                <label for="selectOriginal">Select original query ID</label>
+                                <select class="form-control" name="selectOriginal" id="selectOriginal" :key="item.id">
+                                    <option v-for="item in queries" type="text">{{ item.id }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
+                                v-on:click="markDuplicate(item)">Save</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="resetDuplicateModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -719,7 +753,7 @@
                     async addUser() {
                         var message;
                         var user = {
-                            accessLevel: $('#addUserModal #newAccessLevel').val(),
+                            accessLevel: 1,
                             username: $('#addUserModal #newUsername').val(),
                             password: $('#addUserModal #newPassword').val(),
                             fname: $('#addUserModal #newFname').val(),
@@ -875,6 +909,31 @@
                         this.populateFrequentlyAsked();
                         this.populateLastAsked();
                     },
+                    async markDuplicate(item) {
+                        var message;
+                        var originalQuery = $('#markDuplicateModal #selectOriginal').val();
+                        var query = {
+                            id: this.selectedItem.id,
+                            duplicateOf: $('#markDuplicateModal #selectOriginal').val(),
+                        }
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/query/flagDupe',
+                            type: 'PUT',
+                            data: query,
+                            success: (response) => {
+                                message = JSON.parse(JSON.stringify(response));
+                                alert(`Query with ID: ${message.id}\nmarked as duplicate of query with ID: ${originalQuery}`);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectItem();
+                        this.resetDuplicateModal()
+                        this.updateQueries();
+                    },
                     async sendAnswer() {
                         var message;
                         var query = {
@@ -1008,6 +1067,9 @@
                         $('#updateQueryModal #updateTitle').val("");
                         $('#updateQueryModal #updateCategory').val("");
                         $('#updateQueryModal #updateDescription').val("");
+                    },
+                    resetDuplicateModal() {
+                        $('#markDuplicateModal #selectOriginal').val("");
                     },
                 },
                 mounted() {

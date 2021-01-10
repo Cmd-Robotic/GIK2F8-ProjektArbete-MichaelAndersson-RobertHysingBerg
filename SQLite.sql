@@ -63,5 +63,3 @@ INSERT INTO queryCategories (category) VALUES("Telephony");
 -- DROP TABLE queries;
 -- DROP TABLE queryCategories;
 -- DROP TABLE users;
--- DROP TABLE userstatus;
--- DROP TABLE userlevel;

@@ -862,21 +862,18 @@
                 },
                 async markDuplicate(item) {
                     var message;
+                    var originalQuery = $('#markDuplicateModal #selectOriginal').val();
                     var query = {
                         id: this.selectedItem.id,
-                        userId: this.selectedItem.userId,
-                        title: this.selectedItem.title,
-                        category: this.selectedItem.category,
-                        description: this.selectedItem.description,
                         duplicateOf: $('#markDuplicateModal #selectOriginal').val(),
                     }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/query/',
+                        url: 'http://127.0.0.1:5000/query/flagDupe',
                         type: 'PUT',
                         data: query,
                         success: (response) => {
                             message = JSON.parse(JSON.stringify(response));
-                            alert(`Query with ID: ${message.id} updated`);
+                            alert(`Query with ID: ${message.id}\nmarked as duplicate of query with ID: ${originalQuery}`);
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
