@@ -959,7 +959,7 @@
                             data: query,
                             success: (response) => {
                                 message = JSON.parse(JSON.stringify(response));
-                                alert(`Query with ID: ${message.id}\nmarked as duplicate of query with ID: ${originalQuery}`);
+                                alert(`Query marked as duplicate of query with ID: ${originalQuery}`);
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);

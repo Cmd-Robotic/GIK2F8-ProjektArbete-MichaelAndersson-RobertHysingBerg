@@ -140,7 +140,7 @@
                         <th scope="col">Category</th>
                         <th scope="col">Description</th>
                         <th scope="col">Answers</th>
-                        <th scope="col">Duplicate</th>
+                        <th scope="col">Duplicate_of</th>
                         <th scope="col" class="query-actions">Actions</th>
                     </tr>
                 </thead>
@@ -154,7 +154,7 @@
                         <td>{{ item.category }}</td>
                         <td class="table-row-height">{{ item.description}}</td>
                         <td>{{ item.answers}}</td>
-                        <td>{{ item.duplicate}}</td>
+                        <td>{{ item.duplicateOf}}</td>
                         <td>
                             <button type="button" class="btn btn-primary" data-toggle="modal"
                                 data-target="#updateQueryModal" v-on:click="selectItem(item)">
@@ -906,7 +906,7 @@
                         data: query,
                         success: (response) => {
                             message = JSON.parse(JSON.stringify(response));
-                            alert(`Query with ID: ${message.id}\nmarked as duplicate of query with ID: ${originalQuery}`);
+                            alert(`Query marked as duplicate of query with ID: ${originalQuery}`);
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
