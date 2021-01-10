@@ -253,10 +253,9 @@
                         <div class="modal-footer modalColor">
                             <button type="button" class="btn btn-danger" data-dismiss="modal" 
                                 v-on:click="deleteUser()">Delete account</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                                v-on:click="resetUpdateUserModal()">Close</button>
                             <button type="button" class="btn btn-primary" v-on:click="updateUser()" data-dismiss="modal">Save
                                 changes</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetUpdateUserModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -305,10 +304,9 @@
                             </form>
                         </div>
                         <div class="modal-footer modalColor">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                                v-on:click="resetAddUserModal()">Close</button>
                             <button type="button" class="btn btn-primary" v-on:click="addUser()" data-dismiss="modal">Save
                                 changes</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetAddUserModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -389,7 +387,7 @@
                         <div class="col" v-for="item in answers" :key="item.id">
                             <div class="card h-100 border rounded">
                                 <div class="card-body">
-                                    <p class="card-text">{{ item.description }}</p>
+                                    <p class="card-text">{{ item.answer }}</p>
                                     <p class="card-text">Quality: {{ item.vote }}</p>
                                     <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
                                     <button type="button" class="btn btn-primary" v-on:click="upvoteAnswer(item)">Good</button>
@@ -829,20 +827,18 @@
                     async sendAnswer() {
                         var message;
                         var query = {
-                            title: $('#answerModal #inputTitle').val(),
-                            category: $('#answerModal #inputCategory').val(),
-                            description: $('#answerModal #inputDescription').val(),
+                            queryId: this.selectedItem.id,
+                            answer: $('#answerModal #inputDescription').val(),
                             userId: this.user.id,
-                            username: this.user.username
                         }
                         console.log(query);
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/query/',
+                            url: 'http://127.0.0.1:5000/answer/',
                             type: 'POST',
                             data: query,
                             success: (response) => {
-                                message = response;
-                                alert(message);
+                                //message = response;
+                                alert(`Reply to query with ID: ${this.selectedItem.id} posted`);
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
@@ -886,7 +882,7 @@
                         this.answers = [];
                         var id = this.selectedItem.id;
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/answers/:id',
+                            url: `http://127.0.0.1:5000/answers/${id}`,
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
@@ -935,12 +931,12 @@
                         $('#registerModal #inputNewLname').val("");
                     },
                 },
-                async mounted() {
+                mounted() {
                     this.populateFrequentlyAsked();
                     this.populateLastAsked();
-                    await this.checkLoggedIn();
+                    this.checkLoggedIn();
                     if (this.loggedIn) {
-                        await this.updateQueries();
+                        this.updateQueries();
                     }
                 }
             });

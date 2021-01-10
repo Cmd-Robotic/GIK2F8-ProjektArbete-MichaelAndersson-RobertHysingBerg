@@ -59,6 +59,12 @@ div.dropdown-menu > :first-child {
     margin-left: 10px;
     margin-right: 10px;
 }
+.modal-dialog {
+    overflow-y: initial;
+}
+.modal-content {
+    overflow-y: auto;
+}
 .modal-personal {
     width: auto;
     height: auto;

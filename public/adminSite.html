@@ -161,9 +161,7 @@
                                 Update
                             </button>
                             <button type="button" class="btn btn-info" data-toggle="modal"
-                                data-target="#queryInfoModal" v-on:click="flagQuery(item)">
-                                More
-                            </button>
+                                data-target="#queryModal" v-on:click="openQuery(item)">More</button>
                             <button type="button" class="btn btn-danger" data-toggle="modal"
                                 v-on:click="deleteQuery(item)">
                                 Delete
@@ -230,9 +228,9 @@
                         </form>
                     </div>
                     <div class="modal-footer modalColor">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetAddUserModal()">Close</button>
                         <button type="button" class="btn btn-primary" v-on:click="addUser()" data-dismiss="modal">Save
                             changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetAddUserModal()">Close</button>
                     </div>
                 </div>
             </div>
@@ -290,10 +288,83 @@
                         </form>
                     </div>
                     <div class="modal-footer modalColor">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                            v-on:click="resetUpdateUserModal()">Close</button>
                         <button type="button" class="btn btn-primary" v-on:click="updateUser()" data-dismiss="modal">Save
                             changes</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" v-on:click="resetUpdateUserModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUERY MODAL -->
+        <!-- QUERY MODAL -->
+        <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="queryModalLabel">{{ selectedItem.title }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Asked by: {{ selectedItem.username }} | Category: {{ selectedItem.category }}</p>
+                        {{ selectedItem.description }}
+                    </div>
+                    <span></span>
+                    <div class="col" v-for="item in answers" :key="item.id">
+                        <div class="card h-100 border rounded">
+                            <div class="card-body">
+                                <p class="card-text">{{ item.answer }}</p>
+                                <p class="card-text">Quality: {{ item.vote }}</p>
+                                <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
+                                <button type="button" class="btn btn-primary" v-on:click="upvoteAnswer(item)">Good</button>
+                                <button type="button" class="btn btn-danger" v-on:click="downvoteAnswer(item)">Bad</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div v-show="contributor">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" data-toggle="modal"
+                                data-target="#answerModal">Reply</button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="unselectItem()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANSWER MODAL -->
+        <!-- ANSWER MODAL -->
+        <div class="modal fade" id="answerModal" tabindex="-1" aria-labelledby="answerModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="answerModalLabel">{{ selectedItem.title }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Asked by: {{ selectedItem.username }}</p>
+                        {{ selectedItem.description }}
+                    </div>
+                    <span></span>
+                    <form class="modal-body">
+                        <div class="form-group modalColor">
+                            <label for="inputAnswer">Answer</label>
+                            <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6" answer="answer"
+                                v-model="answer"></textarea>
+                        </div>
+                    </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:show="contributor"
+                            v-on:click="sendAnswer()">Reply</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            v-on:click="resetAnswerModal()">Close</button>
                     </div>
                 </div>
             </div>
@@ -436,6 +507,7 @@
             data: {
                 queries: [],
                 answers: [],
+                answer: "",
                 frequentlyAsked: [],
                 lastAsked: [],
                 item: [],
@@ -545,7 +617,10 @@
                 unselectItem() {
                     this.selectedItem = '';
                 },
-
+                openQuery(item) {
+                    this.selectItem(item);
+                    this.populateAnswers();
+                },
                 addUser() {
                     var message;
                     var user = {
@@ -587,7 +662,7 @@
                     }
                     console.log(user);
                     $.ajax({
-                        url: '/user/',
+                        url: '/user/admin',
                         type: 'PUT',
                         data: user,
                         success: (response) => {
@@ -610,7 +685,7 @@
                     item.accessLevel=0;
                     console.log(user);
                     $.ajax({
-                        url: '/user/',
+                        url: '/user/admin',
                         type: 'PUT',
                         data: user,
                         success: () => {
@@ -660,6 +735,32 @@
                             alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
                         }
                     });
+                },
+                async sendAnswer() {
+                    var message;
+                    var query = {
+                        queryId: this.selectedItem.id,
+                        answer: $('#answerModal #inputAnswer').val(),
+                        userId: this.user.id,
+                    }
+                    console.log(query);
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/answer/',
+                        type: 'POST',
+                        data: query,
+                        success: (response) => {
+                            //message = response;
+                            alert(`Reply to query with ID: ${this.selectedItem.id} posted`);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                            alert(message);
+                        }
+                    });
+                    this.unselectItem();
+                    this.resetAnswerModal();
+                    this.updateQueries();
                 },
                 async sendQuery() {
                     var message;
@@ -713,6 +814,22 @@
                     this.unselectItem();
                     this.updateQueries();
                 },
+                async populateAnswers() {
+                    this.answers = [];
+                    var id = this.selectedItem.id;
+                    await $.ajax({
+                        url: `http://127.0.0.1:5000/answers/${id}`,
+                        type: 'GET',
+                        success: (response) => {
+                            var self = this;
+                            self.answers = response;
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            alert(`${jqXHR.responseText}\nNo answers to the selected query`);
+                        }
+                    });
+                },
                 resetAddQueryModal() {
                     $('#addQueryModal #inputTitle').val("");
                     $('#addQueryModal #inputCategory').val("");
@@ -723,6 +840,10 @@
                     $('#updateQueryModal #updateCategory').val("");
                     $('#updateQueryModal #updateDescription').val("");
                     this.updateQueries()
+                },
+                resetAnswerModal() {
+                    $('#answerModal #inputAnswer').val("");
+                    this.answer = "";
                 },
                 resetAddUserModal() {
                     $('#addUserModal #newAccessLevel').val("");
@@ -744,7 +865,7 @@
                     this.updateUsers()
                 },
             },
-            async mounted() {
+            mounted() {
                 this.checkLoggedIn();
                 if (this.loggedIn) {
                     this.updateQueries();

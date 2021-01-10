@@ -46,7 +46,7 @@ const addQuery = async (data) => {
 const addAnswer = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('INSERT INTO answers (queryId, userId, answer) VALUES(?, ?, ?)', [data.queryId, data.userId, data.description]);
+        await dbConnection.run('INSERT INTO answers (queryId, userId, answer) VALUES(?, ?, ?)', [data.queryId, data.userId, data.answer]);
         await dbConnection.run('UPDATE queries SET answers = (answers + 1) WHERE id = ?', [data.queryId]);
         const answer = await dbConnection.get('SELECT MAX(rowid) FROM answers');
         if (!answer) {

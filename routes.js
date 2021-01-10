@@ -636,7 +636,7 @@ routes.post('/answer/', async (req, res) => {
             // bye bye
         }
         else {
-            if (!req.body.queryId || !req.body.description) {
+            if (!req.body.queryId || !req.body.answer) {
                 // bye bye
             }
             else {
@@ -645,7 +645,7 @@ routes.post('/answer/', async (req, res) => {
                 const answer = {
                     queryId: req.body.queryId,
                     userId: req.session.userId,
-                    description: req.body.description
+                    answer: req.body.answer
                 }
                 const dbRes = await database.addAnswer(answer);
                 if (dbRes.errorMessage) {
@@ -806,15 +806,15 @@ routes.put('/user/admin/', async (req, res) => {
                 res.status(400).send('ERROR! You do not have access to this');
             }
             else {
-                console.log(`| Handling ADMIN-UPDATE-request for user id: ${data.id} |`);
-                logSave(`| ADMIN-UPDATE | USER ID: ${data.id} |`);
+                console.log(`| Handling ADMIN-UPDATE-request for user id: ${req.body.id} |`);
+                logSave(`| ADMIN-UPDATE | USER ID: ${req.body.id} |`);
                 const user = {
-                    accessLevel: req.session.accessLevel,
-                    username: req.session.username,
+                    accessLevel: req.body.accessLevel,
+                    username: req.body.username,
                     fname: req.body.fname,
                     lname: req.body.lname,
                     email: req.body.email,
-                    id: req.session.userId
+                    id: req.body.id
                 }
                 const dbRes = await database.updateUser(user)
                 if (dbRes.errorMessage) {
