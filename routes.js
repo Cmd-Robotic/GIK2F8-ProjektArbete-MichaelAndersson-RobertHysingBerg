@@ -77,15 +77,15 @@ routes.post('/login/', async (req, res) => {
                                 res.status(400).send(errorMessage);
                             }
                             else {
-                                const dbRes = await database.getUser(user.id);
-                                if (dbRes.user.accessLevel < 1) {
+                                const userRes = await database.getUser(user.id);
+                                if (userRes.user.accessLevel < 1) {
                                     res.status(400).send('ERROR! You have been hit by the MIGHTY BANHAMMER!');
                                 }
                                 else {
                                     req.session.userId = user.id;
-                                    req.session.accessLevel = dbRes.user.accessLevel;
-                                    req.session.username = dbRes.user.username;
-                                    res.status(200).json(dbRes.user);
+                                    req.session.accessLevel = userRes.user.accessLevel;
+                                    req.session.username = userRes.user.username;
+                                    res.status(200).json(userRes.user);
                                 }
                             }
                         }
@@ -111,15 +111,15 @@ routes.post('/login/', async (req, res) => {
                                 res.status(400).send(errorMessage);
                             }
                             else {
-                                const dbRes = await database.getUser(user.id);
-                                if (dbRes.user.accessLevel < 1) {
+                                const userRes = await database.getUser(user.id);
+                                if (userRes.user.accessLevel < 1) {
                                     res.status(400).send('ERROR! You have been hit by the MIGHTY BANHAMMER!');
                                 }
                                 else {
                                     req.session.userId = user.id;
-                                    req.session.accessLevel = dbRes.user.accessLevel;
-                                    req.session.username = dbRes.user.username;
-                                    res.status(200).json(dbRes.user);
+                                    req.session.accessLevel = userRes.user.accessLevel;
+                                    req.session.username = userRes.user.username;
+                                    res.status(200).json(userRes.user);
                                 }
                             }
                         }
@@ -375,19 +375,19 @@ routes.post('/query/', async (req, res) => {
                         // const category = dbRes.categories.category;
                         console.log(`| Handling POST-request for query: ${title} |`);
                         logSave(`| POST | QUERY: ${title} |`);
-                        const dbRes = await database.addQuery({
+                        const queryRes = await database.addQuery({
                             'title': title,
                             'category': validCategory,
                             'userId': req.session.userId,
                             'username': req.session.username,
                             'description': description
                         });
-                        if (!dbRes) {
-                            errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        if (!queryRes) {
+                            errorLog(queryRes.status, queryRes.errorMessage);
+                            res.status(queryRes.status).send(queryRes.errorMessage);
                         }
                         else {
-                            res.status(dbRes.status).json(dbRes.query);
+                            res.status(queryRes.status).json(queryRes.query);
                         }
                     }
                 }
@@ -558,14 +558,14 @@ routes.put('/query/', async (req, res) => {
                         // const category = dbRes.categories
                         console.log(`| Handling UPDATE-request for query id: ${id} |`);
                         logSave(`| UPDATE | QUERY ID: ${id} |`);
-                        const dbRes = await database.getQuery(id);
-                        if (dbRes.errorMessage) {
-                            errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        const queryRes = await database.getQuery(id);
+                        if (queryRes.errorMessage) {
+                            errorLog(queryRes.status, queryRes.errorMessage);
+                            res.status(queryRes.status).send(queryRes.errorMessage);
                         }
                         else {
-                            const duplicateOf = dbRes.query.duplicateOf;
-                            if ((dbRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
+                            const duplicateOf = queryRes.query.duplicateOf;
+                            if ((queryRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
                                 res.status(400).send('ERROR! You do not have access');
                             }
                             else {
@@ -576,13 +576,13 @@ routes.put('/query/', async (req, res) => {
                                     id: id,
                                     duplicateOf: duplicateOf
                                 }
-                                const dbRes = await database.updateQuery(query);
-                                if (dbRes.errorMessage) {
-                                    errorLog(dbRes.status, dbRes.errorMessage);
-                                    res.status(dbRes.status).send(dbRes.errorMessage);
+                                const updateQueryRes = await database.updateQuery(query);
+                                if (updateQueryRes.errorMessage) {
+                                    errorLog(updateQueryRes.status, updateQueryRes.errorMessage);
+                                    res.status(updateQueryRes.status).send(updateQueryRes.errorMessage);
                                 }
                                 else {
-                                    res.status(dbRes.status).send(dbRes.message);
+                                    res.status(updateQueryRes.status).send(updateQueryRes.message);
                                 }
                             }
                         }
@@ -616,26 +616,33 @@ routes.put('/query/flagDupe/', async (req, res) => {
                 else {
                     const query = dbRes.query;
                     if (dbRes.query.duplicateOf > -1) {
-                        const dbRes = await database.updateQueryDupeCount(query.id, -1);
-                        if (dbRes.errorMessage) {
-                            errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        const updateQueryRes = await database.updateQueryDupeCount(dbRes.query.id, -1);
+                        if (updateQueryRes.errorMessage) {
+                            errorLog(updateQueryRes.status, updateQueryRes.errorMessage);
+                            res.status(updateQueryRes.status).send(updateQueryRes.errorMessage);
                         }
                         else {
-                            const updateQuery = {
-                                title: query.title,
-                                category: query.category,
-                                description: query.description,
-                                duplicateOf: duplicateOf,
-                                id: query.id
-                            }
-                            const dbRes = await database.updateQuery(updateQuery);
-                            if (dbRes.errorMessage) {
-                                errorLog(dbRes.status, dbRes.errorMessage);
-                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            const dupeRes = await database.updateQueryDupeCount(duplicateOf, 1);
+                            if (dupeRes.errorMessage) {
+                                errorLog(dupeRes.status, dupeRes.errorMessage);
+                                res.status(dupeRes.status).send(dupeRes.errorMessage);
                             }
                             else {
-                                res.status(dbRes.status).send(dbRes.message);
+                                const updateQuery = {
+                                    title: query.title,
+                                    category: query.category,
+                                    description: query.description,
+                                    duplicateOf: duplicateOf,
+                                    id: query.id
+                                }
+                                const queryRes = await database.updateQuery(updateQuery);
+                                if (queryRes.errorMessage) {
+                                    errorLog(queryRes.status, queryRes.errorMessage);
+                                    res.status(queryRes.status).send(queryRes.errorMessage);
+                                }
+                                else {
+                                    res.status(queryRes.status).send(queryRes.message);
+                                }
                             }
                         }
                     }
@@ -647,13 +654,20 @@ routes.put('/query/flagDupe/', async (req, res) => {
                             duplicateOf: duplicateOf,
                             id: query.id
                         }
-                        const dbRes = await database.updateQuery(updateQuery);
-                        if (dbRes.errorMessage) {
-                            errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        const queryRes = await database.updateQuery(updateQuery);
+                        if (queryRes.errorMessage) {
+                            errorLog(queryRes.status, queryRes.errorMessage);
+                            res.status(queryRes.status).send(queryRes.errorMessage);
                         }
                         else {
-                            res.status(dbRes.status).send(dbRes.message);
+                            const finalRes = await database.updateQueryDupeCount(duplicateOf, 1);
+                            if (finalRes.errorMessage) {
+                                errorLog(finalRes.status, finalRes.errorMessage);
+                                res.status(finalRes.status).send(finalRes.errorMessage);
+                            }
+                            else {
+                                res.status(finalRes.status).send(finalRes.message);
+                            }
                         }
                     }
                 }
@@ -683,7 +697,38 @@ routes.put('/answer/', async (req, res) => {
                 }
                 else {
                     if (req.session.userId != dbRes.answer.userId && req.session.accessLevel < 3) {
-                        res.status(400).send('ERROR! You do not have access to this');
+                        if (!req.body.vote) {
+                            res.status(400).send('ERROR! You do not have access to this');
+                        }
+                        else {
+                            const queryId = dbRes.answer.queryId;
+                            const queryRes = await database.getQuery(queryId);
+                            if (queryRes.errorMessage) {
+                                errorLog(queryRes.status, queryRes.errorMessage);
+                                res.status(queryRes.status).send(queryRes.errorMessage);
+                            }
+                            else {
+                                if (queryRes.query.userId != req.session.userId) {
+                                    res.status(400).send('ERROR! You do not have access to this');
+                                }
+                                else {
+                                    const vote = await dataValidation.validVote(req.body.vote);
+                                    if (!vote) {
+                                        res.status(400).send('ERROR! Invalid data sent to server');
+                                    }
+                                    else {
+                                        const answerRes = await updateAnswer({vote: vote, id: id});
+                                        if (answerRes.errorMessage) {
+                                            errorLog(answerRes.status, answerRes.errorMessage);
+                                            res.status(answerRes.status).send(answerRes.errorMessage);
+                                        }
+                                        else {
+                                            res.status(answerRes.status).send(answerRes.message);
+                                        }
+                                    }   
+                                }
+                            }
+                        }
                     }
                     else {
                         if (!req.body.vote) {
@@ -696,13 +741,13 @@ routes.put('/answer/', async (req, res) => {
                                     res.status(400).send('ERROR! Invalid data sent to server');
                                 }
                                 else {
-                                    const dbRes = await database.updateAnswer({answer: answer, id: id});
-                                    if (dbRes.errorMessage) {
-                                        errorLog(dbRes.status, dbRes.errorMessage);
-                                        res.status(dbRes.status).send(dbRes.errorMessage);
+                                    const answerRes = await database.updateAnswer({answer: answer, id: id});
+                                    if (answerRes.errorMessage) {
+                                        errorLog(answerRes.status, answerRes.errorMessage);
+                                        res.status(answerRes.status).send(answerRes.errorMessage);
                                     }
                                     else {
-                                        res.status(dbRes.status).send(dbRes.message);
+                                        res.status(answerRes.status).send(answerRes.message);
                                     }
                                 }
                             }
@@ -713,13 +758,13 @@ routes.put('/answer/', async (req, res) => {
                                 res.status(400).send('ERROR! Invalid data sent to server');
                             }
                             else {
-                                const dbRes = await updateAnswer({vote: vote, id: id});
-                                if (dbRes.errorMessage) {
-                                    errorLog(dbRes.status, dbRes.errorMessage);
-                                    res.status(dbRes.status).send(dbRes.errorMessage);
+                                const answerRes = await updateAnswer({vote: vote, id: id});
+                                if (answerRes.errorMessage) {
+                                    errorLog(answerRes.status, answerRes.errorMessage);
+                                    res.status(answerRes.status).send(answerRes.errorMessage);
                                 }
                                 else {
-                                    res.status(dbRes.status).send(dbRes.message);
+                                    res.status(answerRes.status).send(answerRes.message);
                                 }
                             }
                         }
@@ -790,13 +835,13 @@ routes.delete('/query/', async (req, res) => {
                         res.status(400).send('ERROR! You do not have access to this query');
                     }
                     else {
-                        const dbRes = await database.deleteQuery(id);
-                        if (dbRes.errorMessage) {
-                            errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        const queryRes = await database.deleteQuery(id);
+                        if (queryRes.errorMessage) {
+                            errorLog(queryRes.status, queryRes.errorMessage);
+                            res.status(queryRes.status).send(queryRes.errorMessage);
                         }
                         else {
-                            res.status(dbRes.status).send(dbRes.message);
+                            res.status(queryRes.status).send(queryRes.message);
                         }
                     }
                 }
@@ -829,13 +874,13 @@ routes.delete('/answer/', async (req, res) => {
                         res.status(400).send('ERROR! You do not have access');
                     }
                     else {
-                        const dbRes = await database.deleteAnswer(id);
-                        if (dbRes.errorMessage) {
-                            errorLog(dbRes.status, dbRes.errorMessage);
-                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        const answerRes = await database.deleteAnswer(id);
+                        if (answerRes.errorMessage) {
+                            errorLog(answerRes.status, answerRes.errorMessage);
+                            res.status(answerRes.status).send(answerRes.errorMessage);
                         }
                         else {
-                            res.status(dbRes.status).send(dbRes.message);
+                            res.status(answerRes.status).send(answerRes.message);
                         }
                     }
                 }

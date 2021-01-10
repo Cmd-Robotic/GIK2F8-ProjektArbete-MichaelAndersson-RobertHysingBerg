@@ -186,7 +186,7 @@ const getUser = async (id) => {
 const getAnswerUser = async (id) => {
     try {
         const dbConnection = await database;
-        const answer = await dbConnection.get('SELECT userId FROM answer WHERE id = (?)', [id]);
+        const answer = await dbConnection.get('SELECT userId, queryId FROM answers WHERE id = (?)', [id]);
         if (answer) {
             return { status: '200', answer: answer };
         }
@@ -390,8 +390,8 @@ const getAnswersToQuery = async (id) => {
 const getQuery = async (id) => {
     try {
         const dbConnection = await database;
-        const query = await dbConnection.all('SELECT id, userId, title, category, description FROM queries WHERE id = (?)', [id]);
-        if (query.length > 0) {
+        const query = await dbConnection.get('SELECT id, userId, title, category, description, duplicateOf FROM queries WHERE id = (?)', [id]);
+        if (query) {
             return { status: '200', query: query };
         }
         else {
@@ -498,9 +498,6 @@ const updateQuery = async (data) => {
     try {
         const dbConnection = await database;
         await dbConnection.run('UPDATE queries SET title = ?, category = ?, description = ?, duplicateOf = ? WHERE id = ?', [data.title, data.category, data.description, data.duplicateOf, data.id]);
-        if (data.duplicateOf > -1) {
-            await dbConnection.run('UPDATE queries SET duplicates = (duplicates + 1) WHERE id=?',[data.id]);
-        }
         return { status: '200', message: 'Query updated' };
     }
     catch {
@@ -515,9 +512,6 @@ const updateQueryDupeCount = async (id, amount) => {
     try {
         const dbConnection = await database;
         await dbConnection.run('UPDATE queries SET duplicates = (duplicates + ?) WHERE id = ?', [amount, id]);
-        if (data.duplicateOf > -1) {
-            await dbConnection.run('UPDATE queries SET duplicates = (duplicates + 1) WHERE id=?',[data.id]);
-        }
         return { status: '200', message: 'Query updated' };
     }
     catch {
