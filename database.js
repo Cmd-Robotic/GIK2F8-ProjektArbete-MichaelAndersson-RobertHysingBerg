@@ -243,7 +243,7 @@ const getQueries = async () => {
     try {
         let queries = []
         const dbConnection = await database;
-        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries ORDER BY time DESC');
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates, duplicateOf FROM queries ORDER BY time DESC');
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
@@ -262,7 +262,7 @@ const getQueriesByUserId = async (id) => {
     try {
         let queries = []
         const dbConnection = await database;
-        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries WHERE userId = (?) ORDER BY id ASC', [id]);
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates, duplicateOf FROM queries WHERE userId = (?) ORDER BY id ASC', [id]);
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
@@ -280,7 +280,7 @@ const getQueriesByCategory = async (category) => {
     try {
         let queries = []
         const dbConnection = await database;
-        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries WHERE category = (?) ORDER BY id ASC', [category]);
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates, duplicateOf FROM queries WHERE category = (?) ORDER BY id ASC', [category]);
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
@@ -335,7 +335,7 @@ const getLastQueries = async () => {
     try {
         let queries = []
         const dbConnection = await database;
-        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries ORDER BY time DESC LIMIT 8');
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates, duplicateOf FROM queries ORDER BY time DESC LIMIT 8');
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
@@ -354,7 +354,7 @@ const getLastQueriesByCategory = async (category) => {
     try {
         let queries = []
         const dbConnection = await database;
-        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates FROM queries WHERE category = ? ORDER BY time DESC LIMIT 8', [category]);
+        queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates, duplicateOf FROM queries WHERE category = ? ORDER BY time DESC LIMIT 8', [category]);
         if (queries.length > 0) {
             return { status: '200', queries: queries };
         }
