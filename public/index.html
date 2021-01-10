@@ -404,7 +404,7 @@
                             </div>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal" data-toggle="modal"
-                                    v-show="Contributor" data-target="#markDuplicateModal">Mark duplicate</button>
+                                    v-show="contributor" data-target="#markDuplicateModal">Mark duplicate</button>
                             </div>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -512,8 +512,8 @@
                                         v-bind:value="selectedItem.title">
                                 </div>
                                 <div class="form-group modalColor">
-                                    <label for="inputCategory">Category</label>
-                                    <select class="form-control" name="inputCategory" id="updateCategory"
+                                    <label for="updateCategory">Category</label>
+                                    <select class="form-control" name="updateCategory" id="updateCategory"
                                         v-bind:value="selectedItem.category">
                                         <option type="text">Computer</option>
                                         <option type="text">Cellphone</option>
@@ -522,7 +522,7 @@
                                     </select>
                                 </div>
                                 <div class="form-group modalColor">
-                                    <label for="inputDescription">Description</label>
+                                    <label for="updateDescription">Description</label>
                                     <textarea class="form-control" name="updateDescription" id="updateDescription" rows="6"
                                         v-bind:value="selectedItem.description"></textarea>
                                 </div>
@@ -643,6 +643,8 @@
                     category: ""
                 },
                 methods: {
+
+                    //########## USER LOGIN ##########
                     async loginUser(emailUsername, password) {
                         var userLogin = { 'emailUsername': emailUsername, 'password': password };
                         await $.ajax({
@@ -718,6 +720,8 @@
                             this.updateQueries();
                         }
                     },
+
+                    //########## UPDATE ##########
                     async updateQueries() {
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/queries/user/',
@@ -747,6 +751,8 @@
                         this.selectItem(item);
                         this.populateAnswers();
                     },
+
+                    //########## USER HANDLING ##########
                     async addUser() {
                         var message;
                         var user = {
@@ -827,6 +833,8 @@
                         this.unselectItem();
                         this.updateUsers();
                     },
+
+                    //########## QUERY HANDLING ##########
                     async sendQuery() {
                         var message;
                         var query = {
@@ -857,8 +865,7 @@
                     async updateQuery() {
                         var message;
                         var query = {
-                            id: selectedItem.id,
-                            userId: selectedItem.userId,
+                            id: this.selectedItem.id,
                             title: $('#updateQueryModal #updateTitle').val(),
                             category: $('#updateQueryModal #updateCategory').val(),
                             description: $('#updateQueryModal #updateDescription').val(),
@@ -1026,6 +1033,26 @@
                         this.updateQueries();
                         this.populateAnswers();
                     },
+                    async populateAnswers() {
+                        this.answers = [];
+                        var id = this.selectedItem.id;
+                        await $.ajax({
+                            url: `http://127.0.0.1:5000/answers/${id}`,
+                            type: 'GET',
+                            success: (response) => {
+                                var self = this;
+                                self.answers = response;
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                if (jqXHR.status != '404') {
+                                    alert(`${jqXHR.responseText}`);
+                                }
+                            }
+                        });
+                    },
+
+                    //########## QUERY HANDLING ##########
                     async populateFrequentlyAsked(category) {
                         await $.ajax({
                             url: `http://127.0.0.1:5000/frequentlyasked/${category}`,
@@ -1054,24 +1081,8 @@
                             }
                         });
                     },
-                    async populateAnswers() {
-                        this.answers = [];
-                        var id = this.selectedItem.id;
-                        await $.ajax({
-                            url: `http://127.0.0.1:5000/answers/${id}`,
-                            type: 'GET',
-                            success: (response) => {
-                                var self = this;
-                                self.answers = response;
-                            },
-                            error: function (jqXHR, textStatus, error) {
-                                console.log(jqXHR.status, error, jqXHR.responseText);
-                                if (jqXHR.status != '404') {
-                                    alert(`${jqXHR.responseText}`);
-                                }
-                            }
-                        });
-                    },
+
+                    //########## RESET MODALS ##########
                     resetLoginModal() {
                         $('#loginModal #inputEmailUsername').val("");
                         $('#loginModal #inputPassword').val("");
