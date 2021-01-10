@@ -665,7 +665,7 @@ routes.put('/answer/', async (req, res) => {
             res.status(400).send('ERROR! You do not have access to this');
         }
         else {
-            if (!req.body.answer || !req.body.id) {
+            if (!req.body.id) {
                 res.status(400).send('ERROR! Incomplete data sent to server');
             }
             else {
@@ -675,18 +675,23 @@ routes.put('/answer/', async (req, res) => {
                 }
                 else {
                     if (!req.body.vote) {
-                        const answer = await dataValidation.validDescription(req.body.answer);
-                        if (!answer) {
-                            res.status(400).send('ERROR! Invalid data sent to server');
+                        if (!req.body.answer) {
+                            res.status(400).send('ERROR! Incomplete data sent to server');
                         }
                         else {
-                            const dbRes = await database.updateAnswer({answer: answer, id: id});
-                            if (dbRes.errorMessage) {
-                                errorLog(dbRes.status, dbRes.errorMessage);
-                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            const answer = await dataValidation.validDescription(req.body.answer);
+                            if (!answer) {
+                                res.status(400).send('ERROR! Invalid data sent to server');
                             }
                             else {
-                                res.status(dbRes.status).send(dbRes.message);
+                                const dbRes = await database.updateAnswer({answer: answer, id: id});
+                                if (dbRes.errorMessage) {
+                                    errorLog(dbRes.status, dbRes.errorMessage);
+                                    res.status(dbRes.status).send(dbRes.errorMessage);
+                                }
+                                else {
+                                    res.status(dbRes.status).send(dbRes.message);
+                                }
                             }
                         }
                     }
