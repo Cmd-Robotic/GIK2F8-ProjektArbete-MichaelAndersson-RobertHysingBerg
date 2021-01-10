@@ -437,11 +437,13 @@
                         <form>
                             <div class="form-group modalColor">
                                 <label for="inputTitle">Title</label>
-                                <input type="text" class="form-control" name="updateTitle" id="updateTitle" v-bind:value="selectedItem.title">
+                                <input type="text" class="form-control" name="updateTitle" id="updateTitle"
+                                    v-bind:value="selectedItem.title">
                             </div>
                             <div class="form-group modalColor">
-                                <label for="inputCategory">Category</label>
-                                <select class="form-control" name="inputCategory" id="updateCategory" v-bind:value="selectedItem.category">
+                                <label for="updateCategory">Category</label>
+                                <select class="form-control" name="updateCategory" id="updateCategory"
+                                    v-bind:value="selectedItem.category">
                                     <option type="text">Computer</option>
                                     <option type="text">Cellphone</option>
                                     <option type="text">Broadband</option>
@@ -449,7 +451,7 @@
                                 </select>
                             </div>
                             <div class="form-group modalColor">
-                                <label for="inputDescription">Description</label>
+                                <label for="updateDescription">Description</label>
                                 <textarea class="form-control" name="updateDescription" id="updateDescription" rows="6"
                                     v-bind:value="selectedItem.description"></textarea>
                             </div>
@@ -814,8 +816,7 @@
                 async updateQuery() {
                     var message;
                     var query = {
-                        id: selectedItem.id,
-                        userId: selectedItem.userId,
+                        id: this.selectedItem.id,
                         title: $('#updateQueryModal #updateTitle').val(),
                         category: $('#updateQueryModal #updateCategory').val(),
                         description: $('#updateQueryModal #updateDescription').val(),
@@ -911,7 +912,7 @@
                     var message;
                     var query = {
                         id: item.id,
-                        vote: item.vote += 1
+                        vote: item.vote = 1
                     }
                     console.log(query);
                     await $.ajax({
@@ -935,7 +936,7 @@
                     var message;
                     var query = {
                         id: item.id,
-                        vote: item.vote -= 1
+                        vote: item.vote = -1
                     }
                     console.log(query);
                     await $.ajax({
