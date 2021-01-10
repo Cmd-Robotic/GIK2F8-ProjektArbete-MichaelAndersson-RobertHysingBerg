@@ -732,7 +732,9 @@
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
-                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                                if (jqXHR.status != '404') {
+                                    alert(`${jqXHR.responseText}`);
+                                }
                             }
                         });
                     },
