@@ -558,6 +558,7 @@ const deleteQuery = async (id) => {
     try {
         const dbConnection = await database;
         await dbConnection.run('DELETE FROM queries WHERE id = (?)', [id]);
+        await dbConnection.run('DELETE FROM answers WHERE queryId = (?)', [id]);
         return { status: '200', message: `Query ${id} deleted` };
     }
     catch {

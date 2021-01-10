@@ -321,6 +321,10 @@
                                 <p class="card-text"><small>Posted: {{ item.time }}</small></p>
                                 <button type="button" class="btn btn-primary" v-on:click="upvoteAnswer(item)">Good</button>
                                 <button type="button" class="btn btn-danger" v-on:click="downvoteAnswer(item)">Bad</button>
+                                <div v-show="admin">
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal" data-toggle="modal"
+                                        data-target="#answerModal">Delete</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -330,8 +334,8 @@
                                 data-target="#answerModal">Reply</button>
                         </div>
                         <div v-show="contributor">
-                            <button type="button" class="btn btn-info" data-dismiss="modal"
-                                v-on:click="markDupicate()">Mark duplicate</button>
+                            <button type="button" class="btn btn-info" data-dismiss="modal" data-toggle="modal"
+                                data-target="#markDuplicateModal">Mark duplicate</button>
                         </div>
                         <div>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -366,7 +370,7 @@
                         </div>
                     </form>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:show="contributor"
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
                             v-on:click="sendAnswer()">Reply</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal"
                             v-on:click="resetAnswerModal()">Close</button>
@@ -463,6 +467,35 @@
             </div>
         </div>
 
+        <!-- MARK DUPLICATE MODAL -->
+        <!-- MARK DUPLICATE MODAL -->
+        <div class="modal fade" id="markDuplicateModal" tabindex="-1" aria-labelledby="markDuplicateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="markDuplicateModalLabel">{{ selectedItem.title }}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group modalColor">
+                            <label for="selectOriginal">Select original query ID</label>
+                            <select class="form-control" name="selectOriginal" id="selectOriginal" :key="item.id">
+                                <option v-for="item in queries" type="text">{{ item.id }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
+                            v-on:click="markDuplicate(item)">Save</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            v-on:click="resetDuplicateModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 
@@ -538,6 +571,8 @@
                 category: ""
             },
             methods: {
+
+                //########## USER LOGIN ##########
                 async loginUser(emailUsername, password) {
                     var userLogin = { 'emailUsername': emailUsername, 'password': password };
                     await $.ajax({
@@ -560,14 +595,25 @@
                     });
                     this.checkLoggedIn();
                 },
-                logOutUser() {
+                async logOutUser() {
                     this.loggedIn = false;
                     this.contributor = false;
                     this.admin = false;
+                    this.consumer = false;
                     this.user = [];
                     this.username = 'Not logged in';
                     sessionStorage.removeItem('user');
-                    alert("User logged out");
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/logout/',
+                        type: 'DELETE',
+                        success: function () {
+                            alert("User logged out");
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            alert(`Error!\n${jqXHR.responseText}\nUnable to logout from server`);
+                        }
+                    });
                 },
                 checkLoggedIn() {
                     if (sessionStorage.getItem('user')) {
@@ -601,21 +647,36 @@
                         }
                     }
                 },
+
+                //########## UPDATE ##########
                 async updateQueries() {
-                    var self = this;
-                    var queries = [];
-                    await $.getJSON('/queries/', function (jsondata) {
-                        self.queries = jsondata;
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/queries/',
+                        type: 'GET',
+                        success: (response) => {
+                            var self = this;
+                            self.queries = response;
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                        }
                     });
                 },
                 async updateUsers() {
-                    var self = this;
-                    var users = [];
-                    await $.getJSON('/users/', function (jsondata) {
-                        self.users = jsondata;
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/users/',
+                        type: 'GET',
+                        success: (response) => {
+                            var self = this;
+                            self.users = response;
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            alert(`Error!\n${jqXHR.responseText}\nUnable to update users`);
+                        }
                     });
                 },
-
                 selectItem(item) {
                     this.selectedItem = item;
                 },
@@ -626,7 +687,9 @@
                     this.selectItem(item);
                     this.populateAnswers();
                 },
-                addUser() {
+
+                //########## USER HANDLING ##########
+                async addUser() {
                     var message;
                     var user = {
                         accessLevel: $('#addUserModal #newAccessLevel').val(),
@@ -636,7 +699,7 @@
                         lname: $('#addUserModal #newLname').val(),
                         email: $('#addUserModal #newEmail').val()
                     }
-                    $.ajax({
+                    await $.ajax({
                         url: '/user/',
                         type: 'POST',
                         data: user,
@@ -654,7 +717,7 @@
                     this.resetAddUserModal();
                     this.updateUsers();
                 },
-                updateUser() {
+                async updateUser() {
                     var message;
                     var user = {
                         id: $('#updateUserModal #updateId').val(),
@@ -665,8 +728,7 @@
                         lname: $('#updateUserModal #updateLname').val(),
                         email: $('#updateUserModal #updateEmail').val()
                     }
-                    console.log(user);
-                    $.ajax({
+                    await $.ajax({
                         url: '/user/admin',
                         type: 'PUT',
                         data: user,
@@ -684,12 +746,11 @@
                     this.resetUpdateUserModal();
                     this.updateUsers();
                 },
-                banUser(item) {
+                async banUser(item) {
                     var message;
                     var user = item;
                     item.accessLevel=0;
-                    console.log(user);
-                    $.ajax({
+                    await $.ajax({
                         url: '/user/admin',
                         type: 'PUT',
                         data: user,
@@ -705,13 +766,11 @@
                     this.unselectItem();
                     this.updateUsers();
                 },
-                deleteUser(item) {
-                    //var password = prompt("Please type password");
+                async deleteUser(item) {
                     var message;
                     var user = item;
-                    //var userData = { "id": user.id, "password": password };
                     var userData = { "id": user.id };
-                    $.ajax({
+                    await $.ajax({
                         url: '/user/',
                         type: 'DELETE',
                         data: userData,
@@ -727,19 +786,107 @@
                     this.unselectItem();
                     this.updateUsers();
                 },
-                async updateQueries() {
+
+                //########## QUERY HANDLING ##########
+                async sendQuery() {
+                    var message;
+                    var query = {
+                        title: $('#addQueryModal #inputTitle').val(),
+                        category: $('#addQueryModal #inputCategory').val(),
+                        description: $('#addQueryModal #inputDescription').val(),
+                    }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/queries/',
-                        type: 'GET',
+                        url: 'http://127.0.0.1:5000/query/',
+                        type: 'POST',
+                        data: query,
                         success: (response) => {
-                            var self = this;
-                            self.queries = response;
+                            message = JSON.parse(JSON.stringify(response));
+                            alert(`Query with ID: ${message.id} saved`);
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
-                            alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                            alert(message);
                         }
                     });
+                    this.unselectItem();
+                    this.resetAddQueryModal();
+                    this.updateQueries();
+                },
+                async updateQuery() {
+                    var message;
+                    var query = {
+                        id: selectedItem.id,
+                        userId: selectedItem.userId,
+                        title: $('#updateQueryModal #updateTitle').val(),
+                        category: $('#updateQueryModal #updateCategory').val(),
+                        description: $('#updateQueryModal #updateDescription').val(),
+                    }
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/query/',
+                        type: 'PUT',
+                        data: query,
+                        success: (response) => {
+                            message = JSON.parse(JSON.stringify(response));
+                            alert(`Query with ID: ${message.id} updated`);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                            alert(message);
+                        }
+                    });
+                    this.unselectItem();
+                    this.resetUpdateQueryModal()
+                    this.updateQueries();
+                },
+                async deleteQuery(item) {
+                    var message;
+                    var query = item;
+                    var queryData = { "id": query.id };
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/query/',
+                        type: 'DELETE',
+                        data: queryData,
+                        success: (response) => {
+                            alert(response);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                            alert(message);
+                        }
+                    });
+                    this.unselectItem();
+                    this.updateQueries();
+                },
+                async markDuplicate(item) {
+                    var message;
+                    var query = {
+                        id: this.selectedItem.id,
+                        userId: this.selectedItem.userId,
+                        title: this.selectedItem.title,
+                        category: this.selectedItem.category,
+                        description: this.selectedItem.description,
+                        duplicateOf: $('#markDuplicateModal #selectOriginal').val(),
+                    }
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/query/',
+                        type: 'PUT',
+                        data: query,
+                        success: (response) => {
+                            message = JSON.parse(JSON.stringify(response));
+                            alert(`Query with ID: ${message.id} updated`);
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
+                            alert(message);
+                        }
+                    });
+                    this.unselectItem();
+                    this.resetDuplicateModal()
+                    this.updateQueries();
                 },
                 async sendAnswer() {
                     var message;
@@ -748,13 +895,11 @@
                         answer: $('#answerModal #inputAnswer').val(),
                         userId: this.user.id,
                     }
-                    console.log(query);
                     await $.ajax({
                         url: 'http://127.0.0.1:5000/answer/',
                         type: 'POST',
                         data: query,
-                        success: (response) => {
-                            //message = response;
+                        success: () => {
                             alert(`Reply to query with ID: ${this.selectedItem.id} posted`);
                         },
                         error: function (jqXHR, textStatus, error) {
@@ -765,58 +910,6 @@
                     });
                     this.unselectItem();
                     this.resetAnswerModal();
-                    this.updateQueries();
-                },
-                async sendQuery() {
-                    var message;
-                    var query = {
-                        title: $('#addQueryModal #inputTitle').val(),
-                        category: $('#addQueryModal #inputCategory').val(),
-                        description: $('#addQueryModal #inputDescription').val(),
-                        //userId: this.user.id,
-                        //username: this.user.username
-                    }
-                    console.log(query);
-                    await $.ajax({
-                        url: 'http://127.0.0.1:5000/query/',
-                        type: 'POST',
-                        data: query,
-                        success: (response) => {
-                            var self = this;
-                            message = response;
-                            alert(message);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to save query`);
-                            alert(message);
-                        }
-                    });
-                    this.unselectItem();
-                    this.resetAddQueryModal();
-                    this.resetUpdateQueryModal();
-                    this.updateQueries();
-                },
-                deleteQuery(item) {
-                    //var password = prompt("Please type password");
-                    var message;
-                    var query = item;
-                    //var userData = { "id": user.id, "password": password };
-                    var queryData = { "id": query.id };
-                    $.ajax({
-                        url: 'http://127.0.0.1:5000/query/',
-                        type: 'DELETE',
-                        data: queryData,
-                        success: (response) => {
-                            alert(response);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
-                            alert(message);
-                        }
-                    });
-                    this.unselectItem();
                     this.updateQueries();
                 },
                 async populateAnswers() {
@@ -835,20 +928,8 @@
                         }
                     });
                 },
-                resetAddQueryModal() {
-                    $('#addQueryModal #inputTitle').val("");
-                    $('#addQueryModal #inputCategory').val("");
-                    $('#addQueryModal #inputDescription').val("");
-                },
-                resetUpdateQueryModal() {
-                    $('#updateQueryModal #updateTitle').val("");
-                    $('#updateQueryModal #updateCategory').val("");
-                    $('#updateQueryModal #updateDescription').val("");
-                },
-                resetAnswerModal() {
-                    $('#answerModal #inputAnswer').val("");
-                    this.answer = "";
-                },
+
+                //########## RESET MODALS ##########
                 resetAddUserModal() {
                     $('#addUserModal #newAccessLevel').val("");
                     $('#addUserModal #newUsername').val("");
@@ -866,7 +947,26 @@
                     $('#updateUserModal #updateLname').val("");
                     $('#updateUserModal #updateEmail').val("");
                 },
+                resetAddQueryModal() {
+                    $('#addQueryModal #inputTitle').val("");
+                    $('#addQueryModal #inputCategory').val("");
+                    $('#addQueryModal #inputDescription').val("");
+                },
+                resetUpdateQueryModal() {
+                    $('#updateQueryModal #updateTitle').val("");
+                    $('#updateQueryModal #updateCategory').val("");
+                    $('#updateQueryModal #updateDescription').val("");
+                },
+                resetAnswerModal() {
+                    $('#answerModal #inputAnswer').val("");
+                    this.answer = "";
+                },
+                resetDuplicateModal() {
+                    $('#markDuplicateModal #selectOriginal').val("");
+                },
             },
+
+            //########## MOUNTED ##########
             mounted() {
                 this.checkLoggedIn();
                 if (this.loggedIn) {
