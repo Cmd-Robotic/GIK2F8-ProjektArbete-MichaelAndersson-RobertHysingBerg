@@ -960,8 +960,7 @@
                     async upvoteAnswer(item) {
                         var message;
                         var query = {
-                            queryId: item.id,
-                            answer: item.answer,
+                            id: item.id,
                             vote: item.vote = 1
                         }
                         console.log(query);
@@ -985,8 +984,7 @@
                     async downvoteAnswer(item) {
                         var message;
                         var query = {
-                            queryId: item.id,
-                            answer: item.answer,
+                            id: item.id,
                             vote: item.vote = -1
                         }
                         console.log(query);
