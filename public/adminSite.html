@@ -694,6 +694,11 @@
                             }
                         }
                     });
+                    for (let i = 0; i < this.queries.length; i++){
+                        if (this.queries[i].duplicateOf == "-1") {
+                            this.queries[i].duplicateOf = "";
+                        }
+                    }
                 },
                 async updateUsers() {
                     await $.ajax({
