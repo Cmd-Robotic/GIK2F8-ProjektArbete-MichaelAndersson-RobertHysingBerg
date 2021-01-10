@@ -513,7 +513,12 @@ const updateQueryDupeCount = async (id, amount) => {
 const updateAnswer = async (data) => {
     try {
         const dbConnection = await database;
-        await dbConnection.run('UPDATE answers SET answer = ? WHERE id = ?', [data.answer, data.id]);
+        if (data.vote) {
+            await dbConnection.run('UPDATE answers SET answer = ?, vote = ? WHERE id = ?', [data.answer, data.vote, data.id]);
+        }
+        else {
+            await dbConnection.run('UPDATE answers SET answer = ? WHERE id = ?', [data.answer, data.id]);
+        }
         return { status: '200', message: 'Answer updated' };
     }
     catch {

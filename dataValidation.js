@@ -6,7 +6,7 @@ Names:
 Usernames:
 /(?:[a-zåäöA-ZÅÄÖ0-9_-]{1,32})/
 Titles:
-/(?:[a-zåäöA-ZÅÄÖ0-9_- ]{4,32})/
+/(?:[a-zåäöA-ZÅÄÖ0-9_- ?!.,]{4,32})/
 Passwords:
 /(?:[a-zA-Z0-9_-]{8,64})/
 Descriptions:
@@ -54,7 +54,7 @@ const validUsername = async (name) => {
 const validTitle = async (name) => {
     if (name.length) {
         if (typeof(name) == 'string') {
-            const match = name.match(/(?:[a-zåäöA-ZÅÄÖ0-9_- ]{4,32})/);
+            const match = name.match(/(?:[a-zåäöA-ZÅÄÖ0-9_- ?!.,]{4,32})/);
             if (match && match[0] === match['input']) {
                 return name;
             }
@@ -141,6 +141,13 @@ const validToken = async (tok) => {
     return;
 }
 
+const validVote = async (vote) => {
+    if (vote === 1 || vote === -1) {
+        return vote;
+    }
+    return;
+}
+
 module.exports = {
     validName: validName,
     validEmail: validEmail,
@@ -151,5 +158,6 @@ module.exports = {
     validFileExtension: validFileExtension,
     validToken: validToken,
     validAccessLevel: validAccessLevel,
-    validUsername: validUsername
+    validUsername: validUsername,
+    validVote: validVote
 }

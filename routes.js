@@ -15,7 +15,7 @@ const session = require('express-session');
 const { doesNotReject } = require('assert');
 const { send } = require('process');
 const { EROFS } = require('constants');
-const { updateQueryDupeCount } = require('./database');
+const { updateQueryDupeCount, updateAnswer } = require('./database');
 //const { PerformanceObserver } = require('perf_hooks');
 const saltRounds = 10;
 
@@ -655,7 +655,56 @@ routes.put('/query/flagDupe/', async (req, res) => {
     }
 });
 
-
+routes.put('/answer/', async (req, res) => {
+    if (!req.session.userId) {
+        res.status(400).send('ERROR! You need to log in first');
+    }
+    else {
+        if (req.session.accessLevel < 2) {
+            res.status(400).send('ERROR! You do not have access to this');
+        }
+        else {
+            if (!req.body.answer || !req.body.id) {
+                res.status(400).send('ERROR! Incomplete data sent to server');
+            }
+            else {
+                const answer = await dataValidation.validDescription(req.body.answer);
+                const id = await dataValidation.validId(req.body.id);
+                if (!answer || !id) {
+                    res.status(400).send('ERROR! Invalid data sent to server');
+                }
+                else {
+                    if (!req.body.vote) {
+                        const dbRes = await database.updateAnswer({answer: answer, id: id});
+                        if (dbRes.errorMessage) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        }
+                        else {
+                            res.status(dbRes.status).send(dbRes.message);
+                        }
+                    }
+                    else {
+                        const vote = await dataValidation.validVote(req.body.vote);
+                        if (!vote) {
+                            res.status(400).send('ERROR! Invalid data sent to server');
+                        }
+                        else {
+                            const dbRes = await updateAnswer({answer: answer, vote: vote, id: id});
+                            if (dbRes.errorMessage) {
+                                errorLog(dbRes.status, dbRes.errorMessage);
+                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            }
+                            else {
+                                res.status(dbRes.status).send(dbRes.message);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
 
 //################################################################
 //############################ DELETE ############################
@@ -664,17 +713,17 @@ routes.delete('/user/', async (req, res) => {
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
-        if (req.session.accessLevel < 3) {
-            res.status(400).send('ERROR! You do not have access to this');
+        if (!req.body.userId) {
+            res.status(400).send('ERROR! No userId sent to server');
         }
         else {
-            if (!req.body.userId) {
-                res.status(400).send('ERROR! No userId sent to server');
+            const id = await dataValidation.validId(req.body.userId);
+            if (!id) {
+                res.status(400).send('ERROR! Invalid id sent to server');
             }
             else {
-                const id = await dataValidation.validId(req.body.userId);
-                if (!id) {
-                    res.status(400).send('ERROR! Invalid id sent to server');
+                if (req.session.accessLevel < 3 || req.session.userId != id) {
+                    res.status(400).send('ERROR! You do not have access to this');
                 }
                 else {
                     console.log(`| Handling DELETE-request for user id: ${id} | REQUESTED BY ADMIN ${req.session.userId} |`);
