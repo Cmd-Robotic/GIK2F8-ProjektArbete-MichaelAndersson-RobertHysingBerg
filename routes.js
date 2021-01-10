@@ -15,6 +15,7 @@ const session = require('express-session');
 const { doesNotReject } = require('assert');
 const { send } = require('process');
 const { EROFS } = require('constants');
+const { updateQueryDupeCount } = require('./database');
 //const { PerformanceObserver } = require('perf_hooks');
 const saltRounds = 10;
 
@@ -562,75 +563,90 @@ routes.put('/query/', async (req, res) => {
                             res.status(400).send('ERROR! You do not have access');
                         }
                         else {
-                            if (req.session.accessLevel > 1 && req.body.duplicateOf) {
-                                const duplicateOf = await dataValidation.validId(req.body.duplicateOf);
-                                if (!duplicateOf) {
-                                    res.status(400).send('ERROR! Invalid duplicate id sent to server');
-                                }
-                                else {
-                                    if (dbRes.query.duplicateOf > -1) {
-                                        const dbRes = await database.updateQueryDupeCount(dbRes.query.duplicateOf, -1);
-                                        if (dbRes.errorMessage) {
-                                            errorLog(dbRes.status, dbRes.errorMessage);
-                                            res.status(dbRes.status).send(dbRes.errorMessage);
-                                        }
-                                        // change an already flagged duplicate
-                                        else {
-                                            const query = {
-                                                title: title,
-                                                category: category,
-                                                description: description,
-                                                id: id,
-                                                duplicateOf: duplicateOf
-                                            }
-                                            const dbRes = await database.updateQuery(query);
-                                            if (dbRes.errorMessage) {
-                                                errorLog(dbRes.status, dbRes.errorMessage);
-                                                res.status(dbRes.status).send(dbRes.errorMessage);
-                                            }
-                                            else {
-                                                res.status(dbRes.status).send(dbRes.message);
-                                            }
-                                        }
-                                    }
-                                    // flag duplicate
-                                    else {
-                                        const query = {
-                                            title: title,
-                                            category: category,
-                                            description: description,
-                                            id: id,
-                                            duplicateOf: duplicateOf
-                                        }
-                                        const dbRes = await database.updateQuery(query);
-                                        if (dbRes.errorMessage) {
-                                            errorLog(dbRes.status, dbRes.errorMessage);
-                                            res.status(dbRes.status).send(dbRes.errorMessage);
-                                        }
-                                        else {
-                                            res.status(dbRes.status).send(dbRes.message);
-                                        }
-                                    }    
-                                }
+                            const query = {
+                                title: title,
+                                category: category,
+                                description: description,
+                                id: id,
+                                duplicateOf: duplicateOf
                             }
-                            // non flag duplicate
+                            const dbRes = await database.updateQuery(query);
+                            if (dbRes.errorMessage) {
+                                errorLog(dbRes.status, dbRes.errorMessage);
+                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            }
                             else {
-                                const query = {
-                                    title: title,
-                                    category: category,
-                                    description: description,
-                                    id: id,
-                                    duplicateOf: duplicateOf
-                                }
-                                const dbRes = await database.updateQuery(query);
-                                if (dbRes.errorMessage) {
-                                    errorLog(dbRes.status, dbRes.errorMessage);
-                                    res.status(dbRes.status).send(dbRes.errorMessage);
-                                }
-                                else {
-                                    res.status(dbRes.status).send(dbRes.message);
-                                }
+                                res.status(dbRes.status).send(dbRes.message);
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
+
+routes.put('/query/flagDupe/', async (req, res) => {
+    if (!req.session.userId || req.session.accessLevel < 2) {
+        res.status(400).send('ERROR! You do not have access');
+    }
+    else {
+        if (!req.body.id || !req.body.duplicateOf) {
+            res.status(400).send('ERROR! Incomplete data sent to server');
+        }
+        else {
+            const id = await dataValidation.validId(req.body.id);
+            const duplicateOf = await dataValidation.validId(req.body.duplicateOf);
+            if (!id || !duplicateOf) {
+                res.status(400).send('ERROR! Invalid data sent to server');
+            }
+            else {
+                const dbRes = await database.getQuery(id);
+                if (dbRes.errorMessage) {
+                    errorLog(dbRes.status, dbRes.errorMessage);
+                    res.status(dbRes.status).send(dbRes.errorMessage);
+                }
+                else {
+                    const query = dbRes.query;
+                    if (dbRes.query.duplicateOf > -1) {
+                        const dbRes = await database.updateQueryDupeCount(query.id, -1);
+                        if (dbRes.errorMessage) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        }
+                        else {
+                            const updateQuery = {
+                                title: query.title,
+                                category: query.category,
+                                description: query.description,
+                                duplicateOf: duplicateOf,
+                                id: query.id
+                            }
+                            const dbRes = await database.updateQuery(updateQuery);
+                            if (dbRes.errorMessage) {
+                                errorLog(dbRes.status, dbRes.errorMessage);
+                                res.status(dbRes.status).send(dbRes.errorMessage);
+                            }
+                            else {
+                                res.status(dbRes.status).send(dbRes.message);
+                            }
+                        }
+                    }
+                    else {
+                        const updateQuery = {
+                            title: query.title,
+                            category: query.category,
+                            description: query.description,
+                            duplicateOf: duplicateOf,
+                            id: query.id
+                        }
+                        const dbRes = await database.updateQuery(updateQuery);
+                        if (dbRes.errorMessage) {
+                            errorLog(dbRes.status, dbRes.errorMessage);
+                            res.status(dbRes.status).send(dbRes.errorMessage);
+                        }
+                        else {
+                            res.status(dbRes.status).send(dbRes.message);
                         }
                     }
                 }
