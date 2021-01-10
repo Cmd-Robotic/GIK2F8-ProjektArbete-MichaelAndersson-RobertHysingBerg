@@ -204,7 +204,7 @@ routes.get('/queries/user/', async (req, res) => {
     }
 });
 routes.get('/frequentlyasked/:category', async (req, res) => {
-    if (!req.params.category) {
+    if (req.params.category == "All") {
         // get all
         console.log(`| Handling GET-request for frequently asked queries |`);
         logSave("| GET | frequently asked queries |");
@@ -225,8 +225,8 @@ routes.get('/frequentlyasked/:category', async (req, res) => {
             res.status(400).send('ERROR! Invalid category sent to server');
         }
         else {
-            console.log(`| Handling GET-request for frequently asked queries |`);
-            logSave("| GET | frequently asked queries |");
+            console.log(`| Handling GET-request for frequently asked queries BY CATEGORY |`);
+            logSave("| GET | frequently asked queries | CATEGORY |");
             const dbRes = await database.getFrequentQueriesByCategory(category);
             if (dbRes.errorMessage) {
                 errorLog(dbRes.status, dbRes.errorMessage);
@@ -239,7 +239,7 @@ routes.get('/frequentlyasked/:category', async (req, res) => {
     }
 });
 routes.get('/lastasked/:category', async (req, res) => {
-    if (!req.params.category) {
+    if (req.params.category == "All") {
         // get all
         console.log(`| Handling GET-request for last asked queries |`);
         logSave("| GET | last asked queries |");

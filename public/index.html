@@ -438,7 +438,7 @@
                             </div>
                         </form>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:show="contributor"
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
                                 v-on:click="sendAnswer()">Reply</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 v-on:click="resetAnswerModal()">Close</button>
@@ -901,10 +901,32 @@
                         this.resetAnswerModal();
                         this.updateQueries();
                     },
-                    upvoteAnswer(item) {
-
+                    async upvoteAnswer(item) {
+                        var message;
+                        var query = {
+                            queryId: item.id,
+                            answer: item.answer,
+                            vote: item.vote += 1
+                        }
+                        console.log(query);
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/answer/',
+                            type: 'PUT',
+                            data: query,
+                            success: (response) => {
+                                //message = response;
+                                alert(`Upvote to answer with ID: ${item.id} registered`);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to update query`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectItem();
+                        this.updateQueries();
                     },
-                    downvoteAnswer(item) {
+                    async downvoteAnswer(item) {
 
                     },
                     async populateFrequentlyAsked(category) {
@@ -947,7 +969,9 @@
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
-                                alert(`${jqXHR.responseText}\nNo answers to the selected query`);
+                                if (jqXHR.status != '404') {
+                                    alert(`${jqXHR.responseText}`);
+                                }
                             }
                         });
                     },
