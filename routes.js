@@ -278,7 +278,7 @@ routes.get('/answers/:id', async (req, res) => {
         res.status(400).send('ERROR! No id sent to server');
     }
     else {
-        const id = dataValidation.validId(req.params.id);
+        const id = await dataValidation.validId(req.params.id);
         if (!id) {
             // bye bye
             res.status(400).send('ERROR! Invalid id sent to server');
