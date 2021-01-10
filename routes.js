@@ -371,7 +371,7 @@ routes.post('/query/', async (req, res) => {
                         res.status(dbRes.status).send(dbRes.errorMessage);
                     }
                     else {
-                        const category = dbRes.categories;
+                        const category = dbRes.categories.category;
                         console.log(`| Handling POST-request for query: ${req.body.title} |`);
                         logSave(`| POST | QUERY: ${req.body.title} |`);
                         const dbRes = await database.addQuery({
