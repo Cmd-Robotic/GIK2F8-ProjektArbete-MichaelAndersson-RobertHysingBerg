@@ -1050,12 +1050,12 @@ routes.delete('/user/', async (req, res) => {
         }
         else {
             // check data
-            if (!req.body.userId) {
+            if (!req.body.id) {
                 res.status(400).send('ERROR! No userId sent to server');
             }
             else {
                 // check if valid data
-                const id = await dataValidation.validId(req.body.userId);
+                const id = await dataValidation.validId(req.body.id);
                 if (!id) {
                     res.status(400).send('ERROR! Invalid id sent to server');
                 }
