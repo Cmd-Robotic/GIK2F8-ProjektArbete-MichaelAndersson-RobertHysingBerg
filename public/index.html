@@ -1276,7 +1276,7 @@
                         this.searchResults = [];
                     },
                 },
-                search(item) {
+                async search(item) {
                     await $.ajax({
                         url: 'http://127.0.0.1:5000/search/',
                         type: 'POST',
