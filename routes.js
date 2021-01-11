@@ -270,7 +270,7 @@ routes.get('/queries/category/:category', async (req, res) => {
         else {
             // logging
             console.log(`| Handling GET-request for queries BY CATEGORY |`);
-            logSave("| GET | frequently asked queries | CATEGORY |");
+            logSave("| GET | queries | CATEGORY |");
             // get queries
             const dbRes = await database.getQueriesByCategory(category);
             if (dbRes.errorMessage) {
