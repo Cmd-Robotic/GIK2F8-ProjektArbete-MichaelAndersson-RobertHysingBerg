@@ -64,7 +64,7 @@ div.dropdown-menu > :first-child {
 }
 .modal-content {
     overflow-y: auto;
-    max-height: 1000px;
+    max-height: 80vh;
 }
 .modal-height-lg {
     overflow-y: auto;
