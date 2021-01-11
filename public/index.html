@@ -73,8 +73,9 @@
                         </li>
                     </ul>
                     <form class="form-inline my-2 my-lg-0">
-                        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="searchField">
-                        <button class="btn btn-outline-success my-2 my-sm-0" type="button" v-on:click="search()">Search</button>
+                        <input class="form-control mr-sm-2" placeholder="Search" aria-label="Search" id="searchField">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="button" v-on:click="search()"
+                            data-toggle="modal" data-target="#searchResultsModal">Search</button>
                     </form>
                 </div>
             </nav>
@@ -1301,26 +1302,29 @@
                     resetDuplicateModal() {
                         $('#markDuplicateModal #selectOriginal').val("");
                     },
+                    resetSearchField() {
+                        $('#searchField').val("");
+                    },
                     resetSearchResults() {
                         this.searchResults = [];
                     },
-                },
-                async search(item) {
-                    await $.ajax({
-                        url: 'http://127.0.0.1:5000/search/',
-                        type: 'POST',
-                        data: item,
-                        success: (response) => {
-                            var self = this;
-                            this.searchResults = response;
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to conduct search`);
-                            alert(message);
-                        }
-                    });
-                    //this.updateQueries();
+                    async search() {
+                        var search = $('#searchField').val();
+                        await $.ajax({
+                            url: `http://127.0.0.1:5000/queries/${search}`,
+                            type: 'GET',
+                            success: (response) => {
+                                var self = this;
+                                self.searchResults = response;
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to conduct search`);
+                                alert(message);
+                            }
+                        });
+                        this.resetSearchField();
+                    },
                 },
                 mounted() {
                     this.populateFrequentlyAsked("All");
