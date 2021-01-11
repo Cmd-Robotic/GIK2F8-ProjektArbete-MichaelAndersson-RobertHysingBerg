@@ -1134,7 +1134,9 @@
                             }
                         });
                         this.unselectQuery();
-                        this.resetDuplicateModal()
+                        this.resetDuplicateModal();
+                        this.populateFrequentlyAsked(this.selectedCategory);
+                        this.populateLastAsked(this.selectedCategory);
                         this.updateQueries();
                     },
                     async sendAnswer() {
