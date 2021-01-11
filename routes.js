@@ -16,6 +16,7 @@ const { doesNotReject } = require('assert');
 const { send } = require('process');
 const { EROFS } = require('constants');
 const { updateQueryDupeCount, updateAnswer } = require('./database');
+const { validTitle } = require('./dataValidation');
 //const { PerformanceObserver } = require('perf_hooks');
 const saltRounds = 10;
 
@@ -38,6 +39,7 @@ routes.use(session({
 //###############################################################
 //############################ LOGIN ############################
 routes.post('/login/', async (req, res) => {
+    // check if data
     if (!req.body.emailUsername) {
         res.status(400).send('No email or username sent to server');
     }
@@ -46,20 +48,25 @@ routes.post('/login/', async (req, res) => {
             res.status(400).send('No password sent to server');
         }
         else {
+            // check if login by username or email
             const email = await dv.validEmail(req.body.emailUsername);
             const username = await dv.validUsername(req.body.emailUsername);
             if (!email && !username) {
                 res.status(400).send('Invalid username or email sent to server');
             }
             else {
+                // check if password is valid
                 const password = await dv.validPassword(req.body.password);
                 if (!password) {
                     res.status(400).send('Invalid password sent to server');
                 }
                 else {
+                    // split, if email handle login as email, else handle as username login
                     if (email) {
+                        // logging
                         console.log(`| Handling LOGIN-request for user email: ${email} |`);
                         logSave(`| LOGIN | EMAIL: ${email} |`);
+                        // get the users id and password
                         const dbRes = await database.getUserByEmail(email);
                         if (dbRes.errorMessage) {
                             // error time
@@ -67,21 +74,22 @@ routes.post('/login/', async (req, res) => {
                             res.status(404).send(`Could not find a user with email ${email}`);
                         }
                         else {
-                            // go further
+                            // check if the passwords match
                             const user = dbRes.user;
                             const pass = await comparePass(password, user.password);
-                            // const pass = (password == user.password);
                             if (!pass) {
                                 const errorMessage = 'Passwords do not match';
                                 errorLog(400, errorMessage);
                                 res.status(400).send(errorMessage);
                             }
                             else {
+                                // login and check for ban, ban is if accessLevel has sunken below a common user (<0)
                                 const userRes = await database.getUser(user.id);
                                 if (userRes.user.accessLevel < 1) {
                                     res.status(400).send('ERROR! You have been hit by the MIGHTY BANHAMMER!');
                                 }
                                 else {
+                                    // set the session parameters
                                     req.session.userId = user.id;
                                     req.session.accessLevel = userRes.user.accessLevel;
                                     req.session.username = userRes.user.username;
@@ -92,8 +100,10 @@ routes.post('/login/', async (req, res) => {
                     }
                     else if (username) {
                         // login by username here
+                        // logging
                         console.log(`| Handling LOGIN-request for user: ${username} |`);
                         logSave(`| LOGIN | USERNAME: ${username} |`);
+                        // getting the users id and password
                         const dbRes = await database.getUserByUsername(username);
                         if (dbRes.errorMessage) {
                             // error time
@@ -101,7 +111,7 @@ routes.post('/login/', async (req, res) => {
                             res.status(404).send(`Could not find user with username ${username}`);
                         }
                         else {
-                            // go further
+                            // check if the passwords match
                             const user = dbRes.user;
                             const pass = await comparePass(password, user.password);
                             // const pass = (password == user.password);
@@ -111,11 +121,13 @@ routes.post('/login/', async (req, res) => {
                                 res.status(400).send(errorMessage);
                             }
                             else {
+                                // check if the user is banned (accessLevel<0)
                                 const userRes = await database.getUser(user.id);
                                 if (userRes.user.accessLevel < 1) {
                                     res.status(400).send('ERROR! You have been hit by the MIGHTY BANHAMMER!');
                                 }
                                 else {
+                                    // set the session parameters
                                     req.session.userId = user.id;
                                     req.session.accessLevel = userRes.user.accessLevel;
                                     req.session.username = userRes.user.username;
@@ -133,16 +145,20 @@ routes.post('/login/', async (req, res) => {
 //#############################################################
 //########################## LOGOUT ###########################
 routes.delete('/logout/', async (req, res) => {
+    // check if session
     if (!req.session) {
         res.status(400).send('ERROR! You do not have a session');
     }
     else {
+        // check if logged in
         if (!req.session.userId) {
             res.status(400).send('ERROR! You must login first to logoff');
         }
         else {
+            // logging
             console.log(`| User ${req.session.username} Logging off |`);
             logSave(`| LOGOFF | USERID: ${req.session.userId} |`);
+            // destroy session
             req.session.destroy();
             res.status(200).send('bye bye!');
         }
@@ -150,18 +166,21 @@ routes.delete('/logout/', async (req, res) => {
 });
 //#############################################################
 //############################ GET ############################
-
+// get route for all users, only super admin access (lvl 3+)
 routes.get('/users/', async (req, res) => {
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
+        // accesslevel check
         if (req.session.accessLevel < 3) {
             res.status(400).send('ERROR! You do not have permission to access this');
         }
         else {
+            // logging
             console.log('| Handling GET-request for all users |');
             logSave('| GET | all users |');
+            // getting the users
             const dbRes = await database.getUsers();
             if (dbRes.errorMessage) {
                 errorLog(dbRes.status, dbRes.errorMessage);
@@ -173,10 +192,12 @@ routes.get('/users/', async (req, res) => {
         }
     }
 });
-
+// get route for all queries
 routes.get('/queries/', async (req, res) => {
+    // logging
     console.log(`| Handling GET-request for all queries |`);
     logSave("| GET | all queries |");
+    // getting the queries
     const dbRes = await database.getQueries();
     if (dbRes.errorMessage) {
         errorLog(dbRes.status, dbRes.errorMessage);
@@ -186,14 +207,17 @@ routes.get('/queries/', async (req, res) => {
         res.status(dbRes.status).json(dbRes.queries);
     }
 });
+// get the current user's queries
 routes.get('/queries/user/', async (req, res) => {
     if (!req.session.userId) {
         // bye bye, login first
         res.status(400).send('Please login first');
     }
     else {
+        // logging
         console.log(`| Handling GET-request for User queries | User ID: ${req.session.userId}`);
         logSave(`| GET | UserId: ${req.session.userId} | queries |`);
+        // getting the queries
         const dbRes = await database.getQueriesByUserId(req.session.userId);
         if (dbRes.errorMessage) {
             errorLog(dbRes.status, dbRes.errorMessage);
@@ -204,16 +228,22 @@ routes.get('/queries/user/', async (req, res) => {
         }
     }
 });
+// search by title route
 routes.get('/queries/:search', async (req, res) => {
     if (!req.params.search) {
         res.status(400).send('ERROR! Incomplete data sent to server');
     }
     else {
+        // data validation
         const validSearch = await dataValidation.validTitle(req.params.search);
         if (!validSearch) {
             res.status(400).send('ERROR! Invalid data sent to server');
         }
         else {
+            // logging
+            console.log(`| Handling GET-request for title search | Search: ${validSearch}`);
+            logSave(`| GET | UserId: ${validSearch} | search title queries |`);
+            // getting the data
             const dbRes = await database.getQueriesByTitle(validSearch);
             if (dbRes.errorMessage) {
                 errorLog(dbRes.status, dbRes.errorMessage);
@@ -228,8 +258,10 @@ routes.get('/queries/:search', async (req, res) => {
 routes.get('/frequentlyasked/:category', async (req, res) => {
     if (req.params.category == "All") {
         // get all
+        // logging
         console.log(`| Handling GET-request for frequently asked queries |`);
         logSave("| GET | frequently asked queries |");
+        // get queries
         const dbRes = await database.getFrequentQueries();
         if (dbRes.errorMessage) {
             errorLog(dbRes.status, dbRes.errorMessage);
@@ -247,8 +279,10 @@ routes.get('/frequentlyasked/:category', async (req, res) => {
             res.status(400).send('ERROR! Invalid category sent to server');
         }
         else {
+            // logging
             console.log(`| Handling GET-request for frequently asked queries BY CATEGORY |`);
             logSave("| GET | frequently asked queries | CATEGORY |");
+            // get queries
             const dbRes = await database.getFrequentQueriesByCategory(category);
             if (dbRes.errorMessage) {
                 errorLog(dbRes.status, dbRes.errorMessage);
@@ -263,8 +297,10 @@ routes.get('/frequentlyasked/:category', async (req, res) => {
 routes.get('/lastasked/:category', async (req, res) => {
     if (req.params.category == "All") {
         // get all
+        // logging
         console.log(`| Handling GET-request for last asked queries |`);
         logSave("| GET | last asked queries |");
+        // getting the queries
         const dbRes = await database.getLastQueries();
         if (dbRes.errorMessage) {
             errorLog(dbRes.status, dbRes.errorMessage);
@@ -276,14 +312,17 @@ routes.get('/lastasked/:category', async (req, res) => {
     }
     else {
         // get specific category
+        // check if valid category
         const category = await dataValidation.validName(req.params.category);
         if (!category) {
             // bye bye
             res.status(400).send('ERROR! Invalid category sent to server');
         }
         else {
+            // logging
             console.log(`| Handling GET-request for last asked queries BY CATEGORY |`);
             logSave("| GET | last asked queries | CATEGORY |");
+            // getting the queries
             const dbRes = await database.getLastQueriesByCategory(category);
             if (dbRes.errorMessage) {
                 errorLog(dbRes.status, dbRes.errorMessage);
@@ -300,14 +339,17 @@ routes.get('/answers/:id', async (req, res) => {
         res.status(400).send('ERROR! No id sent to server');
     }
     else {
+        // check if valid id
         const id = await dataValidation.validId(req.params.id);
         if (!id) {
             // bye bye
             res.status(400).send('ERROR! Invalid id sent to server');
         }
         else {
+            // logging
             console.log(`| Handling GET-request for answers to query |`);
             logSave("| GET | answers to query |");
+            // getting the answers
             const dbRes = await database.getAnswersToQuery(id);
             if (dbRes.errorMessage) {
                 errorLog(dbRes.status, dbRes.errorMessage);
@@ -323,10 +365,12 @@ routes.get('/answers/:id', async (req, res) => {
 //##############################################################
 //############################ POST ############################
 routes.post('/user/', async (req, res) => {
+    // check if data recieved is complete
     if (!req.body.username || !req.body.accessLevel || !req.body.password || !req.body.fname || !req.body.lname || !req.body.email) {
         res.status(400).send('ERROR! Incomplete data sent to server');
     }
     else {
+        // check if the data is valid
         const username = await dataValidation.validUsername(req.body.username);
         const accessLevel = await dataValidation.validAccessLevel(req.body.accessLevel);
         const passwordIn = await dataValidation.validPassword(req.body.password);
@@ -338,13 +382,17 @@ routes.post('/user/', async (req, res) => {
             res.status(400).send('ERROR! Invalid data sent to server');
         }
         else {
+            // check if the user is to be created at an elevated accesslevel and if they have the permission to do so
             if (accessLevel > 1 && (!req.session.accessLevel || req.session.accessLevel < 3)) {
                 res.status(400).send('ERROR! You do not have access to create an elevated user');
             }
             else {
+                // logging
                 console.log(`| Handling POST-request for NEW USER | username: ${username} |`);
                 logSave(`| POST | USERCREATION | Username: ${username} |`);
+                // encrypt password
                 const password = await generatePass(passwordIn);
+                // create the user object and send to database
                 const user = {
                     accessLevel: accessLevel,
                     username: username,
@@ -367,14 +415,17 @@ routes.post('/user/', async (req, res) => {
 });
 
 routes.post('/query/', async (req, res) => {
+    // check if logged in
     if (!req.session.userId || !req.session.username) {
         res.status(400).send('ERROR! You should log in first');
     }
     else {
+        // check if complete data
         if (!req.body.title || !req.body.category || !req.body.description) {
             res.status(400).send('ERROR! Missing data for query');
         }
         else {
+            // check if valid data
             const title = await dataValidation.validTitle(req.body.title);
             const description = await dataValidation.validDescription(req.body.description);
             if (!title || !description) {
@@ -394,8 +445,10 @@ routes.post('/query/', async (req, res) => {
                     else {
                         // this shit does not work for some inane reason. So i am just going to bypass it...
                         // const category = dbRes.categories.category;
+                        // logging
                         console.log(`| Handling POST-request for query: ${title} |`);
                         logSave(`| POST | QUERY: ${title} |`);
+                        // creating the query and passing it to the database
                         const queryRes = await database.addQuery({
                             'title': title,
                             'category': validCategory,
@@ -417,29 +470,35 @@ routes.post('/query/', async (req, res) => {
     }
 });
 routes.post('/answer/', async (req, res) => {
+    // check if logged in
     if (!req.session.userId || !req.session.username) {
         // bye bye
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
+        // check permission
         if (req.session.accessLevel < 2) {
             // bye bye
             res.status(400).send('ERROR! You do not have access to this');
         }
         else {
+            // check if data
             if (!req.body.queryId || !req.body.answer) {
                 // bye bye
                 res.status(400).send('ERROR! Missing data for query');
             }
             else {
+                // check if valid data
                 const queryId = await dataValidation.validId(req.body.queryId);
                 const answerText = await dataValidation.validDescription(req.body.answer);
                 if (!queryId || !answerText) {
                     res.status(400).send('ERROR! Invalid data sent to server');
                 }
                 else {
+                    // logging
                     console.log(`| Handling POST-request for answer for query id: ${queryId} |`);
                     logSave(`| POST | ANSWER for query id: ${queryId} |`);
+                    // create answer object and pass to database
                     const answer = {
                         queryId: queryId,
                         userId: req.session.userId,
@@ -463,15 +522,19 @@ routes.post('/answer/', async (req, res) => {
 
 //################################################################
 //############################ UPDATE ############################
+// this route only allows modifying the currently logged in user
 routes.put('/user/', async (req, res) => {
+    // check if logged in
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
+        // check if data
         if (!req.body.username || !req.body.fname || !req.body.lname || !req.body.email) {
             res.status(400).send('ERROR! Invalid update data sent to server');
         }
         else {
+            // check if valid data
             const username = await dataValidation.validUsername(req.body.username);
             const fname = await dataValidation.validName(req.body.fname);
             const lname = await dataValidation.validName(req.body.lname);
@@ -479,8 +542,10 @@ routes.put('/user/', async (req, res) => {
             if (!username || !fname || !lname || !email) {
                 res.status(400).send('ERROR! Invalid data sent to server');
             }
+            // logging
             console.log(`| Handling UPDATE-request for user id: ${req.session.userId} |`);
             logSave(`| UPDATE | USER ID: ${req.session.userId} |`);
+            // create user object and pass to database for updating
             const user = {
                 accessLevel: req.session.accessLevel,
                 username: username,
@@ -500,20 +565,24 @@ routes.put('/user/', async (req, res) => {
         }
     }
 });
-
+// admin user modification, for example banning
 routes.put('/user/admin/', async (req, res) => {
+    // check if logged in
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
+        // check if data
         if (!req.body.fname || !req.body.lname || !req.body.email || !req.body.accessLevel || !req.body.id || !req.body.username) {
             res.status(400).send('ERROR! Invalid update data sent to server');
         }
         else {
+            // check accesslevel
             if (req.session.accessLevel < 3) {
                 res.status(400).send('ERROR! You do not have access to this');
             }
             else {
+                // check if valid data
                 const fname = await dataValidation.validName(req.body.fname);
                 const lname = await dataValidation.validName(req.body.lname);
                 const email = await dataValidation.validEmail(req.body.email);
@@ -524,8 +593,10 @@ routes.put('/user/admin/', async (req, res) => {
                     res.status(400).send('ERROR! Invalid data sent to server');
                 }
                 else {
+                    // logging
                     console.log(`| Handling ADMIN-UPDATE-request for user id: ${id} |`);
                     logSave(`| ADMIN-UPDATE | USER ID: ${id} |`);
+                    // create user object and pass to databse for updating
                     const user = {
                         accessLevel: accessLevel,
                         username: username,
@@ -550,14 +621,17 @@ routes.put('/user/admin/', async (req, res) => {
 
 // updates queries, takes duplicateOf as an optional parameter if you're a contributor or admin
 routes.put('/query/', async (req, res) => {
+    // check if logged in
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
+        // check if data
         if (!req.body.title || !req.body.category || !req.body.description || !req.body.id) {
             res.status(400).send('ERROR! Incomplete data sent to server');
         }
         else {
+            // check if valid data
             const title = await dataValidation.validTitle(req.body.title);
             const description = await dataValidation.validDescription(req.body.description);
             const id = await dataValidation.validId(req.body.id);
@@ -577,19 +651,24 @@ routes.put('/query/', async (req, res) => {
                     }
                     else {
                         // const category = dbRes.categories
+                        // logging
                         console.log(`| Handling UPDATE-request for query id: ${id} |`);
                         logSave(`| UPDATE | QUERY ID: ${id} |`);
+                        // get the query to check it
                         const queryRes = await database.getQuery(id);
                         if (queryRes.errorMessage) {
                             errorLog(queryRes.status, queryRes.errorMessage);
                             res.status(queryRes.status).send(queryRes.errorMessage);
                         }
                         else {
+                            // get what query it's a duplicate of, if any
                             const duplicateOf = queryRes.query.duplicateOf;
+                            // check access to modifying the query
                             if ((queryRes.query.userId != req.session.userId) && (req.session.accessLevel < 3)) {
                                 res.status(400).send('ERROR! You do not have access');
                             }
                             else {
+                                // update the query
                                 const query = {
                                     title: title,
                                     category: validCategory,
@@ -614,21 +693,26 @@ routes.put('/query/', async (req, res) => {
     }
 });
 
+// mark a query as duplicate
 routes.put('/query/flagDupe/', async (req, res) => {
+    // check if logged in and access
     if (!req.session.userId || req.session.accessLevel < 2) {
         res.status(400).send('ERROR! You do not have access');
     }
     else {
+        // check if data
         if (!req.body.id || !req.body.duplicateOf) {
             res.status(400).send('ERROR! Incomplete data sent to server');
         }
         else {
+            // check if valid data
             const id = await dataValidation.validId(req.body.id);
             const duplicateOf = await dataValidation.validId(req.body.duplicateOf);
             if (!id || !duplicateOf) {
                 res.status(400).send('ERROR! Invalid data sent to server');
             }
             else {
+                // get the query for checking
                 const dbRes = await database.getQuery(id);
                 if (dbRes.errorMessage) {
                     errorLog(dbRes.status, dbRes.errorMessage);
@@ -636,19 +720,23 @@ routes.put('/query/flagDupe/', async (req, res) => {
                 }
                 else {
                     const query = dbRes.query;
+                    // check if already marked as duplicate
                     if (dbRes.query.duplicateOf > -1) {
-                        const updateQueryRes = await database.updateQueryDupeCount(dbRes.query.id, -1);
+                        // change dupe count if already marked as duplicate
+                        const updateQueryRes = await database.updateQueryDupeCount(dbRes.query.duplicateOf, -1);
                         if (updateQueryRes.errorMessage) {
                             errorLog(updateQueryRes.status, updateQueryRes.errorMessage);
                             res.status(updateQueryRes.status).send(updateQueryRes.errorMessage);
                         }
                         else {
+                            // update the dupe count of the query it's being marked as a duplicate of
                             const dupeRes = await database.updateQueryDupeCount(duplicateOf, 1);
                             if (dupeRes.errorMessage) {
                                 errorLog(dupeRes.status, dupeRes.errorMessage);
                                 res.status(dupeRes.status).send(dupeRes.errorMessage);
                             }
                             else {
+                                // finally update the query
                                 const updateQuery = {
                                     title: query.title,
                                     category: query.category,
@@ -668,6 +756,7 @@ routes.put('/query/flagDupe/', async (req, res) => {
                         }
                     }
                     else {
+                        // update the query
                         const updateQuery = {
                             title: query.title,
                             category: query.category,
@@ -681,6 +770,7 @@ routes.put('/query/flagDupe/', async (req, res) => {
                             res.status(queryRes.status).send(queryRes.errorMessage);
                         }
                         else {
+                            // update the dupecount
                             const finalRes = await database.updateQueryDupeCount(duplicateOf, 1);
                             if (finalRes.errorMessage) {
                                 errorLog(finalRes.status, finalRes.errorMessage);
@@ -697,31 +787,39 @@ routes.put('/query/flagDupe/', async (req, res) => {
     }
 });
 
+// update answer toure
 routes.put('/answer/', async (req, res) => {
+    // check if logged in
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to log in first');
     }
     else {
+        // check if data
         if (!req.body.id) {
             res.status(400).send('ERROR! Incomplete data sent to server');
         }
         else {
+            // check if valid data
             const id = await dataValidation.validId(req.body.id);
             if (!id) {
                 res.status(400).send('ERROR! Invalid data sent to server');
             }
             else {
+                // get the answer's userId and queryId for comparison
                 const dbRes = await database.getAnswerUser(id);
                 if (dbRes.errorMessage) {
                     errorLog(dbRes.status, dbRes.errorMessage);
                     res.status(dbRes.status).send(dbRes.errorMessage);
                 }
                 else {
+                    // check if user has permission change the answer and if user is super admin
                     if (req.session.userId != dbRes.answer.userId && req.session.accessLevel < 3) {
+                        // up/down vote path for non admins
                         if (!req.body.vote) {
                             res.status(400).send('ERROR! You do not have access to this');
                         }
                         else {
+                            // check the query owner for permission
                             const queryId = dbRes.answer.queryId;
                             const queryRes = await database.getQuery(queryId);
                             if (queryRes.errorMessage) {
@@ -729,15 +827,18 @@ routes.put('/answer/', async (req, res) => {
                                 res.status(queryRes.status).send(queryRes.errorMessage);
                             }
                             else {
+                                // check if the user up/down voting owns the query
                                 if (queryRes.query.userId != req.session.userId) {
                                     res.status(400).send('ERROR! You do not have access to this');
                                 }
                                 else {
+                                    // validate the vote
                                     const vote = await dataValidation.validVote(req.body.vote);
                                     if (!vote) {
                                         res.status(400).send('ERROR! Invalid data sent to server');
                                     }
                                     else {
+                                        // up/down vote
                                         const answerRes = await updateAnswer({vote: vote, id: id});
                                         if (answerRes.errorMessage) {
                                             errorLog(answerRes.status, answerRes.errorMessage);
@@ -752,16 +853,21 @@ routes.put('/answer/', async (req, res) => {
                         }
                     }
                     else {
+                        // we get here if the user owns the answer or the user is a super admin
+                        // check if vote
                         if (!req.body.vote) {
+                            // check if answer
                             if (!req.body.answer) {
                                 res.status(400).send('ERROR! Incomplete data sent to server');
                             }
                             else {
+                                // check if valid answer
                                 const answer = await dataValidation.validDescription(req.body.answer);
                                 if (!answer) {
                                     res.status(400).send('ERROR! Invalid data sent to server');
                                 }
                                 else {
+                                    // update the answer
                                     const answerRes = await database.updateAnswer({answer: answer, id: id});
                                     if (answerRes.errorMessage) {
                                         errorLog(answerRes.status, answerRes.errorMessage);
@@ -774,11 +880,13 @@ routes.put('/answer/', async (req, res) => {
                             }
                         }
                         else {
+                            // check if the vote is valid
                             const vote = await dataValidation.validVote(req.body.vote);
                             if (!vote) {
                                 res.status(400).send('ERROR! Invalid data sent to server');
                             }
                             else {
+                                // update the answer vote
                                 const answerRes = await updateAnswer({vote: vote, id: id});
                                 if (answerRes.errorMessage) {
                                     errorLog(answerRes.status, answerRes.errorMessage);
@@ -799,25 +907,31 @@ routes.put('/answer/', async (req, res) => {
 //################################################################
 //############################ DELETE ############################
 routes.delete('/user/', async (req, res) => {
+    // check login
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to be logged in');
     }
     else {
+        // check data
         if (!req.body.userId) {
             res.status(400).send('ERROR! No userId sent to server');
         }
         else {
+            // check if valid data
             const id = await dataValidation.validId(req.body.userId);
             if (!id) {
                 res.status(400).send('ERROR! Invalid id sent to server');
             }
             else {
-                if (req.session.accessLevel < 3 || req.session.userId != id) {
+                // check permission
+                if (req.session.accessLevel < 3 && req.session.userId != id) {
                     res.status(400).send('ERROR! You do not have access to this');
                 }
                 else {
+                    // logging
                     console.log(`| Handling DELETE-request for user id: ${id} | REQUESTED BY ADMIN ${req.session.userId} |`);
                     logSave(`| DELETE | USER ID: ${id} | ADMIN ID: ${req.session.userId} |`);
+                    // delete user
                     const dbRes = await database.deleteUser(id);
                     if (dbRes.errorMessage) {
                         errorLog(dbRes.status, dbRes.errorMessage);
@@ -833,29 +947,35 @@ routes.delete('/user/', async (req, res) => {
 });
 
 routes.delete('/query/', async (req, res) => {
+    // check login
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to login first');
     }
     else {
+        // check data
         if (!req.body.id) {
             res.status(400).send('ERROR! No id sent to server');
         }
         else {
+            // check if valid data
             const id = await dataValidation.validId(req.body.id);
             if (!id) {
                 res.status(400).send('ERROR! Invalid id sent to server');
             }
             else {
+                // get the query for comparison
                 const dbRes = await database.getQuery(id);
                 if (dbRes.errorMessage) {
                     errorLog(dbRes.status, dbRes.errorMessage);
                     res.status(dbRes.status).send(dbRes.errorMessage);
                 }
                 else {
+                    // check access
                     if (req.session.accessLevel < 3 && res.session.userId != dbRes.query.userId) {
                         res.status(400).send('ERROR! You do not have access to this query');
                     }
                     else {
+                        // delete the query
                         const queryRes = await database.deleteQuery(id);
                         if (queryRes.errorMessage) {
                             errorLog(queryRes.status, queryRes.errorMessage);
@@ -872,29 +992,35 @@ routes.delete('/query/', async (req, res) => {
 });
 
 routes.delete('/answer/', async (req, res) => {
+    // check login
     if (!req.session.userId) {
         res.status(400).send('ERROR! You need to log in first');
     }
     else {
+        // check data
         if (!req.body.id) {
             res.status(400).send('ERROR! Incomplete data sent to server');
         }
         else {
+            // check if valid data
             const id = await dataValidation.validId(req.body.id);
             if (!id) {
                 res.status(400).send('ERROR! Invalid data sent to server');
             }
             else {
+                // get answer for comparison
                 const dbRes = await database.getAnswerUser(id);
                 if (dbRes.errorMessage) {
                     errorLog(dbRes.status, dbRes.errorMessage);
                     res.status(dbRes.status).send(dbRes.errorMessage);
                 }
                 else {
+                    // check access
                     if (req.session.userId != dbRes.answer.userId && req.session.accessLevel < 3) {
                         res.status(400).send('ERROR! You do not have access');
                     }
                     else {
+                        // delete answer
                         const answerRes = await database.deleteAnswer(id);
                         if (answerRes.errorMessage) {
                             errorLog(answerRes.status, answerRes.errorMessage);
