@@ -64,10 +64,14 @@ div.dropdown-menu > :first-child {
 }
 .modal-content {
     overflow-y: auto;
+    max-height: 1000px;
+}
+.modal-height-lg {
+    overflow-y: auto;
+    max-height: 1000px;
 }
 .modal-personal {
     width: auto;
-    height: auto;
     max-width: 1200px;
 }
 

@@ -80,7 +80,7 @@
         <!-- USERS -->
         <!-- USERS -->
         <div class="container-fluid table-responsive-lg border border-primary admin-tables">
-            <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
+            <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectUser()"
                 data-target="#addUserModal">New User</button>
             <label class="table-label" for="usersTable">USERS</label>
             <table class="table table-image" id="usersTable">
@@ -107,7 +107,7 @@
                         <td>{{ item.lastLogin}}</td>
                         <td>
                             <button type="button" class="btn btn-primary" data-toggle="modal"
-                                data-target="#updateUserModal" v-on:click="selectItem(item)">
+                                data-target="#updateUserModal" v-on:click="selectUser(item)">
                                 Update info
                             </button>
                             <button type="button" class="btn btn-warning" data-toggle="modal" v-on:click="banUser(item)">
@@ -126,7 +126,7 @@
         <!-- QUERIES -->
         <!-- QUERIES -->
         <div class="container-fluid table-responsive-lg border border-primary admin-tables">
-            <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectItem()"
+            <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectQuery()"
                 data-target="#addQueryModal">New Query</button>
             <label class="table-label" for="queriesTable">QUERIES</label>
             <table class="table table-image" id="queriesTable">
@@ -157,7 +157,7 @@
                         <td>{{ item.duplicateOf}}</td>
                         <td>
                             <button type="button" class="btn btn-primary" data-toggle="modal"
-                                data-target="#updateQueryModal" v-on:click="selectItem(item)">
+                                data-target="#updateQueryModal" v-on:click="selectQuery(item)">
                                 Update
                             </button>
                             <button type="button" class="btn btn-info" data-toggle="modal"
@@ -194,7 +194,7 @@
                             <div class="form-group modalColor">
                                 <label for="newAccessLevel">Access level</label>
                                 <select class="form-control" name="newAccessLevel" id="newAccessLevel"
-                                    v-bind:value="selectedItem.accessLevel">
+                                    v-bind:value="selectedUser.accessLevel">
                                     <option type="number">1</option>
                                     <option type="number">2</option>
                                     <option type="number">3</option>
@@ -203,27 +203,27 @@
                             <div class="form-group modalColor">
                                 <label for="newUsername">Username</label>
                                 <input type="text" class="form-control" name="newUsername" id="newUsername"
-                                    v-bind:value="selectedItem.username">
+                                    v-bind:value="selectedUser.username">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="newPassword">Password</label>
                                 <input type="text" class="form-control" name="newPassword" id="newPassword" 
-                                    v-bind:value="selectedItem.password">
+                                    v-bind:value="selectedUser.password">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="newFname">Firstname</label>
                                 <input type="text" class="form-control" name="newFname" id="newFname"
-                                    v-bind:value="selectedItem.fname">
+                                    v-bind:value="selectedUser.fname">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="newLname">Lastname</label>
                                 <input type="text" class="form-control" name="newLname" id="newLname"
-                                    v-bind:value="selectedItem.lname">
+                                    v-bind:value="selectedUser.lname">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="newEmail">Email</label>
                                 <input type="email" class="form-control" name="newEmail" id="newEmail" 
-                                    v-bind:value="selectedItem.email">
+                                    v-bind:value="selectedUser.email">
                             </div>
                         </form>
                     </div>
@@ -254,12 +254,12 @@
                             <div class="form-group modalColor">
                                 <label for="updateId">ID</label>
                                 <input type="text" class="form-control" name="updateId" id="updateId"
-                                    v-bind:value="selectedItem.id" readonly>
+                                    v-bind:value="selectedUser.id" readonly>
                             </div>
                             <div class="form-group modalColor">
                                 <label for="updateAccessLevel">Access level</label>
                                 <select class="form-control" name="updateAccessLevel" id="updateAccessLevel"
-                                    v-bind:value="selectedItem.accessLevel">
+                                    v-bind:value="selectedUser.accessLevel">
                                     <option type="number">1</option>
                                     <option type="number">2</option>
                                     <option type="number">3</option>
@@ -268,22 +268,22 @@
                             <div class="form-group modalColor">
                                 <label for="updateUsername">Username</label>
                                 <input type="text" class="form-control" name="updateUsername" id="updateUsername"
-                                    v-bind:value="selectedItem.username">
+                                    v-bind:value="selectedUser.username">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="updateFname">Firstname</label>
                                 <input type="text" class="form-control" name="updateFname" id="updateFname"
-                                    v-bind:value="selectedItem.fname">
+                                    v-bind:value="selectedUser.fname">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="updateLname">Lastname</label>
                                 <input type="text" class="form-control" name="updateLname" id="updateLname"
-                                    v-bind:value="selectedItem.lname">
+                                    v-bind:value="selectedUser.lname">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="updateEmail">Email</label>
                                 <input type="email" class="form-control" name="updateEmail" id="updateEmail"
-                                    v-bind:value="selectedItem.email">
+                                    v-bind:value="selectedUser.email">
                             </div>
                         </form>
                     </div>
@@ -302,31 +302,32 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="queryModalLabel">{{ selectedItem.title }}</h5>
+                        <h5 class="modal-title" id="queryModalLabel">{{ selectedQuery.title }}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Asked by: {{ selectedItem.username }} | Category: {{ selectedItem.category }}</p>
-                        {{ selectedItem.description }}
+                        <p>Asked by: {{ selectedQuery.username }} | Category: {{ selectedQuery.category }}</p>
+                        {{ selectedQuery.description }}
                     </div>
-                    <span></span>
-                    <div class="col" v-for="item in answers" :key="item.id">
-                        <div class="card h-100 border rounded">
-                            <div class="card-body">
-                                <p class="card-text">Reply by: {{ item.userId }}</p>
-                                <p class="card-text">{{ item.answer }}</p>
-                                <p class="card-text">Quality: {{ item.vote }}</p>
-                                <p class="card-text"><small>Posted: {{ item.time }}</small></p>
-                                <button type="button" class="btn btn-primary" v-show="contributor"
-                                    v-on:click="upvoteAnswer(item)">Good</button>
-                                <button type="button" class="btn btn-danger" v-show="contributor"
-                                    v-on:click="downvoteAnswer(item)">Bad</button>
-                                <button v-show="admin" type="button" class="btn btn-danger btn-right"
-                                    data-target="deleteAnswer(item)">Delete</button>
-                                <button v-show="admin" type="button" class="btn btn-info btn-right btn-margin" data-target="#updateAnswerModal" data-toggle="modal"
-                                    v-on:click="selectItem(item)">Update</button>
+                    <div class="modal-body modal-height-lg">
+                        <div class="col" v-for="item in answers" :key="item.id">
+                            <div class="card h-100 border rounded">
+                                <div class="card-body">
+                                    <p class="card-text">Reply by: {{ item.userId }}</p>
+                                    <p class="card-text">{{ item.answer }}</p>
+                                    <p class="card-text">Quality: {{ item.vote }}</p>
+                                    <p class="card-text"><small>Posted: {{ item.time }}</small></p>
+                                    <button type="button" class="btn btn-primary" v-show="contributor"
+                                        v-on:click="upvoteAnswer(item)">Good</button>
+                                    <button type="button" class="btn btn-danger" v-show="contributor"
+                                        v-on:click="downvoteAnswer(item)">Bad</button>
+                                    <button v-show="admin" type="button" class="btn btn-danger btn-right"
+                                        data-target="deleteAnswer(item)">Delete</button>
+                                    <button v-show="admin" type="button" class="btn btn-info btn-right btn-margin" data-target="#updateAnswerModal" data-toggle="modal"
+                                        v-on:click="selectAnswer(item)">Update</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -341,7 +342,7 @@
                         </div>
                         <div>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                                v-on:click="unselectItem()">Close</button>
+                                v-on:click="unselectQuery()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -354,14 +355,14 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="answerModalLabel">{{ selectedItem.title }}</h5>
+                        <h5 class="modal-title" id="answerModalLabel">{{ selectedQuery.title }}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p>Asked by: {{ selectedItem.username }}</p>
-                        {{ selectedItem.description }}
+                        <p>Asked by: {{ selectedQuery.username }}</p>
+                        {{ selectedQuery.description }}
                     </div>
                     <span></span>
                     <form class="modal-body">
@@ -388,19 +389,19 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="updateAnswerModalLabel">{{ selectedItem.title }}</h5>
+                        <h5 class="modal-title" id="updateAnswerModalLabel">{{ selectedAnswer.title }}</h5>
                         <form class="modal-body">
                             <div class="form-group modalColor">
                                 <label for="updateAnswer">Answer</label>
-                                <textarea class="form-control" id="updateAnswer" placeholder="selectedItem.answer" rows="6"
-                                    answer="answer" v-bind:value="selectedItem.answer"></textarea>
+                                <textarea class="form-control" id="updateAnswer" placeholder="selectedAnswer.answer" rows="6"
+                                    v-bind:value="selectedAnswer.answer"></textarea>
                             </div>
                         </form>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
                                 v-on:click="updateAnswer()">Reply</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                                v-on:click="resetAnswerModal()">Close</button>
+                                v-on:click="resetUpdateAnswerModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -468,12 +469,12 @@
                             <div class="form-group modalColor">
                                 <label for="inputTitle">Title</label>
                                 <input type="text" class="form-control" name="updateTitle" id="updateTitle"
-                                    v-bind:value="selectedItem.title">
+                                    v-bind:value="selectedQuery.title">
                             </div>
                             <div class="form-group modalColor">
                                 <label for="updateCategory">Category</label>
                                 <select class="form-control" name="updateCategory" id="updateCategory"
-                                    v-bind:value="selectedItem.category">
+                                    v-bind:value="selectedQuery.category">
                                     <option type="text">Computer</option>
                                     <option type="text">Cellphone</option>
                                     <option type="text">Broadband</option>
@@ -483,7 +484,7 @@
                             <div class="form-group modalColor">
                                 <label for="updateDescription">Description</label>
                                 <textarea class="form-control" name="updateDescription" id="updateDescription" rows="6"
-                                    v-bind:value="selectedItem.description"></textarea>
+                                    v-bind:value="selectedQuery.description"></textarea>
                             </div>
                         </form>
                     </div>
@@ -503,7 +504,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="markDuplicateModalLabel">{{ selectedItem.title }}</h5>
+                        <h5 class="modal-title" id="markDuplicateModalLabel">{{ selectedQuery.title }}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -580,6 +581,9 @@
                 lastAsked: [],
                 item: [],
                 selectedItem: '',
+                selectedUser: '',
+                selectedQuery: '',
+                selectedAnswer: '',
                 email: '',
                 password: '',
                 user: [],
@@ -719,11 +723,23 @@
                 selectItem(item) {
                     this.selectedItem = item;
                 },
+                selectQuery(item) {
+                    this.selectedQuery = item;
+                },
+                selectAnswer(item) {
+                    this.selectedAnswer = item;
+                },
                 unselectItem() {
                     this.selectedItem = '';
                 },
+                unselectQuery() {
+                    this.selectedQuery = '';
+                },
+                unselectAnswer() {
+                    this.selectedAnswer = '';
+                },
                 openQuery(item) {
-                    this.selectItem(item);
+                    this.selectQuery(item);
                     this.populateAnswers();
                 },
 
@@ -752,7 +768,7 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    //this.unselectItem();
                     this.resetAddUserModal();
                     this.updateUsers();
                 },
@@ -802,7 +818,7 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    //this.unselectItem();
                     this.updateUsers();
                 },
                 async deleteUser(item) {
@@ -822,7 +838,7 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    //this.unselectItem();
                     this.updateUsers();
                 },
 
@@ -848,14 +864,14 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    //this.unselectItem();
                     this.resetAddQueryModal();
                     this.updateQueries();
                 },
                 async updateQuery() {
                     var message;
                     var query = {
-                        id: this.selectedItem.id,
+                        id: this.selectedQuery.id,
                         title: $('#updateQueryModal #updateTitle').val(),
                         category: $('#updateQueryModal #updateCategory').val(),
                         description: $('#updateQueryModal #updateDescription').val(),
@@ -874,7 +890,7 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    this.unselectQuery();
                     this.resetUpdateQueryModal()
                     this.updateQueries();
                 },
@@ -895,14 +911,14 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    //this.unselectItem();
                     this.updateQueries();
                 },
                 async markDuplicate(item) {
                     var message;
                     var originalQuery = $('#markDuplicateModal #selectOriginal').val();
                     var query = {
-                        id: this.selectedItem.id,
+                        id: this.selectedQuery.id,
                         duplicateOf: $('#markDuplicateModal #selectOriginal').val(),
                     }
                     await $.ajax({
@@ -919,14 +935,14 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    this.unselectQuery();
                     this.resetDuplicateModal()
                     this.updateQueries();
                 },
                 async sendAnswer() {
                     var message;
                     var answer = {
-                        queryId: this.selectedItem.id,
+                        queryId: this.selectedQuery.id,
                         answer: $('#answerModal #inputAnswer').val(),
                         userId: this.user.id,
                     }
@@ -935,7 +951,7 @@
                         type: 'POST',
                         data: answer,
                         success: () => {
-                            alert(`Reply to query with ID: ${this.selectedItem.id} posted`);
+                            alert(`Reply to query with ID: ${this.selectedQuery.id} posted`);
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
@@ -943,14 +959,14 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    this.unselectQuery();
                     this.resetAnswerModal();
                     this.updateQueries();
                 },
                 async updateAnswer() {
                     var message;
                     var answer = {
-                        id: this.selectedItem.id,
+                        id: this.selectedAnswer.id,
                         answer: $('#updateAnswerModal #updateAnswer').val(),
                     }
                     await $.ajax({
@@ -958,7 +974,7 @@
                         type: 'PUT',
                         data: answer,
                         success: () => {
-                            alert(`Reply to query with ID: ${this.selectedItem.id} posted`);
+                            alert(`Answer with ID: ${this.selectedAnswer.id} updated`);
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
@@ -966,7 +982,7 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    this.unselectAnswer();
                     this.resetupdateAnswerModal();
                     this.updateQueries();
                 },
@@ -991,7 +1007,7 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    //this.unselectItem();
                     this.updateQueries();
                 },
                 async downvoteAnswer(item) {
@@ -1015,7 +1031,7 @@
                             alert(message);
                         }
                     });
-                    this.unselectItem();
+                    //this.unselectItem();
                     this.updateQueries();
                 },
                 async deleteAnswer(item) {
@@ -1041,7 +1057,7 @@
                 },
                 async populateAnswers() {
                     this.answers = [];
-                    var id = this.selectedItem.id;
+                    var id = this.selectedQuery.id;
                     await $.ajax({
                         url: `http://127.0.0.1:5000/answers/${id}`,
                         type: 'GET',
@@ -1075,6 +1091,7 @@
                     $('#updateUserModal #updateFname').val("");
                     $('#updateUserModal #updateLname').val("");
                     $('#updateUserModal #updateEmail').val("");
+                    this.updateUsers();
                 },
                 resetAddQueryModal() {
                     $('#addQueryModal #inputTitle').val("");
@@ -1085,14 +1102,16 @@
                     $('#updateQueryModal #updateTitle').val("");
                     $('#updateQueryModal #updateCategory').val("");
                     $('#updateQueryModal #updateDescription').val("");
+                    this.updateQueries();
                 },
                 resetAnswerModal() {
                     $('#answerModal #inputAnswer').val("");
                     this.answer = "";
                 },
-                resetupdateAnswerModal() {
+                resetUpdateAnswerModal() {
                     $('#updateAnswerModal #updateAnswer').val("");
                     this.answer = "";
+                    this.populateAnswers();
                 },
                 resetDuplicateModal() {
                     $('#markDuplicateModal #selectOriginal').val("");
