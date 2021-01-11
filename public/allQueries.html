@@ -850,10 +850,10 @@
                 },
 
                 //########## UPDATE ##########
-                async updateQueries(category) {
+                async updateQueries() {
                     this.queries = [];
                     this.allQueries = [];
-                    if (category == "All" || category == "") {
+                    if (this.selectedCategory == "All" || this.selectedCategory == "") {
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/queries/',
                             type: 'GET',
@@ -868,7 +868,10 @@
                                 }
                             },
                             error: function (jqXHR, textStatus, error) {
+                                var self = this;
                                 console.log(jqXHR.status, error, jqXHR.responseText);
+                                self.allQueries = [];
+                                self.queries = [];
                                 if (jqXHR.status != '404') {
                                     alert(`${jqXHR.responseText}`);
                                 }
@@ -877,7 +880,7 @@
                     }
                     else {
                         await $.ajax({
-                            url: `http://127.0.0.1:5000/queries/category/${category}`,
+                            url: `http://127.0.0.1:5000/queries/category/${this.selectedCategory}`,
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
@@ -890,7 +893,10 @@
                                 }
                             },
                             error: function (jqXHR, textStatus, error) {
+                                var self = this;
                                 console.log(jqXHR.status, error, jqXHR.responseText);
+                                self.allQueries = [];
+                                self.queries = [];
                                 if (jqXHR.status != '404') {
                                     alert(`${jqXHR.responseText}`);
                                 }
@@ -900,8 +906,7 @@
                 },
                 selectCategory() {
                     this.selectedCategory = $('#selectCategory').val();
-                    this.populateFrequentlyAsked(this.selectedCategory);
-                    this.populateLastAsked(this.selectedCategory);
+                    this.updateQueries();
                 },
                 selectItem(item) {
                     this.selectedItem = item;
@@ -1279,38 +1284,7 @@
                 },
 
                 //########## QUERY HANDLING ##########
-                async populateFrequentlyAsked(category) {
-                    await $.ajax({
-                        url: `http://127.0.0.1:5000/frequentlyasked/${category}`,
-                        type: 'GET',
-                        success: (response) => {
-                            var self = this;
-                            self.frequentlyAsked = response;
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            if (jqXHR.status != '404') {
-                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
-                            }
-                        }
-                    });
-                },
-                async populateLastAsked(category) {
-                    await $.ajax({
-                        url: `http://127.0.0.1:5000/lastasked/${category}`,
-                        type: 'GET',
-                        success: (response) => {
-                            var self = this;
-                            self.lastAsked = response;
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            if (jqXHR.status != '404') {
-                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
-                            }
-                        }
-                    });
-                },
+                
 
                 //########## RESET MODALS ##########
                 resetLoginModal() {
@@ -1385,8 +1359,7 @@
                 },
             },
             mounted() {
-                this.populateFrequentlyAsked("All");
-                this.populateLastAsked("All");
+                this.updateQueries();
                 this.checkLoggedIn();
                 if (this.loggedIn) {
                     this.updateQueries();
