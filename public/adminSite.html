@@ -19,6 +19,8 @@
         <!------------------------------------------------------------------------------------------------------------------------------>
         <!-- NAVBAR -->
         <!-- NAVBAR -->
+        <!-- The navbar presents the user with different selection based on if the user
+                is logged in and the accesslevel of the user -->
         <nav class="navbar navbar-expand-lg navbar-dark border border-primary">
             <a class="navbar-brand" href="index.html">A to The Q</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -71,14 +73,19 @@
 
         <!------------------------------------------------------------------------------------------------------------------------------>
         
+        <!-- ADMIN SITE. ONLY SUPERADMIN HAS ACCESS TO THIS SITE -->
+
         <!-- PAGE HEADER -->
         <!-- PAGE HEADER -->
+        <!-- The header of the page -->
         <div v-show="admin" class="container container-pg-head">
             <h1 class="h1-pg text-center">Admin Site</h1>
         </div>
 
         <!-- USERS -->
         <!-- USERS -->
+        <!-- A table containing all of the registered users. 
+            The super admin can administer the users from here -->
         <div v-show="admin" class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectUser()"
                 data-target="#addUserModal">New User</button>
@@ -123,6 +130,8 @@
         
         <!-- QUERIES -->
         <!-- QUERIES -->
+        <!-- A table containing all of the registered queries. 
+            The super admin can administer the queries from here -->
         <div v-show="admin" class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectQuery()"
                 data-target="#addQueryModal">New Query</button>
@@ -176,6 +185,7 @@
 
         <!-- ADD USER MODAL -->
         <!-- ADD USER MODAL -->
+        <!-- A modal for adding/registering a new user -->
         <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
             :item="item">
             <div class="modal-dialog">
@@ -186,7 +196,6 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
                     <div class="modal-body">
                         <form id="formAddUser">
                             <div class="form-group modalColor">
@@ -236,6 +245,7 @@
 
         <!-- UPDATE USER MODAL -->
         <!-- UPDATE USER MODAL -->
+        <!-- A modal for updating the users info. -->
         <div class="modal fade" id="updateUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
             :item="item">
             <div class="modal-dialog">
@@ -246,7 +256,6 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
                     <div class="modal-body">
                         <form id="formUpdateUser">
                             <div class="form-group modalColor">
@@ -296,6 +305,7 @@
 
         <!-- QUERY MODAL -->
         <!-- QUERY MODAL -->
+        <!-- A modal for showing a selected query -->
         <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -322,7 +332,7 @@
                                     <button type="button" class="btn btn-danger" v-show="contributor"
                                         v-on:click="downvoteAnswer(item)">Bad</button>
                                     <button v-show="admin" type="button" class="btn btn-danger btn-right"
-                                        data-target="deleteAnswer(item)">Delete</button>
+                                        v-on:click="deleteAnswer(item)">Delete</button>
                                     <button v-show="admin" type="button" class="btn btn-info btn-right btn-margin" data-target="#updateAnswerModal" data-toggle="modal"
                                         v-on:click="selectAnswer(item)">Update</button>
                                 </div>
@@ -349,6 +359,7 @@
 
         <!-- ANSWER MODAL -->
         <!-- ANSWER MODAL -->
+        <!-- A modal for writing an answer to a query -->
         <div class="modal fade" id="answerModal" tabindex="-1" aria-labelledby="answerModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -366,8 +377,7 @@
                     <form class="modal-body">
                         <div class="form-group modalColor">
                             <label for="inputAnswer">Answer</label>
-                            <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6"
-                                v-model="answer"></textarea>
+                            <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6"></textarea>
                         </div>
                     </form>
                     <div class="modal-footer">
@@ -382,6 +392,7 @@
 
         <!-- UPDATE ANSWER MODAL -->
         <!-- UPDATE ANSWER MODAL -->
+        <!-- A modal for updating an answer -->
         <div class="modal fade" id="updateAnswerModal" tabindex="-1" aria-labelledby="updateAnswerModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
@@ -411,6 +422,7 @@
 
         <!-- ADD QUERY MODAL -->
         <!-- ADD QUERY MODAL -->
+        <!-- A modal for adding a new query -->
         <div class="modal fade" id="addQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -455,6 +467,7 @@
 
         <!-- UPDATE QUERY MODAL -->
         <!-- UPDATE QUERY MODAL -->
+        <!-- A modal for updating a query -->
         <div class="modal fade" id="updateQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true"
             :item="item">
             <div class="modal-dialog">
@@ -501,6 +514,7 @@
 
         <!-- MARK DUPLICATE MODAL -->
         <!-- MARK DUPLICATE MODAL -->
+        <!-- A modal for marking a query as duplicate of another query -->
         <div class="modal fade" id="markDuplicateModal" tabindex="-1" aria-labelledby="markDuplicateModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -575,6 +589,7 @@
         new Vue({
             el: '#app',
             data: {
+                // Declaration of variables
                 queries: [],
                 answers: [],
                 item: [],
@@ -604,29 +619,8 @@
             },
             methods: {
 
-                //########## USER LOGIN ##########
-                async loginUser(emailUsername, password) {
-                    var userLogin = { 'emailUsername': emailUsername, 'password': password };
-                    await $.ajax({
-                        url: '/login/',
-                        type: 'POST',
-                        data: userLogin,
-                        success: function (response) {
-                            var self = this;
-                            self.user = response;
-                            self.username = self.user.username;
-                            self.loggedIn = true;
-                            var parsed = JSON.stringify(this.user)
-                            sessionStorage.setItem('user', parsed)
-                            alert(`User ${response.username} logged in`);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            alert(`Error!\n${jqXHR.responseText}\nUnable to login`);
-                        }
-                    });
-                    this.checkLoggedIn();
-                },
+                //########## USER LOGOUT ##########
+                // Logging out a user and removing the local session, also destroying the server session
                 async logOutUser() {
                     this.loggedIn = false;
                     this.contributor = false;
@@ -653,6 +647,7 @@
                     this.queries = [];
                     window.location.href = '/index.html';
                 },
+                // Checking if a user is logged in on the local side
                 checkLoggedIn() {
                     if (sessionStorage.getItem('user')) {
                         this.user = [];
@@ -685,6 +680,7 @@
                         }
                     }
                 },
+                // If a user is not logged in, making sure that no variables should be left behind
                 notLoggedIn() {
                     this.loggedIn = false;
                     this.contributor = false;
@@ -695,6 +691,7 @@
                 },
 
                 //########## UPDATE ##########
+                // Get all queries from server and store them in a list
                 async updateQueries() {
                     await $.ajax({
                         url: '/queries/',
@@ -716,6 +713,7 @@
                         }
                     }
                 },
+                // Get all users from server and store them in a list
                 async updateUsers() {
                     await $.ajax({
                         url: '/users/',
@@ -732,6 +730,7 @@
                         }
                     });
                 },
+                // Selection of different objects and setting of values to be worked with
                 selectUser(item) {
                     this.selectedUser = item;
                 },
@@ -756,6 +755,7 @@
                 },
 
                 //########## USER HANDLING ##########
+                // Add/register a new user
                 async addUser() {
                     var message;
                     var user = {
@@ -783,6 +783,7 @@
                     this.resetAddUserModal();
                     this.updateUsers();
                 },
+                // Update an existing user.
                 async updateUser() {
                     var message;
                     var user = {
@@ -812,6 +813,7 @@
                     this.resetUpdateUserModal();
                     this.updateUsers();
                 },
+                // Temporarily an existing user.
                 async banUser(item) {
                     var question = confirm("Are you sure you want to ban user?");
                     if (question) {
@@ -825,8 +827,6 @@
                             lname: item.lname,
                             email: item.email
                         }
-                        //item.accessLevel=0;
-                        console.log(user);
                         await $.ajax({
                             url: '/user/admin/',
                             type: 'PUT',
@@ -843,6 +843,7 @@
                         this.updateUsers();
                     }
                 },
+                // Delete an existing user.
                 async deleteUser(item) {
                     var question = confirm("Are you sure you want to delete user?");
                     if (question) {
@@ -867,6 +868,7 @@
                 },
 
                 //########## QUERY HANDLING ##########
+                // Post a new query to the server.
                 async sendQuery() {
                     var message;
                     var query = {
@@ -891,6 +893,7 @@
                     this.resetAddQueryModal();
                     this.updateQueries();
                 },
+                // Update an existing query.
                 async updateQuery() {
                     var message;
                     var query = {
@@ -917,6 +920,7 @@
                     this.resetUpdateQueryModal()
                     this.updateQueries();
                 },
+                // Delete an existing query.
                 async deleteQuery(item) {
                     var question = confirm("Are you sure you want to delete query?");
                     if (question) {
@@ -939,6 +943,7 @@
                         this.updateQueries();
                     }
                 },
+                // Mark a query as duplicate of another query
                 async markDuplicate(item) {
                     var message;
                     var originalQuery = $('#markDuplicateModal #selectOriginal').val();
@@ -964,6 +969,7 @@
                     this.resetDuplicateModal()
                     this.updateQueries();
                 },
+                // Reply to an existing query
                 async sendAnswer() {
                     var message;
                     var answer = {
@@ -988,6 +994,7 @@
                     this.resetAnswerModal();
                     this.updateQueries();
                 },
+                // Update an existing answer to a query
                 async updateAnswer() {
                     var message;
                     var answer = {
@@ -1011,13 +1018,13 @@
                     this.resetupdateAnswerModal();
                     this.updateQueries();
                 },
+                // Upvote or downvote answers to queries
                 async upvoteAnswer(item) {
                     var message;
                     var answer = {
                         id: item.id,
                         vote: item.vote = 1
                     }
-                    console.log(answer);
                     await $.ajax({
                         url: '/answer/',
                         type: 'PUT',
@@ -1040,7 +1047,6 @@
                         id: item.id,
                         vote: item.vote = -1
                     }
-                    console.log(query);
                     await $.ajax({
                         url: '/answer/',
                         type: 'PUT',
@@ -1057,12 +1063,13 @@
                     });
                     this.updateQueries();
                 },
+                // Delete an answer to a query
                 async deleteAnswer(item) {
                     var question = confirm("Are you sure you want to delete answer?");
                     if (question) {
                         var message;
                         var answer = item;
-                        var queryData = { "id": answer.id };
+                        var queryData = { id: answer.id };
                         await $.ajax({
                             url: '/answer/',
                             type: 'DELETE',
@@ -1080,6 +1087,7 @@
                         this.populateAnswers();
                     }
                 },
+                // Function for population of answers to a selected query
                 async populateAnswers() {
                     this.answers = [];
                     var id = this.selectedQuery.id;
@@ -1100,6 +1108,7 @@
                 },
 
                 //########## RESET MODALS ##########
+                // Functions for resetting values in different modals
                 resetAddUserModal() {
                     $('#addUserModal #newAccessLevel').val("");
                     $('#addUserModal #newUsername').val("");
@@ -1142,6 +1151,7 @@
             },
 
             //########## MOUNTED ##########
+            // Function to run when site is mounted
             mounted() {
                 this.checkLoggedIn();
                 if (this.loggedIn) {

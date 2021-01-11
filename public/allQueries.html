@@ -44,8 +44,8 @@
                                 data-target="#personalQueryModal">See your Q&As</a>
                             <a class="dropdown-item" href="allQueries.html">See all Q&As</a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">About Us</a>
-                            <a class="dropdown-item" href="#">Contact</a>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#aboutUsModal">About Us</a>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#contactUsModal">Contact</a>
                         </div>
                     </li>
                 </ul>
@@ -107,8 +107,7 @@
             </form>
         </div>
 
-        <!-- The user can choose to filter the two containers for frequently asked and last asked
-                    questions based on categories -->
+        <!-- The user can choose to filter the container for questions based on categories -->
 
         <!-- ALL QUERIES -->
         <!-- ALL QUERIES -->
@@ -141,6 +140,55 @@
         <!------------------------------------------------------------------------------------------------------------------------------>
         <!-- MODALS -->
         <!-- MODALS -->
+
+        <!-- ABOUT US MODAL -->
+        <!-- ABOUT US MODAL -->
+        <!-- A modal with information about the creators -->
+        <div class="modal fade" id="aboutUsModal" tabindex="-1" aria-labelledby="aboutUsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="aboutUsModalLabel">About us</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Created by:</p>
+                        <p>Michael Andersson & Robert Hysing Berg</p>
+                        <p>Two nice guys =)</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CONTACT US MODAL -->
+        <!-- CONTACT US MODAL -->
+        <!-- A modal with contact info for the creators -->
+        <div class="modal fade" id="contactUsModal" tabindex="-1" aria-labelledby="contactUsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="contactUsModalLabel">Contact</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Contact us?</p>
+                        <p>Michael Andersson: nope</p>
+                        <p>Robert Hysing Berg: nope</p>
+                        <p>Maybe call someone else instead..</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- SEARCH RESULTS MODAL -->
         <!-- SEARCH RESULTS MODAL -->
@@ -454,11 +502,10 @@
                                         v-on:click="upvoteAnswer(item)">Good</button>
                                     <button type="button" class="btn btn-danger" v-show="admin || allow"
                                         v-on:click="downvoteAnswer(item)">Bad</button>
-                                    <button v-show="contributor" type="button" class="btn btn-info btn-right"
-                                        data-target="#updateAnswerModal" data-toggle="modal"
-                                        v-on:click="selectAnswer(item)">Update</button>
-                                    <button v-show="admin" type="button" class="btn btn-danger btn-right"
-                                        data-target="deleteAnswer(item)">Delete</button>
+                                    <button v-show="admin || user.id==item.userId" type="button" class="btn btn-info btn-right"
+                                        data-target="#updateAnswerModal" data-toggle="modal" v-on:click="selectAnswer(item)">Update</button>
+                                    <button v-show="admin || user.id==item.userId" type="button" class="btn btn-danger btn-right"
+                                        v-on:click="deleteAnswer(item)">Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -504,8 +551,7 @@
                     <form class="modal-body">
                         <div class="form-group modalColor">
                             <label for="inputAnswer">Answer</label>
-                            <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6"
-                                answer="answer" v-model="answer"></textarea>
+                            <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6"></textarea>
                         </div>
                     </form>
                     <div class="modal-footer">
@@ -727,7 +773,6 @@
                 queries: [],
                 allQueries: [],
                 answers: [],
-                answer: "",
                 frequentlyAsked: [],
                 lastAsked: [],
                 selectedCategory: "All",
@@ -807,6 +852,7 @@
                         }
                     });
                 },
+                // Checking if a user is logged in on the local side
                 checkLoggedIn() {
                     if (sessionStorage.getItem('user')) {
                         this.user = [];
@@ -840,6 +886,7 @@
                         this.updateQueries();
                     }
                 },
+                // If a user is not logged in, making sure that no variables should be left behind
                 notLoggedIn() {
                     this.loggedIn = false;
                     this.contributor = false;
@@ -850,6 +897,8 @@
                 },
 
                 //########## UPDATE ##########
+                // Get all queries from server and store them in two lists
+                // Can get queries based of category selection of the user
                 async updateQueries() {
                     this.queries = [];
                     this.allQueries = [];
@@ -904,13 +953,12 @@
                         });
                     }
                 },
+                // Selection of category for frequently asked and latest querries
                 selectCategory() {
                     this.selectedCategory = $('#selectCategory').val();
                     this.updateQueries();
                 },
-                selectItem(item) {
-                    this.selectedItem = item;
-                },
+                // Selection of a query to be active
                 selectQuery(item) {
                     this.selectedQuery = item;
                     if (item.userId == this.user.id) {
@@ -923,13 +971,9 @@
                 selectAnswer(item) {
                     this.selectedAnswer = item;
                 },
-                unselectItem() {
-                    this.selectedItem = '';
-                },
                 unselectQuery() {
                     this.selectedQuery = '';
                     this.allow = false;
-                    console.log(this.allow);
                 },
                 unselectAnswer() {
                     this.selectedAnswer = '';
@@ -940,6 +984,7 @@
                 },
 
                 //########## USER HANDLING ##########
+                // Add/register a new user
                 async addUser() {
                     var message;
                     var user = {
@@ -964,10 +1009,11 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.resetAddUserModal();
                     this.updateUsers();
                 },
+                // Update an existing user. Checks for the logged in user both here and in the modal
+                // A super admin can update all users
                 async updateUser() {
                     var message;
                     var user = {
@@ -1005,10 +1051,10 @@
                         }
                     });
                     this.checkLoggedIn();
-                    //this.unselectItem();
                     this.resetUpdateUserModal();
-                    //this.updateUsers();
                 },
+                // Delete an existing user. A logged in user can delete their own account
+                // A super admin can delete all users
                 async deleteUser(item) {
                     var question = confirm("Are you sure you want to delete user?");
                     if (question) {
@@ -1031,12 +1077,12 @@
                         if (item.id == this.user.id) {
                             this.logOutUser();
                         }
-                        //this.unselectItem();
                         this.updateUsers();
                     }
                 },
 
                 //########## QUERY HANDLING ##########
+                // Post a new query to the server. Only a logged in user can post a query
                 async sendQuery() {
                     var message;
                     var query = {
@@ -1058,12 +1104,13 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.resetAddQueryModal()
                     this.updateQueries();
                     this.populateFrequentlyAsked(this.selectedCategory);
                     this.populateLastAsked(this.selectedCategory);
                 },
+                // Update an existing query. Only a logged in user can update their own query
+                // A super admin can update all querys
                 async updateQuery() {
                     var message;
                     var query = {
@@ -1093,6 +1140,8 @@
                     this.populateFrequentlyAsked(this.selectedCategory);
                     this.populateLastAsked(this.selectedCategory);
                 },
+                // Delete an existing query. A logged in user can delete thair own queries
+                // A super admin can delete all queries
                 deleteQuery(item) {
                     var question = confirm("Are you sure you want to delete query?");
                     if (question) {
@@ -1118,6 +1167,7 @@
                         this.populateLastAsked(this.selectedCategory);
                     }
                 },
+                // A super admin or a contributor can mark a query as duplicate of another query
                 async markDuplicate(item) {
                     var message;
                     var originalQuery = $('#markDuplicateModal #selectOriginal').val();
@@ -1143,6 +1193,7 @@
                     this.resetDuplicateModal()
                     this.updateQueries();
                 },
+                // A super admin or a contributor can reply to an existing query
                 async sendAnswer() {
                     var message;
                     var answer = {
@@ -1170,6 +1221,8 @@
                     this.populateFrequentlyAsked(this.selectedCategory);
                     this.populateLastAsked(this.selectedCategory);
                 },
+                // A contributors can update their own answers
+                // A super admin can update all answers
                 async updateAnswer() {
                     var message;
                     var answer = {
@@ -1194,6 +1247,7 @@
                     this.populateAnswers();
                     console.log(this.selectedQuery);
                 },
+                // A logged in user can upvote or downvote answers to their queries
                 async upvoteAnswer(item) {
                     var message;
                     var answer = {
@@ -1214,7 +1268,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateQueries();
                 },
                 async downvoteAnswer(item) {
@@ -1228,7 +1281,6 @@
                         type: 'PUT',
                         data: answer,
                         success: (response) => {
-                            //message = response;
                             alert(`Upvote to answer with ID: ${item.id} registered`);
                         },
                         error: function (jqXHR, textStatus, error) {
@@ -1237,15 +1289,16 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateQueries();
                 },
+                // A contributor can delete their own answers
+                // A super admin can delete all answers
                 async deleteAnswer(item) {
                     var question = confirm("Are you sure you want to delete answer?");
                     if (question) {
                         var message;
                         var answer = item;
-                        var queryData = { "id": answer.id };
+                        var queryData = { id: answer.id };
                         await $.ajax({
                             url: '/answer/',
                             type: 'DELETE',
@@ -1259,11 +1312,11 @@
                                 alert(message);
                             }
                         });
-                        //this.unselectItem();
                         this.updateQueries();
                         this.populateAnswers();
                     }
                 },
+                // Function for population of answers to a selected query
                 async populateAnswers() {
                     this.answers = [];
                     var id = this.selectedQuery.id;
@@ -1283,10 +1336,8 @@
                     });
                 },
 
-                //########## QUERY HANDLING ##########
-                
-
                 //########## RESET MODALS ##########
+                // Functions for resetting values in different modals
                 resetLoginModal() {
                     $('#loginModal #inputEmailUsername').val("");
                     $('#loginModal #inputPassword').val("");
@@ -1334,6 +1385,7 @@
                 resetSearchResults() {
                     this.searchResults = [];
                 },
+                // Function for the search field in the upper right corner of the site
                 async search() {
                     var search = $('#searchField').val();
                     await $.ajax({
@@ -1358,6 +1410,8 @@
                     $('#searchResultsModal').close;
                 },
             },
+            //########## MOUNTED ##########
+            // Function to run when site is mounted
             mounted() {
                 this.updateQueries();
                 this.checkLoggedIn();
