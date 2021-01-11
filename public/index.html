@@ -1404,6 +1404,7 @@
                     // Function for the search field in the upper right corner of the site
                     async search() {
                         var search = $('#searchField').val();
+                        this.resetSearchField();
                         await $.ajax({
                             url: `/queries/${search}`,
                             type: 'GET',
@@ -1422,8 +1423,6 @@
                                 }
                             }
                         });
-                        this.resetSearchField();
-                        $('#searchResultsModal').close;
                     },
                 },
                 //########## MOUNTED ##########
