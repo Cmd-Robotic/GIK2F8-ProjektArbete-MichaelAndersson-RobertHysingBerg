@@ -30,7 +30,7 @@
                     <li class="nav-item active">
                         <a class="nav-link" href="index.html">Home</a>
                     </li>
-                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Admin Site</a>
+                    <a v-show="admin" class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Admin Site</a>
                 </ul>
                 <ul id="navbarUser" class="navbar-nav">
                     <li class="nav-logged-in">
@@ -56,7 +56,7 @@
                                     data-target="#addUserModal">Register</a></span>
                             <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
                                     data-target="#loginModal">Log in</a></span>
-                            <span v-show="loggedIn"><a class="dropdown-item" href="index.html" v-on:click="logOutUser()">Log
+                            <span v-show="loggedIn"><a class="dropdown-item" href="#" v-on:click="logOutUser()">Log
                                     out</a></span>
                         </div>
                     </li>
@@ -73,13 +73,13 @@
         
         <!-- PAGE HEADER -->
         <!-- PAGE HEADER -->
-        <div class="container container-pg-head">
+        <div v-show="admin" class="container container-pg-head">
             <h1 class="h1-pg text-center">Admin Site</h1>
         </div>
 
         <!-- USERS -->
         <!-- USERS -->
-        <div class="container-fluid table-responsive-lg border border-primary admin-tables">
+        <div v-show="admin" class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectUser()"
                 data-target="#addUserModal">New User</button>
             <label class="table-label" for="usersTable">USERS</label>
@@ -125,7 +125,7 @@
         
         <!-- QUERIES -->
         <!-- QUERIES -->
-        <div class="container-fluid table-responsive-lg border border-primary admin-tables">
+        <div v-show="admin" class="container-fluid table-responsive-lg border border-primary admin-tables">
             <button class="btn btn-primary btn-card" data-toggle="modal" v-on:click="unselectQuery()"
                 data-target="#addQueryModal">New Query</button>
             <label class="table-label" for="queriesTable">QUERIES</label>
@@ -577,8 +577,6 @@
                 queries: [],
                 answers: [],
                 answer: "",
-                frequentlyAsked: [],
-                lastAsked: [],
                 item: [],
                 selectedItem: '',
                 selectedUser: '',
@@ -648,6 +646,9 @@
                             alert(`Error!\n${jqXHR.responseText}\nUnable to logout from server`);
                         }
                     });
+                    this.users = [];
+                    this.queries = [];
+                    window.location.href = '/index.html';
                 },
                 checkLoggedIn() {
                     if (sessionStorage.getItem('user')) {

@@ -38,8 +38,8 @@
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal" data-target="#addQueryModal">Ask a Q</a>
                                 <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal" data-target="#personalQueryModal">See your Q&As</a>
-                                <a v-show="loggedIn" class="dropdown-item" href="allQueries.html">See all Q&As</a>
-                                <div v-show="loggedIn" class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="allQueries.html">See all Q&As</a>
+                                <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#">About Us</a>
                                 <a class="dropdown-item" href="#">Contact</a>
                             </div>
@@ -651,7 +651,7 @@
                     answer: "",
                     frequentlyAsked: [],
                     lastAsked: [],
-                    selectedCategory: "ALL",
+                    selectedCategory: "All",
                     item: '',
                     selectedItem: '',
                     selectedUser: '',
@@ -919,8 +919,8 @@
                         //this.unselectItem();
                         this.resetAddQueryModal()
                         this.updateQueries();
-                        this.populateFrequentlyAsked("All");
-                        this.populateLastAsked("All");
+                        this.populateFrequentlyAsked(this.selectedCategory);
+                        this.populateLastAsked(this.selectedCategory);
                     },
                     async updateQuery() {
                         var message;
@@ -948,8 +948,8 @@
                         this.unselectQuery();
                         this.resetUpdateQueryModal()
                         this.updateQueries();
-                        this.populateFrequentlyAsked("All");
-                        this.populateLastAsked("All");
+                        this.populateFrequentlyAsked(this.selectedCategory);
+                        this.populateLastAsked(this.selectedCategory);
                     },
                     deleteQuery(item) {
                         var message;
@@ -970,8 +970,8 @@
                         });
                         this.unselectQuery();
                         this.updateQueries();
-                        this.populateFrequentlyAsked("All");
-                        this.populateLastAsked("All");
+                        this.populateFrequentlyAsked(this.selectedCategory);
+                        this.populateLastAsked(this.selectedCategory);
                     },
                     async markDuplicate(item) {
                         var message;
@@ -1021,7 +1021,9 @@
                         });
                         this.unselectQuery();
                         this.resetAnswerModal();
-                        this.updateQueries();
+                        //this.updateQueries();
+                        this.populateFrequentlyAsked(this.selectedCategory);
+                        this.populateLastAsked(this.selectedCategory);
                     },
                     async updateAnswer() {
                         var message;
@@ -1067,7 +1069,7 @@
                             }
                         });
                         //this.unselectItem();
-                        this.updateQueries();
+                        //this.updateQueries();
                     },
                     async downvoteAnswer(item) {
                         var message;
@@ -1078,7 +1080,7 @@
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/answer/',
                             type: 'PUT',
-                            data: query,
+                            data: answer,
                             success: (response) => {
                                 //message = response;
                                 alert(`Upvote to answer with ID: ${item.id} registered`);
@@ -1090,7 +1092,7 @@
                             }
                         });
                         //this.unselectItem();
-                        this.updateQueries();
+                        //this.updateQueries();
                     },
                     async deleteAnswer(item) {
                         var message;
