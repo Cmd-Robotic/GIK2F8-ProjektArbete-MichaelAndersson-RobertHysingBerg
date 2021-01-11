@@ -51,9 +51,7 @@
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Account
-                            </a>
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <span v-show="loggedIn"><a class="dropdown-item disabled" href="#" tabindex="-1"
                                         aria-disabled="true">{{ username }}</a></span>
@@ -75,8 +73,8 @@
                         </li>
                     </ul>
                     <form class="form-inline my-2 my-lg-0">
-                        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success my-2 my-sm-0" type="button">Search</button>
+                        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="searchField">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="button" v-on:click="search()">Search</button>
                     </form>
                 </div>
             </nav>
@@ -395,7 +393,7 @@
                                         <p class="card-text"><small>Posted: {{ item.time }}</small></p>
                                         <button type="button" class="btn btn-primary" v-show="contributor" v-on:click="upvoteAnswer(item)">Good</button>
                                         <button type="button" class="btn btn-danger" v-show="contributor" v-on:click="downvoteAnswer(item)">Bad</button>
-                                        <button v-show="admin" type="button" class="btn btn-info btn-right" data-target="#updateAnswerModal"
+                                        <button v-show="contributor" type="button" class="btn btn-info btn-right" data-target="#updateAnswerModal"
                                             data-toggle="modal" v-on:click="selectAnswer(item)">Update</button>
                                         <button v-show="admin" type="button" class="btn btn-danger btn-right" data-target="deleteAnswer(item)">Delete</button>
                                     </div>
@@ -411,6 +409,8 @@
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal" data-toggle="modal"
                                     v-show="contributor" data-target="#markDuplicateModal">Mark duplicate</button>
                             </div>
+                            <button type="button" v-show="admin || allow" class="btn btn-primary btn-card" data-toggle="modal" 
+                                data-target="#updateQueryModal">Update</button>
                             <div>
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                     v-on:click="unselectQuery()">Close</button>
@@ -599,6 +599,64 @@
                 </div>
             </div>
 
+            <!-- SEARCH RESULTS MODAL -->
+            <!-- SEARCH RESULTS MODAL -->
+            <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-labelledby="searchResultsLabel" aria-hidden="true">
+                <div class="modal-dialog modal-personal">
+                    <div class="modal-content">
+                        <div class="modal-body modal-height-lg">
+                            <label for="searchResultsTable">YOUR SEARCH</label>
+                            <table class="table table-image" id="searchResultsTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">Posted</th>
+                                        <th scope="col">Posted by ID</th>
+                                        <th scope="col">Posted by user</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Category</th>
+                                        <th scope="col" rows="3">Description</th>
+                                        <th scope="col">Answers</th>
+                                        <th scope="col">Duplicate</th>
+                                        <th scope="col" class="query-actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-content" v-for="item in searchResults" :key="item.id">
+                                        <td>{{ item.id }}</td>
+                                        <td>{{ item.time }}</td>
+                                        <td>{{ item.userId }}</td>
+                                        <td>{{ item.username }}</td>
+                                        <td class="table-row-height">{{ item.title }}</td>
+                                        <td>{{ item.category }}</td>
+                                        <td class="table-row-height">{{ item.description}}</td>
+                                        <td>{{ item.answers}}</td>
+                                        <td>{{ item.duplicate}}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
+                                                data-target="#updateQueryModal" v-on:click="selectQuery(item)">
+                                                Update
+                                            </button>
+                                            <button type="button" class="btn btn-info btn-card" data-toggle="modal"
+                                                data-target="#queryModal" v-on:click="openQuery(item)">
+                                                Show
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-card" data-toggle="modal"
+                                                v-on:click="deleteQuery(item)">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
 
@@ -657,6 +715,7 @@
                     selectedUser: '',
                     selectedQuery: '',
                     selectedAnswer: '',
+                    searchResults: [],
                     email: '',
                     password: '',
                     user: [],
@@ -666,6 +725,7 @@
                     admin: false,
                     contributor: false,
                     consumer: false,
+                    allow: false,
                     emailUsername: "",
                     newUsername: "",
                     newEmail: "",
@@ -782,6 +842,9 @@
                     },
                     selectQuery(item) {
                         this.selectedQuery = item;
+                        if (item.userId == this.user.id) {
+                            this.allow = true;
+                        }
                     },
                     selectAnswer(item) {
                         this.selectedAnswer = item;
@@ -791,6 +854,7 @@
                     },
                     unselectQuery() {
                         this.selectedQuery = '';
+                        this.allow = false;
                     },
                     unselectAnswer() {
                         this.selectedAnswer = '';
@@ -1208,6 +1272,26 @@
                     resetDuplicateModal() {
                         $('#markDuplicateModal #selectOriginal').val("");
                     },
+                    resetSearchResults() {
+                        this.searchResults = [];
+                    },
+                },
+                search(item) {
+                    await $.ajax({
+                        url: 'http://127.0.0.1:5000/search/',
+                        type: 'POST',
+                        data: item,
+                        success: (response) => {
+                            var self = this;
+                            this.searchResults = response;
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to conduct search`);
+                            alert(message);
+                        }
+                    });
+                    //this.updateQueries();
                 },
                 mounted() {
                     this.populateFrequentlyAsked("All");
