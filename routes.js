@@ -204,6 +204,27 @@ routes.get('/queries/user/', async (req, res) => {
         }
     }
 });
+routes.get('/queries/:search', async (req, res) => {
+    if (!req.params.search) {
+        res.status(400).send('ERROR! Incomplete data sent to server');
+    }
+    else {
+        const validSearch = await dataValidation.validTitle(req.params.search);
+        if (!validSearch) {
+            res.status(400).send('ERROR! Invalid data sent to server');
+        }
+        else {
+            const dbRes = await database.getQueriesByTitle(validSearch);
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).json(dbRes.queries);
+            }
+        }
+    }
+});
 routes.get('/frequentlyasked/:category', async (req, res) => {
     if (req.params.category == "All") {
         // get all

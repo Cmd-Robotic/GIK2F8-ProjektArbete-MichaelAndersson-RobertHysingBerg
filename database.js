@@ -258,6 +258,23 @@ const getQueries = async () => {
         //throw new Error('Något gick fel vid kommunikation med databasen');
     }
 };
+const getQueriesByTitle = async (title) => {
+    try {
+        const dbConnection = await database;
+        const queries = await dbConnection.all('SELECT id, time, userId, username, title, category, description, answers, duplicates, duplicateOf FROM queries WHERE title LIKE ?;', ['%' + title + '%']);
+        if (queries.length > 0) {
+            return { status: '200', queries: queries };
+        }
+        else {
+            return { status: '404', };
+        }
+    }
+    catch (error) {
+        console.log(`| ERROR | ${error} |`);
+        logSave(`| ERROR | ${error} |`);
+        return { status: '400', errorMessage: 'ERROR! Database failure' };
+    }
+};
 const getQueriesByUserId = async (id) => {
     try {
         let queries = []
@@ -682,6 +699,7 @@ module.exports = {
     // getUserStatus : getUserStatus,
     // Query stuff
     getQueries : getQueries,
+    getQueriesByTitle : getQueriesByTitle,
     getQuery : getQuery,
     addQuery : addQuery,
     // addQueryPic : addQueryPic,
