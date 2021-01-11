@@ -764,7 +764,7 @@
                 async loginUser(emailUsername, password) {
                     var userLogin = { 'emailUsername': emailUsername, 'password': password };
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/login/',
+                        url: '/login/',
                         type: 'POST',
                         data: userLogin,
                         success: function (response) {
@@ -793,7 +793,7 @@
                     this.username = 'Not logged in';
                     sessionStorage.removeItem('user');
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/logout/',
+                        url: '/logout/',
                         type: 'DELETE',
                         success: function () {
                             alert("User logged out");
@@ -855,7 +855,7 @@
                     this.allQueries = [];
                     if (this.selectedCategory == "All" || this.selectedCategory == "") {
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/queries/',
+                            url: '/queries/',
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
@@ -880,7 +880,7 @@
                     }
                     else {
                         await $.ajax({
-                            url: `http://127.0.0.1:5000/queries/category/${this.selectedCategory}`,
+                            url: `/queries/category/${this.selectedCategory}`,
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
@@ -1045,7 +1045,7 @@
                         description: $('#addQueryModal #inputDescription').val(),
                     }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/query/',
+                        url: '/query/',
                         type: 'POST',
                         data: query,
                         success: (response) => {
@@ -1074,7 +1074,7 @@
                     }
                     console.log(query);
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/query/',
+                        url: '/query/',
                         type: 'PUT',
                         data: query,
                         success: (response) => {
@@ -1100,7 +1100,7 @@
                         var query = item;
                         var queryData = { "id": query.id };
                         $.ajax({
-                            url: 'http://127.0.0.1:5000/query/',
+                            url: '/query/',
                             type: 'DELETE',
                             data: queryData,
                             success: (response) => {
@@ -1126,7 +1126,7 @@
                         duplicateOf: $('#markDuplicateModal #selectOriginal').val(),
                     }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/query/flagDupe',
+                        url: '/query/flagDupe',
                         type: 'PUT',
                         data: query,
                         success: (response) => {
@@ -1151,7 +1151,7 @@
                         userId: this.user.id,
                     }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/answer/',
+                        url: '/answer/',
                         type: 'POST',
                         data: answer,
                         success: (response) => {
@@ -1177,7 +1177,7 @@
                         answer: $('#updateAnswerModal #updateAnswer').val(),
                     }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/answer/',
+                        url: '/answer/',
                         type: 'PUT',
                         data: answer,
                         success: () => {
@@ -1201,7 +1201,7 @@
                         vote: item.vote = 1
                     }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/answer/',
+                        url: '/answer/',
                         type: 'PUT',
                         data: answer,
                         success: (response) => {
@@ -1224,7 +1224,7 @@
                         vote: item.vote = -1
                     }
                     await $.ajax({
-                        url: 'http://127.0.0.1:5000/answer/',
+                        url: '/answer/',
                         type: 'PUT',
                         data: answer,
                         success: (response) => {
@@ -1247,7 +1247,7 @@
                         var answer = item;
                         var queryData = { "id": answer.id };
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/answer/',
+                            url: '/answer/',
                             type: 'DELETE',
                             data: queryData,
                             success: (response) => {
@@ -1268,7 +1268,7 @@
                     this.answers = [];
                     var id = this.selectedQuery.id;
                     await $.ajax({
-                        url: `http://127.0.0.1:5000/answers/${id}`,
+                        url: `/answers/${id}`,
                         type: 'GET',
                         success: (response) => {
                             var self = this;
@@ -1337,7 +1337,7 @@
                 async search() {
                     var search = $('#searchField').val();
                     await $.ajax({
-                        url: `http://127.0.0.1:5000/queries/${search}`,
+                        url: `/queries/${search}`,
                         type: 'GET',
                         success: (response) => {
                             var self = this;
