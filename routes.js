@@ -971,7 +971,7 @@ routes.delete('/query/', async (req, res) => {
                 }
                 else {
                     // check access
-                    if (req.session.accessLevel < 3 && res.session.userId != dbRes.query.userId) {
+                    if (req.session.accessLevel < 3 && req.session.userId != dbRes.query.userId) {
                         res.status(400).send('ERROR! You do not have access to this query');
                     }
                     else {

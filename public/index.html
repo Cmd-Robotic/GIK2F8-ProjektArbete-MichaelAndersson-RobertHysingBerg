@@ -19,6 +19,8 @@
             <!------------------------------------------------------------------------------------------------------------------------------>
             <!-- NAVBAR -->
             <!-- NAVBAR -->
+            <!-- The navbar presents the user with different selection based on if the user
+                    is logged in and the accesslevel of the user -->
             <nav class="navbar navbar-expand-lg navbar-dark border border-primary">
                 <a class="navbar-brand" href="index.html">A to The Q</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -84,6 +86,7 @@
             
             <!-- PAGE HEADER -->
             <!-- PAGE HEADER -->
+            <!-- The header of the page -->
             <div class="container container-pg-head">
                 <h1 class="h1-pg text-center">The Answers You Need</h1>
             </div>
@@ -102,8 +105,12 @@
                 </form>
             </div>
 
+            <!-- The user can choose to filter the two containers for frequently asked and last asked
+                    questions based on categories -->
+
             <!-- FREQUENTLY ASKED -->
             <!-- FREQUENTLY ASKED -->
+            <!-- Shows the querries which have the highest number of duplicates -->
             <div class="container-fluid" id="frequentlyAskedQs">
                 <div class="container-fluid border border-primary rounded site-container">
                     <h4>Frequently asked questions | Category: {{ selectedCategory }}</h4>
@@ -131,6 +138,7 @@
 
             <!-- LAST ASKED -->
             <!-- LAST ASKED -->
+            <!-- Shows the querries latest queries -->
             <div class="container-fluid" id="lastAskedQs">
                 <div class="container-fluid border border-primary rounded site-container">
                     <h4>Last asked questions | Category: {{ selectedCategory }}</h4>
@@ -161,8 +169,66 @@
             <!-- MODALS -->
             <!-- MODALS -->
 
+            <!-- SEARCH RESULTS MODAL -->
+            <!-- SEARCH RESULTS MODAL -->
+            <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-labelledby="searchResultsLabel" aria-hidden="true">
+                <div class="modal-dialog modal-personal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                                v-on:click="resetSearchResults()">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body modal-height-lg">
+                            <label for="searchResultsTable">YOUR SEARCH</label>
+                            <table class="table table-image" id="searchResultsTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Id</th>
+                                        <th scope="col">Posted</th>
+                                        <th scope="col">Posted by ID</th>
+                                        <th scope="col">Posted by user</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Category</th>
+                                        <th scope="col" rows="3">Description</th>
+                                        <th scope="col">Answers</th>
+                                        <th scope="col">Duplicate</th>
+                                        <th scope="col" class="query-actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="table-content" v-for="item in searchResults" :key="item.id">
+                                        <td>{{ item.id }}</td>
+                                        <td>{{ item.time }}</td>
+                                        <td>{{ item.userId }}</td>
+                                        <td>{{ item.username }}</td>
+                                        <td class="table-row-height">{{ item.title }}</td>
+                                        <td>{{ item.category }}</td>
+                                        <td class="table-row-height">{{ item.description}}</td>
+                                        <td>{{ item.answers}}</td>
+                                        <td>{{ item.duplicate}}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-info btn-card" data-toggle="modal"
+                                                data-target="#queryModal" v-on:click="openQuery(item)">
+                                                Show
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="resetSearchResults()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- LOGIN MODAL -->
             <!-- LOGIN MODAL -->
+            <!-- A modal for logging in -->
             <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -200,6 +266,7 @@
 
             <!-- UPDATE USER MODAL -->
             <!-- UPDATE USER MODAL -->
+            <!-- A modal for updating the users info. A logged in user can update its own info -->
             <div class="modal fade" id="updateUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
                 :user="user">
                 <div class="modal-dialog">
@@ -210,7 +277,6 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
                         <div class="modal-body">
                             <form id="formUpdateUser">
                                 <div class="form-group modalColor">
@@ -262,6 +328,7 @@
 
             <!-- ADD USER MODAL -->
             <!-- ADD USER MODAL -->
+            <!-- A modal for adding/registering a new user -->
             <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
                 :user="user">
                 <div class="modal-dialog">
@@ -272,7 +339,6 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
                         <div class="modal-body">
                             <form id="formAddUser">
                                 <div class="form-group modalColor">
@@ -313,6 +379,7 @@
 
             <!-- PERSONAL QUERY MODAL -->
             <!-- PERSONAL QUERY MODAL -->
+            <!-- A modal for showing the querys of the user that is logged in -->
             <div class="modal fade" id="personalQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-personal">
                     <div class="modal-content">
@@ -376,6 +443,7 @@
 
             <!-- QUERY MODAL -->
             <!-- QUERY MODAL -->
+            <!-- A modal for showing a selected query -->
             <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -428,6 +496,7 @@
 
             <!-- ANSWER MODAL -->
             <!-- ANSWER MODAL -->
+            <!-- A modal for writing an answer to a query -->
             <div class="modal fade" id="answerModal" tabindex="-1" aria-labelledby="answerModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -461,6 +530,7 @@
 
             <!-- UPDATE ANSWER MODAL -->
             <!-- UPDATE ANSWER MODAL -->
+            <!-- A modal for updating an answer -->
             <div class="modal fade" id="updateAnswerModal" tabindex="-1" aria-labelledby="updateAnswerModalLabel"
                 aria-hidden="true">
                 <div class="modal-dialog">
@@ -490,6 +560,7 @@
 
             <!-- ADD QUERY MODAL -->
             <!-- ADD QUERY MODAL -->
+            <!-- A modal for adding a new query -->
             <div class="modal fade" id="addQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -534,6 +605,7 @@
 
             <!-- UPDATE QUERY MODAL -->
             <!-- UPDATE QUERY MODAL -->
+            <!-- A modal for updating a query -->
             <div class="modal fade" id="updateQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true"
                 :item="item">
                 <div class="modal-dialog">
@@ -844,6 +916,7 @@
 
                     //########## UPDATE ##########
                     async updateQueries() {
+                        this.queries = [];
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/queries/user/',
                             type: 'GET',
@@ -1140,9 +1213,9 @@
                             }
                         });
                         this.unselectAnswer();
-                        this.resetupdateAnswerModal();
-                        //this.updateQueries();
+                        this.resetUpdateAnswerModal();
                         this.populateAnswers();
+                        console.log(this.selectedQuery);
                     },
                     async upvoteAnswer(item) {
                         var message;
