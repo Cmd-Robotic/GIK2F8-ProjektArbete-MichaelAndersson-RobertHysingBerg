@@ -643,6 +643,9 @@
                         type: 'DELETE',
                         success: function () {
                             alert("User logged out");
+                            if (!alert) {
+                                return
+                            }
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
@@ -684,6 +687,14 @@
                             }
                         }
                     }
+                },
+                notLoggedIn() {
+                    this.loggedIn = false;
+                    this.contributor = false;
+                    this.admin = false;
+                    this.consumer = false;
+                    this.user = [];
+                    this.username = 'Not logged in';
                 },
 
                 //########## UPDATE ##########
@@ -1129,6 +1140,9 @@
                 if (this.loggedIn) {
                     this.updateQueries();
                     this.updateUsers();
+                }
+                else {
+                    this.notLoggedIn();
                 }
             }
         });
