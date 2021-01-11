@@ -255,6 +255,34 @@ routes.get('/queries/:search', async (req, res) => {
         }
     }
 });
+// get all by category
+routes.get('/queries/category/:category', async (req, res) => {
+    if (!req.params.category) {
+        res.status(400).send('ERROR! No category sent to server');
+    }
+    else {
+        // get specific category
+        const category = await dataValidation.validName(req.params.category);
+        if (!category) {
+            // bye bye
+            res.status(400).send('ERROR! Invalid category sent to server');
+        }
+        else {
+            // logging
+            console.log(`| Handling GET-request for queries BY CATEGORY |`);
+            logSave("| GET | frequently asked queries | CATEGORY |");
+            // get queries
+            const dbRes = await database.getQueriesByCategory(category);
+            if (dbRes.errorMessage) {
+                errorLog(dbRes.status, dbRes.errorMessage);
+                res.status(dbRes.status).send(dbRes.errorMessage);
+            }
+            else {
+                res.status(dbRes.status).json(dbRes.queries);
+            }
+        }
+    }
+});
 routes.get('/frequentlyasked/:category', async (req, res) => {
     if (req.params.category == "All") {
         // get all
