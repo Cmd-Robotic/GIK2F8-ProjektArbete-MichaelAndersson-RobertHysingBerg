@@ -668,7 +668,7 @@
                             <div class="form-group modalColor">
                                 <label for="selectOriginal">Select original query ID</label>
                                 <select class="form-control" name="selectOriginal" id="selectOriginal" :key="item.id">
-                                    <option v-for="item in queries" type="text">{{ item.id }}</option>
+                                    <option v-for="item in allQueries" type="text">{{ item.id }}</option>
                                 </select>
                             </div>
                         </div>
@@ -732,6 +732,7 @@
 
                     // Declaration of variables
                     queries: [],
+                    allQueries: [],
                     answers: [],
                     answer: "",
                     frequentlyAsked: [],
@@ -859,11 +860,16 @@
                     async updateQueries() {
                         this.queries = [];
                         await $.ajax({
-                            url: 'http://127.0.0.1:5000/queries/user/',
+                            url: 'http://127.0.0.1:5000/queries/',
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
-                                self.queries = response;
+                                self.allQueries = response;
+                                for (var i = 0; i < this.allQueries.length; i++) {
+                                    if (this.allQueries[i].userId == this.user.id) {
+                                        self.queries.push(this.allQueries[i]);
+                                    }
+                                }
                             },
                             error: function (jqXHR, textStatus, error) {
                                 console.log(jqXHR.status, error, jqXHR.responseText);
@@ -980,27 +986,30 @@
                         //this.updateUsers();
                     },
                     async deleteUser(item) {
-                        var message;
-                        var user = item;
-                        var userData = { "userId": item.id };
-                        await $.ajax({
-                            url: '/user/',
-                            type: 'DELETE',
-                            data: userData,
-                            success: (response) => {
-                                alert(response);
-                            },
-                            error: function (jqXHR, textStatus, error) {
-                                console.log(jqXHR.status, error, jqXHR.responseText);
-                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
-                                alert(message);
+                        var question = confirm("Are you sure you want to delete user?");
+                        if (question) {
+                            var message;
+                            var user = item;
+                            var userData = { "userId": item.id };
+                            await $.ajax({
+                                url: '/user/',
+                                type: 'DELETE',
+                                data: userData,
+                                success: (response) => {
+                                    alert(response);
+                                },
+                                error: function (jqXHR, textStatus, error) {
+                                    console.log(jqXHR.status, error, jqXHR.responseText);
+                                    message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
+                                    alert(message);
+                                }
+                            });
+                            if (item.id == this.user.id) {
+                                this.logOutUser();
                             }
-                        });
-                        if (item.id == this.user.id) {
-                            this.logOutUser();
+                            //this.unselectItem();
+                            this.updateUsers();
                         }
-                        //this.unselectItem();
-                        this.updateUsers();
                     },
 
                     //########## QUERY HANDLING ##########
@@ -1061,26 +1070,29 @@
                         this.populateLastAsked(this.selectedCategory);
                     },
                     deleteQuery(item) {
-                        var message;
-                        var query = item;
-                        var queryData = { "id": query.id };
-                        $.ajax({
-                            url: 'http://127.0.0.1:5000/query/',
-                            type: 'DELETE',
-                            data: queryData,
-                            success: (response) => {
-                                alert(response);
-                            },
-                            error: function (jqXHR, textStatus, error) {
-                                console.log(jqXHR.status, error, jqXHR.responseText);
-                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
-                                alert(message);
-                            }
-                        });
-                        this.unselectQuery();
-                        this.updateQueries();
-                        this.populateFrequentlyAsked(this.selectedCategory);
-                        this.populateLastAsked(this.selectedCategory);
+                        var question = confirm("Are you sure you want to delete query?");
+                        if (question) {
+                            var message;
+                            var query = item;
+                            var queryData = { "id": query.id };
+                            $.ajax({
+                                url: 'http://127.0.0.1:5000/query/',
+                                type: 'DELETE',
+                                data: queryData,
+                                success: (response) => {
+                                    alert(response);
+                                },
+                                error: function (jqXHR, textStatus, error) {
+                                    console.log(jqXHR.status, error, jqXHR.responseText);
+                                    message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                                    alert(message);
+                                }
+                            });
+                            this.unselectQuery();
+                            this.updateQueries();
+                            this.populateFrequentlyAsked(this.selectedCategory);
+                            this.populateLastAsked(this.selectedCategory);
+                        }
                     },
                     async markDuplicate(item) {
                         var message;
@@ -1205,25 +1217,28 @@
                         //this.updateQueries();
                     },
                     async deleteAnswer(item) {
-                        var message;
-                        var answer = item;
-                        var queryData = { "id": answer.id };
-                        await $.ajax({
-                            url: 'http://127.0.0.1:5000/answer/',
-                            type: 'DELETE',
-                            data: queryData,
-                            success: (response) => {
-                                alert(response);
-                            },
-                            error: function (jqXHR, textStatus, error) {
-                                console.log(jqXHR.status, error, jqXHR.responseText);
-                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
-                                alert(message);
-                            }
-                        });
-                        //this.unselectItem();
-                        this.updateQueries();
-                        this.populateAnswers();
+                        var question = confirm("Are you sure you want to delete answer?");
+                        if (question) {
+                            var message;
+                            var answer = item;
+                            var queryData = { "id": answer.id };
+                            await $.ajax({
+                                url: 'http://127.0.0.1:5000/answer/',
+                                type: 'DELETE',
+                                data: queryData,
+                                success: (response) => {
+                                    alert(response);
+                                },
+                                error: function (jqXHR, textStatus, error) {
+                                    console.log(jqXHR.status, error, jqXHR.responseText);
+                                    message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                                    alert(message);
+                                }
+                            });
+                            //this.unselectItem();
+                            this.updateQueries();
+                            this.populateAnswers();
+                        }
                     },
                     async populateAnswers() {
                         this.answers = [];

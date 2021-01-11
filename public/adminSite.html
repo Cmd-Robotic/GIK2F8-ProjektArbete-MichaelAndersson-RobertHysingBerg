@@ -813,51 +813,57 @@
                     this.updateUsers();
                 },
                 async banUser(item) {
-                    var message;
-                    var user = {
-                        id: item.id,
-                        accessLevel: 0,
-                        username: item.username,
-                        //password: item.password,
-                        fname: item.fname,
-                        lname: item.lname,
-                        email: item.email
-                    }
-                    //item.accessLevel=0;
-                    console.log(user);
-                    await $.ajax({
-                        url: '/user/admin/',
-                        type: 'PUT',
-                        data: user,
-                        success: () => {
-                            alert(`User with ID: ${item.id} has been banned`);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to ban user`);
-                            alert(message);
+                    var question = confirm("Are you sure you want to ban user?");
+                    if (question) {
+                        var message;
+                        var user = {
+                            id: item.id,
+                            accessLevel: 0,
+                            username: item.username,
+                            //password: item.password,
+                            fname: item.fname,
+                            lname: item.lname,
+                            email: item.email
                         }
-                    });
-                    this.updateUsers();
+                        //item.accessLevel=0;
+                        console.log(user);
+                        await $.ajax({
+                            url: '/user/admin/',
+                            type: 'PUT',
+                            data: user,
+                            success: () => {
+                                alert(`User with ID: ${item.id} has been banned`);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to ban user`);
+                                alert(message);
+                            }
+                        });
+                        this.updateUsers();
+                    }
                 },
                 async deleteUser(item) {
-                    var message;
-                    var user = item;
-                    var userData = { "id": user.id };
-                    await $.ajax({
-                        url: '/user/',
-                        type: 'DELETE',
-                        data: userData,
-                        success: (response) => {
-                            alert(response);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
-                            alert(message);
-                        }
-                    });
-                    this.updateUsers();
+                    var question = confirm("Are you sure you want to delete user?");
+                    if (question) {
+                        var message;
+                        var user = item;
+                        var userData = { "id": user.id };
+                        await $.ajax({
+                            url: '/user/',
+                            type: 'DELETE',
+                            data: userData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
+                                alert(message);
+                            }
+                        });
+                        this.updateUsers();
+                    }
                 },
 
                 //########## QUERY HANDLING ##########
@@ -912,23 +918,26 @@
                     this.updateQueries();
                 },
                 async deleteQuery(item) {
-                    var message;
-                    var query = item;
-                    var queryData = { "id": query.id };
-                    await $.ajax({
-                        url: 'http://127.0.0.1:5000/query/',
-                        type: 'DELETE',
-                        data: queryData,
-                        success: (response) => {
-                            alert(response);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
-                            alert(message);
-                        }
-                    });
-                    this.updateQueries();
+                    var question = confirm("Are you sure you want to delete query?");
+                    if (question) {
+                        var message;
+                        var query = item;
+                        var queryData = { "id": query.id };
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/query/',
+                            type: 'DELETE',
+                            data: queryData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                                alert(message);
+                            }
+                        });
+                        this.updateQueries();
+                    }
                 },
                 async markDuplicate(item) {
                     var message;
@@ -1049,24 +1058,27 @@
                     this.updateQueries();
                 },
                 async deleteAnswer(item) {
-                    var message;
-                    var answer = item;
-                    var queryData = { "id": answer.id };
-                    await $.ajax({
-                        url: 'http://127.0.0.1:5000/answer/',
-                        type: 'DELETE',
-                        data: queryData,
-                        success: (response) => {
-                            alert(response);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
-                            alert(message);
-                        }
-                    });
-                    this.updateQueries();
-                    this.populateAnswers();
+                    var question = confirm("Are you sure you want to delete answer?");
+                    if (question) {
+                        var message;
+                        var answer = item;
+                        var queryData = { "id": answer.id };
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/answer/',
+                            type: 'DELETE',
+                            data: queryData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                                alert(message);
+                            }
+                        });
+                        this.updateQueries();
+                        this.populateAnswers();
+                    }
                 },
                 async populateAnswers() {
                     this.answers = [];
