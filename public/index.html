@@ -881,6 +881,22 @@
                             }
                         });
                     },
+                    async populateFrequentlyAsked(category) {
+                        await $.ajax({
+                            url: `http://127.0.0.1:5000/frequentlyasked/${category}`,
+                            type: 'GET',
+                            success: (response) => {
+                                var self = this;
+                                self.frequentlyAsked = response;
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                if (jqXHR.status != '404') {
+                                    alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                                }
+                            }
+                        });
+                    },
                     selectCategory() {
                         this.selectedCategory = $('#selectCategory').val();
                         this.populateFrequentlyAsked(this.selectedCategory);

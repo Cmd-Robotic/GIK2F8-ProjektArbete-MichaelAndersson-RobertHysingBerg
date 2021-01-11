@@ -19,6 +19,8 @@
         <!------------------------------------------------------------------------------------------------------------------------------>
         <!-- NAVBAR -->
         <!-- NAVBAR -->
+        <!-- The navbar presents the user with different selection based on if the user
+                    is logged in and the accesslevel of the user -->
         <nav class="navbar navbar-expand-lg navbar-dark border border-primary">
             <a class="navbar-brand" href="index.html">A to The Q</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -40,7 +42,7 @@
                                 data-target="#addQueryModal">Ask a Q</a>
                             <a v-show="loggedIn" class="dropdown-item" href="#" data-toggle="modal"
                                 data-target="#personalQueryModal">See your Q&As</a>
-                            <a class="dropdown-item disabled" href="#">See all Q&As</a>
+                            <a class="dropdown-item" href="allQueries.html">See all Q&As</a>
                             <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="#">About Us</a>
                             <a class="dropdown-item" href="#">Contact</a>
@@ -53,9 +55,7 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button"
-                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Account
-                        </a>
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <span v-show="loggedIn"><a class="dropdown-item disabled" href="#" tabindex="-1"
                                     aria-disabled="true">{{ username }}</a></span>
@@ -77,8 +77,9 @@
                     </li>
                 </ul>
                 <form class="form-inline my-2 my-lg-0">
-                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="button">Search</button>
+                    <input class="form-control mr-sm-2" placeholder="Search" aria-label="Search" id="searchField">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="button" v-on:click="search()"
+                        data-toggle="modal" data-target="#searchResultsModal">Search</button>
                 </form>
             </div>
         </nav>
@@ -87,6 +88,7 @@
 
         <!-- PAGE HEADER -->
         <!-- PAGE HEADER -->
+        <!-- The header of the page -->
         <div class="container container-pg-head">
             <h1 class="h1-pg text-center">The Answers You Need</h1>
         </div>
@@ -105,6 +107,9 @@
             </form>
         </div>
 
+        <!-- The user can choose to filter the two containers for frequently asked and last asked
+                    questions based on categories -->
+
         <!-- ALL QUERIES -->
         <!-- ALL QUERIES -->
         <div class="container-fluid" id="allQueries">
@@ -122,8 +127,8 @@
                                 <p class="card-text query-description">{{ item.description }}</p>
                                 <p class="card-text"><small class="text-muted">Posted: {{ item.time }}</small></p>
                             </div>
-                            <button type="button" class="btn btn-primary btn-card" data-toggle="modal"
-                                data-target="#queryModal" v-on:click="openQuery(item)">
+                            <button type="button" class="btn btn-primary btn-card" data-toggle="modal" data-target="#queryModal"
+                                v-on:click="openQuery(item)">
                                 Open query
                             </button>
                         </div>
@@ -137,14 +142,75 @@
         <!-- MODALS -->
         <!-- MODALS -->
 
+        <!-- SEARCH RESULTS MODAL -->
+        <!-- SEARCH RESULTS MODAL -->
+        <!-- A modal for showing the results of a search -->
+        <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-labelledby="searchResultsLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-personal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetSearchResults()">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body modal-height-lg">
+                        <label for="searchResultsTable">YOUR SEARCH</label>
+                        <table class="table table-image" id="searchResultsTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Id</th>
+                                    <th scope="col">Posted</th>
+                                    <th scope="col">Posted by ID</th>
+                                    <th scope="col">Posted by user</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Category</th>
+                                    <th scope="col" rows="3">Description</th>
+                                    <th scope="col">Answers</th>
+                                    <th scope="col">Duplicate</th>
+                                    <th scope="col" class="query-actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="table-content" v-for="item in searchResults" :key="item.id">
+                                    <td>{{ item.id }}</td>
+                                    <td>{{ item.time }}</td>
+                                    <td>{{ item.userId }}</td>
+                                    <td>{{ item.username }}</td>
+                                    <td class="table-row-height">{{ item.title }}</td>
+                                    <td>{{ item.category }}</td>
+                                    <td class="table-row-height">{{ item.description}}</td>
+                                    <td>{{ item.answers}}</td>
+                                    <td>{{ item.duplicate}}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-info btn-card" data-toggle="modal"
+                                            data-target="#queryModal" v-on:click="openQuery(item)">
+                                            Show
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            v-on:click="resetSearchResults()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- LOGIN MODAL -->
         <!-- LOGIN MODAL -->
+        <!-- A modal for logging in -->
         <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="loginModalLabel">Login</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetLoginModal()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -178,17 +244,18 @@
 
         <!-- UPDATE USER MODAL -->
         <!-- UPDATE USER MODAL -->
+        <!-- A modal for updating the users info. A logged in user can update its own info -->
         <div class="modal fade" id="updateUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
             :user="user">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="updateUserLabel">Update user</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetUpdateUserModal()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
                     <div class="modal-body">
                         <form id="formUpdateUser">
                             <div class="form-group modalColor">
@@ -242,17 +309,18 @@
 
         <!-- ADD USER MODAL -->
         <!-- ADD USER MODAL -->
+        <!-- A modal for adding/registering a new user -->
         <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true"
             :user="user">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="addUserLabel">New user</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetAddUserModal()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <!-- <img v-bind:src="selectedItem.picture" class="card-img-top" alt="..."> -->
                     <div class="modal-body">
                         <form id="formAddUser">
                             <div class="form-group modalColor">
@@ -262,7 +330,7 @@
                             </div>
                             <div class="form-group modalColor">
                                 <label for="newPassword">Password</label>
-                                <input type="text" class="form-control" name="newPassword" id="newPassword"
+                                <input type="password" class="form-control" name="newPassword" id="newPassword"
                                     v-bind:value="selectedUser.password">
                             </div>
                             <div class="form-group modalColor">
@@ -294,12 +362,18 @@
 
         <!-- PERSONAL QUERY MODAL -->
         <!-- PERSONAL QUERY MODAL -->
+        <!-- A modal for showing the querys of the user that is logged in -->
         <div class="modal fade" id="personalQueryModal" tabindex="-1" aria-labelledby="queryModalLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-personal">
                 <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="personalQueryModalLabel">Your queries</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                     <div class="modal-body modal-height-lg">
-                        <label for="queriesTable">YOUR QUERIES</label>
                         <table class="table table-image" id="queriesTable">
                             <thead>
                                 <tr>
@@ -353,12 +427,14 @@
 
         <!-- QUERY MODAL -->
         <!-- QUERY MODAL -->
+        <!-- A modal for showing a selected query -->
         <div class="modal fade" id="queryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="queryModalLabel">{{ selectedQuery.title }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="unselectQuery()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -374,11 +450,11 @@
                                     <p class="card-text">{{ item.answer }}</p>
                                     <p class="card-text">Quality: {{ item.vote }}</p>
                                     <p class="card-text"><small>Posted: {{ item.time }}</small></p>
-                                    <button type="button" class="btn btn-primary" v-show="contributor"
+                                    <button type="button" class="btn btn-primary" v-show="admin || allow"
                                         v-on:click="upvoteAnswer(item)">Good</button>
-                                    <button type="button" class="btn btn-danger" v-show="contributor"
+                                    <button type="button" class="btn btn-danger" v-show="admin || allow"
                                         v-on:click="downvoteAnswer(item)">Bad</button>
-                                    <button v-show="admin" type="button" class="btn btn-info btn-right"
+                                    <button v-show="contributor" type="button" class="btn btn-info btn-right"
                                         data-target="#updateAnswerModal" data-toggle="modal"
                                         v-on:click="selectAnswer(item)">Update</button>
                                     <button v-show="admin" type="button" class="btn btn-danger btn-right"
@@ -396,6 +472,8 @@
                             <button type="button" class="btn btn-secondary" data-dismiss="modal" data-toggle="modal"
                                 v-show="contributor" data-target="#markDuplicateModal">Mark duplicate</button>
                         </div>
+                        <button type="button" v-show="admin || allow" class="btn btn-primary btn-card"
+                            data-toggle="modal" data-target="#updateQueryModal">Update</button>
                         <div>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal"
                                 v-on:click="unselectQuery()">Close</button>
@@ -407,12 +485,14 @@
 
         <!-- ANSWER MODAL -->
         <!-- ANSWER MODAL -->
+        <!-- A modal for writing an answer to a query -->
         <div class="modal fade" id="answerModal" tabindex="-1" aria-labelledby="answerModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="answerModalLabel">{{ selectedQuery.title }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetAnswerModal()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -440,25 +520,30 @@
 
         <!-- UPDATE ANSWER MODAL -->
         <!-- UPDATE ANSWER MODAL -->
+        <!-- A modal for updating an answer -->
         <div class="modal fade" id="updateAnswerModal" tabindex="-1" aria-labelledby="updateAnswerModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="updateAnswerModalLabel">{{ selectedQuery.title }}</h5>
-                        <form class="modal-body">
-                            <div class="form-group modalColor">
-                                <label for="updateAnswer">Answer</label>
-                                <textarea class="form-control" id="updateAnswer" rows="6"
-                                    placeholder="selectedAnswer.answer" v-bind:value="selectedAnswer.answer"></textarea>
-                            </div>
-                        </form>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
-                                v-on:click="updateAnswer()">Reply</button>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                                v-on:click="resetUpdateAnswerModal()">Close</button>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetUpdateAnswerModal()">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form class="modal-body">
+                        <div class="form-group modalColor">
+                            <label for="updateAnswer">Answer</label>
+                            <textarea class="form-control" id="updateAnswer" rows="6"
+                                placeholder="selectedAnswer.answer" v-bind:value="selectedAnswer.answer"></textarea>
                         </div>
+                    </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
+                            v-on:click="updateAnswer()">Reply</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                            v-on:click="resetUpdateAnswerModal()">Close</button>
                     </div>
                 </div>
             </div>
@@ -466,12 +551,14 @@
 
         <!-- ADD QUERY MODAL -->
         <!-- ADD QUERY MODAL -->
+        <!-- A modal for adding a new query -->
         <div class="modal fade" id="addQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="addQueryModalLabel">Make a query</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetAddQueryModal()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -510,13 +597,15 @@
 
         <!-- UPDATE QUERY MODAL -->
         <!-- UPDATE QUERY MODAL -->
+        <!-- A modal for updating a query -->
         <div class="modal fade" id="updateQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true"
             :item="item">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="updateQueryModalLabel">Update query</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetUpdateQueryModal()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -556,13 +645,15 @@
 
         <!-- MARK DUPLICATE MODAL -->
         <!-- MARK DUPLICATE MODAL -->
+        <!-- A modal for marking a query as duplicate of another query -->
         <div class="modal fade" id="markDuplicateModal" tabindex="-1" aria-labelledby="markDuplicateModalLabel"
             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="markDuplicateModalLabel">{{ selectedQuery.title }}</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            v-on:click="resetDuplicateModal()">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -570,7 +661,7 @@
                         <div class="form-group modalColor">
                             <label for="selectOriginal">Select original query ID</label>
                             <select class="form-control" name="selectOriginal" id="selectOriginal" :key="item.id">
-                                <option v-for="item in queries" type="text">{{ item.id }}</option>
+                                <option v-for="item in allQueries" type="text">{{ item.id }}</option>
                             </select>
                         </div>
                     </div>
@@ -583,13 +674,13 @@
                 </div>
             </div>
         </div>
-
     </div>
 
 
     <!------------------------------------------------------------------------------------------------------------------------------>
     <!-- FOOTER -->
     <!-- FOOTER -->
+    <!-- Footer of the page -->
     <footer class="border border-primary border-left-0 border-right-0 border-bottom-0">
         <div class="container-fluid">
             <div class="row just">
@@ -631,15 +722,21 @@
         new Vue({
             el: '#app',
             data: {
+
+                // Declaration of variables
                 queries: [],
-                answers: [],
                 allQueries: [],
+                answers: [],
+                answer: "",
+                frequentlyAsked: [],
+                lastAsked: [],
                 selectedCategory: "All",
                 item: '',
                 selectedItem: '',
                 selectedUser: '',
                 selectedQuery: '',
                 selectedAnswer: '',
+                searchResults: [],
                 email: '',
                 password: '',
                 user: [],
@@ -649,6 +746,7 @@
                 admin: false,
                 contributor: false,
                 consumer: false,
+                allow: false,
                 emailUsername: "",
                 newUsername: "",
                 newEmail: "",
@@ -662,6 +760,7 @@
             methods: {
 
                 //########## USER LOGIN ##########
+                // Logging in a user and creating a local session for that user
                 async loginUser(emailUsername, password) {
                     var userLogin = { 'emailUsername': emailUsername, 'password': password };
                     await $.ajax({
@@ -684,6 +783,7 @@
                     });
                     this.checkLoggedIn();
                 },
+                // Logging out a user and removing the local session, also destroying the server session
                 async logOutUser() {
                     this.loggedIn = false;
                     this.contributor = false;
@@ -697,6 +797,9 @@
                         type: 'DELETE',
                         success: function () {
                             alert("User logged out");
+                            if (!alert) {
+                                return
+                            }
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
@@ -737,33 +840,80 @@
                         this.updateQueries();
                     }
                 },
+                notLoggedIn() {
+                    this.loggedIn = false;
+                    this.contributor = false;
+                    this.admin = false;
+                    this.consumer = false;
+                    this.user = [];
+                    this.username = 'Not logged in';
+                },
 
                 //########## UPDATE ##########
-                async updateQueries() {
-                    await $.ajax({
-                        url: 'http://127.0.0.1:5000/queries/user/',
-                        type: 'GET',
-                        success: (response) => {
-                            var self = this;
-                            self.queries = response;
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            if (jqXHR.status != '404') {
-                                alert(`${jqXHR.responseText}`);
+                async updateQueries(category) {
+                    this.queries = [];
+                    this.allQueries = [];
+                    if (category == "All" || category == "") {
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/queries/',
+                            type: 'GET',
+                            success: (response) => {
+                                var self = this;
+                                self.allQueries = response;
+                                self.queries = [];
+                                for (var i = 0; i < self.allQueries.length; i++) {
+                                    if (self.allQueries[i].userId == self.user.id) {
+                                        self.queries.push(self.allQueries[i]);
+                                    }
+                                }
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                if (jqXHR.status != '404') {
+                                    alert(`${jqXHR.responseText}`);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
+                    else {
+                        await $.ajax({
+                            url: `http://127.0.0.1:5000/queries/category/${category}`,
+                            type: 'GET',
+                            success: (response) => {
+                                var self = this;
+                                self.allQueries = response;
+                                self.queries = [];
+                                for (var i = 0; i < self.allQueries.length; i++) {
+                                    if (self.allQueries[i].userId == self.user.id) {
+                                        self.queries.push(self.allQueries[i]);
+                                    }
+                                }
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                if (jqXHR.status != '404') {
+                                    alert(`${jqXHR.responseText}`);
+                                }
+                            }
+                        });
+                    }
                 },
                 selectCategory() {
                     this.selectedCategory = $('#selectCategory').val();
-                    this.populateAllQueries(this.selectedCategory);
+                    this.populateFrequentlyAsked(this.selectedCategory);
+                    this.populateLastAsked(this.selectedCategory);
                 },
                 selectItem(item) {
                     this.selectedItem = item;
                 },
                 selectQuery(item) {
                     this.selectedQuery = item;
+                    if (item.userId == this.user.id) {
+                        this.allow = true;
+                    }
+                    else {
+                        this.allow = false;
+                    }
                 },
                 selectAnswer(item) {
                     this.selectedAnswer = item;
@@ -773,6 +923,8 @@
                 },
                 unselectQuery() {
                     this.selectedQuery = '';
+                    this.allow = false;
+                    console.log(this.allow);
                 },
                 unselectAnswer() {
                     this.selectedAnswer = '';
@@ -853,27 +1005,30 @@
                     //this.updateUsers();
                 },
                 async deleteUser(item) {
-                    var message;
-                    var user = item;
-                    var userData = { "userId": item.id };
-                    await $.ajax({
-                        url: '/user/',
-                        type: 'DELETE',
-                        data: userData,
-                        success: (response) => {
-                            alert(response);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
-                            alert(message);
+                    var question = confirm("Are you sure you want to delete user?");
+                    if (question) {
+                        var message;
+                        var user = item;
+                        var userData = { "userId": item.id };
+                        await $.ajax({
+                            url: '/user/',
+                            type: 'DELETE',
+                            data: userData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete user`);
+                                alert(message);
+                            }
+                        });
+                        if (item.id == this.user.id) {
+                            this.logOutUser();
                         }
-                    });
-                    if (item.id == this.user.id) {
-                        this.logOutUser();
+                        //this.unselectItem();
+                        this.updateUsers();
                     }
-                    //this.unselectItem();
-                    this.updateUsers();
                 },
 
                 //########## QUERY HANDLING ##########
@@ -901,7 +1056,8 @@
                     //this.unselectItem();
                     this.resetAddQueryModal()
                     this.updateQueries();
-                    this.populateAllQueries(this.selectedCategory);
+                    this.populateFrequentlyAsked(this.selectedCategory);
+                    this.populateLastAsked(this.selectedCategory);
                 },
                 async updateQuery() {
                     var message;
@@ -929,28 +1085,33 @@
                     this.unselectQuery();
                     this.resetUpdateQueryModal()
                     this.updateQueries();
-                    this.populateAllQueries(this.selectedCategory);
+                    this.populateFrequentlyAsked(this.selectedCategory);
+                    this.populateLastAsked(this.selectedCategory);
                 },
                 deleteQuery(item) {
-                    var message;
-                    var query = item;
-                    var queryData = { "id": query.id };
-                    $.ajax({
-                        url: 'http://127.0.0.1:5000/query/',
-                        type: 'DELETE',
-                        data: queryData,
-                        success: (response) => {
-                            alert(response);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
-                            alert(message);
-                        }
-                    });
-                    this.unselectQuery();
-                    this.updateQueries();
-                    this.populateAllQueries(this.selectedCategory);
+                    var question = confirm("Are you sure you want to delete query?");
+                    if (question) {
+                        var message;
+                        var query = item;
+                        var queryData = { "id": query.id };
+                        $.ajax({
+                            url: 'http://127.0.0.1:5000/query/',
+                            type: 'DELETE',
+                            data: queryData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                                alert(message);
+                            }
+                        });
+                        this.unselectQuery();
+                        this.updateQueries();
+                        this.populateFrequentlyAsked(this.selectedCategory);
+                        this.populateLastAsked(this.selectedCategory);
+                    }
                 },
                 async markDuplicate(item) {
                     var message;
@@ -1001,7 +1162,8 @@
                     this.unselectQuery();
                     this.resetAnswerModal();
                     //this.updateQueries();
-                    this.populateAllQueries(this.selectedCategory);
+                    this.populateFrequentlyAsked(this.selectedCategory);
+                    this.populateLastAsked(this.selectedCategory);
                 },
                 async updateAnswer() {
                     var message;
@@ -1023,8 +1185,9 @@
                         }
                     });
                     this.unselectAnswer();
-                    this.resetupdateAnswerModal();
-                    this.updateQueries();
+                    this.resetUpdateAnswerModal();
+                    this.populateAnswers();
+                    console.log(this.selectedQuery);
                 },
                 async upvoteAnswer(item) {
                     var message;
@@ -1047,7 +1210,7 @@
                         }
                     });
                     //this.unselectItem();
-                    //this.updateQueries();
+                    this.updateQueries();
                 },
                 async downvoteAnswer(item) {
                     var message;
@@ -1070,28 +1233,31 @@
                         }
                     });
                     //this.unselectItem();
-                    //this.updateQueries();
+                    this.updateQueries();
                 },
                 async deleteAnswer(item) {
-                    var message;
-                    var answer = item;
-                    var queryData = { "id": answer.id };
-                    await $.ajax({
-                        url: 'http://127.0.0.1:5000/answer/',
-                        type: 'DELETE',
-                        data: queryData,
-                        success: (response) => {
-                            alert(response);
-                        },
-                        error: function (jqXHR, textStatus, error) {
-                            console.log(jqXHR.status, error, jqXHR.responseText);
-                            message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
-                            alert(message);
-                        }
-                    });
-                    //this.unselectItem();
-                    this.updateQueries();
-                    this.populateAnswers();
+                    var question = confirm("Are you sure you want to delete answer?");
+                    if (question) {
+                        var message;
+                        var answer = item;
+                        var queryData = { "id": answer.id };
+                        await $.ajax({
+                            url: 'http://127.0.0.1:5000/answer/',
+                            type: 'DELETE',
+                            data: queryData,
+                            success: (response) => {
+                                alert(response);
+                            },
+                            error: function (jqXHR, textStatus, error) {
+                                console.log(jqXHR.status, error, jqXHR.responseText);
+                                message = (`Error!\n${jqXHR.responseText}\nUnable to delete query`);
+                                alert(message);
+                            }
+                        });
+                        //this.unselectItem();
+                        this.updateQueries();
+                        this.populateAnswers();
+                    }
                 },
                 async populateAnswers() {
                     this.answers = [];
@@ -1113,17 +1279,35 @@
                 },
 
                 //########## QUERY HANDLING ##########
-                async populateAllQueries(category) {
+                async populateFrequentlyAsked(category) {
                     await $.ajax({
-                        url: `http://127.0.0.1:5000/queries/`,
+                        url: `http://127.0.0.1:5000/frequentlyasked/${category}`,
                         type: 'GET',
                         success: (response) => {
                             var self = this;
-                            self.allQueries = response;
+                            self.frequentlyAsked = response;
                         },
                         error: function (jqXHR, textStatus, error) {
                             console.log(jqXHR.status, error, jqXHR.responseText);
-                            alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                            if (jqXHR.status != '404') {
+                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                            }
+                        }
+                    });
+                },
+                async populateLastAsked(category) {
+                    await $.ajax({
+                        url: `http://127.0.0.1:5000/lastasked/${category}`,
+                        type: 'GET',
+                        success: (response) => {
+                            var self = this;
+                            self.lastAsked = response;
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            if (jqXHR.status != '404') {
+                                alert(`Error!\n${jqXHR.responseText}\nUnable to update queries`);
+                            }
                         }
                     });
                 },
@@ -1170,12 +1354,45 @@
                 resetDuplicateModal() {
                     $('#markDuplicateModal #selectOriginal').val("");
                 },
+                resetSearchField() {
+                    $('#searchField').val("");
+                },
+                resetSearchResults() {
+                    this.searchResults = [];
+                },
+                async search() {
+                    var search = $('#searchField').val();
+                    await $.ajax({
+                        url: `http://127.0.0.1:5000/queries/${search}`,
+                        type: 'GET',
+                        success: (response) => {
+                            var self = this;
+                            self.searchResults = response;
+                        },
+                        error: function (jqXHR, textStatus, error) {
+                            console.log(jqXHR.status, error, jqXHR.responseText);
+                            message = (`Error!\n${jqXHR.responseText}\nUnable to conduct search`);
+                            if (jqXHR.status == '404') {
+                                alert('No queries matching the search found!');
+                            }
+                            else if (jqXHR.status != '404') {
+                                alert(message);
+                            }
+                        }
+                    });
+                    this.resetSearchField();
+                    $('#searchResultsModal').close;
+                },
             },
             mounted() {
-                this.populateAllQueries("All");
+                this.populateFrequentlyAsked("All");
+                this.populateLastAsked("All");
                 this.checkLoggedIn();
                 if (this.loggedIn) {
                     this.updateQueries();
+                }
+                else {
+                    this.notLoggedIn();
                 }
             }
         });
