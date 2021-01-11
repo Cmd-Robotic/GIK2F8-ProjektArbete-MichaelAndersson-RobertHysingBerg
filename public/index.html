@@ -167,7 +167,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="loginModalLabel">Login</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetLoginModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -205,7 +205,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="updateUserLabel">Update user</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetUpdateUserModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -267,7 +267,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="addUserLabel">New user</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetAddUserModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -315,8 +315,13 @@
             <div class="modal fade" id="personalQueryModal" tabindex="-1" aria-labelledby="queryModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-personal">
                     <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="personalQueryModalLabel">Your queries</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
                         <div class="modal-body modal-height-lg">
-                            <label for="queriesTable">YOUR QUERIES</label>
                             <table class="table table-image" id="queriesTable">
                                 <thead>
                                     <tr>
@@ -375,7 +380,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="queryModalLabel">{{ selectedQuery.title }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="unselectQuery()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -427,7 +432,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="answerModalLabel">{{ selectedQuery.title }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetAnswerModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -461,6 +466,9 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="updateAnswerModalLabel">{{ selectedQuery.title }}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetUpdateAnswerModal()">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                             <form class="modal-body">
                                 <div class="form-group modalColor">
                                     <label for="updateAnswer">Answer</label>
@@ -486,7 +494,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="addQueryModalLabel">Make a query</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetAddQueryModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -531,7 +539,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="updateQueryModalLabel">Update query</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetUpdateQueryModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -577,7 +585,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="markDuplicateModalLabel">{{ selectedQuery.title }}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetDuplicateModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -604,6 +612,11 @@
             <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-labelledby="searchResultsLabel" aria-hidden="true">
                 <div class="modal-dialog modal-personal">
                     <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
                         <div class="modal-body modal-height-lg">
                             <label for="searchResultsTable">YOUR SEARCH</label>
                             <table class="table table-image" id="searchResultsTable">
@@ -845,6 +858,9 @@
                         if (item.userId == this.user.id) {
                             this.allow = true;
                         }
+                        else {
+                            this.allow = false;
+                        }
                     },
                     selectAnswer(item) {
                         this.selectedAnswer = item;
@@ -855,6 +871,7 @@
                     unselectQuery() {
                         this.selectedQuery = '';
                         this.allow = false;
+                        console.log(this.allow);
                     },
                     unselectAnswer() {
                         this.selectedAnswer = '';
