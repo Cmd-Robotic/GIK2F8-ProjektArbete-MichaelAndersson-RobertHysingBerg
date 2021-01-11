@@ -368,7 +368,7 @@
                     <form class="modal-body">
                         <div class="form-group modalColor">
                             <label for="inputAnswer">Answer</label>
-                            <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6" answer="answer"
+                            <textarea class="form-control" id="inputAnswer" placeholder="Answer" rows="6"
                                 v-model="answer"></textarea>
                         </div>
                     </form>
@@ -579,7 +579,6 @@
             data: {
                 queries: [],
                 answers: [],
-                answer: "",
                 item: [],
                 selectedItem: '',
                 selectedUser: '',
@@ -1122,11 +1121,9 @@
                 },
                 resetAnswerModal() {
                     $('#answerModal #inputAnswer').val("");
-                    this.answer = "";
                 },
                 resetUpdateAnswerModal() {
                     $('#updateAnswerModal #updateAnswer').val("");
-                    this.answer = "";
                     this.populateAnswers();
                 },
                 resetDuplicateModal() {

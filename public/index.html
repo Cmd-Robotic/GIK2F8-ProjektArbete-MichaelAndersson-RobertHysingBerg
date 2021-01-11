@@ -397,11 +397,11 @@
                                         <p class="card-text">{{ item.answer }}</p>
                                         <p class="card-text">Quality: {{ item.vote }}</p>
                                         <p class="card-text"><small>Posted: {{ item.time }}</small></p>
-                                        <button type="button" class="btn btn-primary" v-show="contributor" v-on:click="upvoteAnswer(item)">Good</button>
-                                        <button type="button" class="btn btn-danger" v-show="contributor" v-on:click="downvoteAnswer(item)">Bad</button>
+                                        <button type="button" class="btn btn-primary" v-show="admin || allow" v-on:click="upvoteAnswer(item)">Good</button>
+                                        <button type="button" class="btn btn-danger" v-show="admin || allow" v-on:click="downvoteAnswer(item)">Bad</button>
                                         <button v-show="contributor" type="button" class="btn btn-info btn-right" data-target="#updateAnswerModal"
                                             data-toggle="modal" v-on:click="selectAnswer(item)">Update</button>
-                                        <button v-show="admin" type="button" class="btn btn-danger btn-right" data-target="deleteAnswer(item)">Delete</button>
+                                        <button v-show="admin || allow" type="button" class="btn btn-danger btn-right" data-target="deleteAnswer(item)">Delete</button>
                                     </div>
                                 </div>
                             </div>
@@ -470,19 +470,19 @@
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close" v-on:click="resetUpdateAnswerModal()">
                                 <span aria-hidden="true">&times;</span>
                             </button>
-                            <form class="modal-body">
-                                <div class="form-group modalColor">
-                                    <label for="updateAnswer">Answer</label>
-                                    <textarea class="form-control" id="updateAnswer" rows="6" placeholder="selectedAnswer.answer"
-                                        v-bind:value="selectedAnswer.answer"></textarea>
-                                </div>
-                            </form>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
-                                    v-on:click="updateAnswer()">Reply</button>
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                                    v-on:click="resetUpdateAnswerModal()">Close</button>
+                        </div>
+                        <form class="modal-body">
+                            <div class="form-group modalColor">
+                                <label for="updateAnswer">Answer</label>
+                                <textarea class="form-control" id="updateAnswer" rows="6" placeholder="selectedAnswer.answer"
+                                    v-bind:value="selectedAnswer.answer"></textarea>
                             </div>
+                        </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-show="contributor"
+                                v-on:click="updateAnswer()">Reply</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                v-on:click="resetUpdateAnswerModal()">Close</button>
                         </div>
                     </div>
                 </div>
@@ -1141,7 +1141,8 @@
                         });
                         this.unselectAnswer();
                         this.resetupdateAnswerModal();
-                        this.updateQueries();
+                        //this.updateQueries();
+                        this.populateAnswers();
                     },
                     async upvoteAnswer(item) {
                         var message;
@@ -1293,11 +1294,9 @@
                     },
                     resetAnswerModal() {
                         $('#answerModal #inputAnswer').val("");
-                        this.answer = "";
                     },
                     resetUpdateAnswerModal() {
                         $('#updateAnswerModal #updateAnswer').val("");
-                        this.answer = "";
                         this.populateAnswers();
                     },
                     resetDuplicateModal() {

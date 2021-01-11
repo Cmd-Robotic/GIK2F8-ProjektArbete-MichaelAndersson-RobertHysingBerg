@@ -633,7 +633,6 @@
             data: {
                 queries: [],
                 answers: [],
-                answer: "",
                 allQueries: [],
                 selectedCategory: "All",
                 item: '',
@@ -1163,11 +1162,9 @@
                 },
                 resetAnswerModal() {
                     $('#answerModal #inputAnswer').val("");
-                    this.answer = "";
                 },
                 resetUpdateAnswerModal() {
                     $('#updateAnswerModal #updateAnswer').val("");
-                    this.answer = "";
                     this.populateAnswers();
                 },
                 resetDuplicateModal() {
