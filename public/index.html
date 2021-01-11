@@ -470,7 +470,7 @@
                                         <button type="button" class="btn btn-danger" v-show="admin || allow" v-on:click="downvoteAnswer(item)">Bad</button>
                                         <button v-show="contributor" type="button" class="btn btn-info btn-right" data-target="#updateAnswerModal"
                                             data-toggle="modal" v-on:click="selectAnswer(item)">Update</button>
-                                        <button v-show="admin || allow" type="button" class="btn btn-danger btn-right" data-target="deleteAnswer(item)">Delete</button>
+                                        <button v-show="admin" type="button" class="btn btn-danger btn-right" data-target="deleteAnswer(item)">Delete</button>
                                     </div>
                                 </div>
                             </div>
@@ -859,15 +859,17 @@
                     //########## UPDATE ##########
                     async updateQueries() {
                         this.queries = [];
+                        this.allQueries = [];
                         await $.ajax({
                             url: 'http://127.0.0.1:5000/queries/',
                             type: 'GET',
                             success: (response) => {
                                 var self = this;
                                 self.allQueries = response;
-                                for (var i = 0; i < this.allQueries.length; i++) {
-                                    if (this.allQueries[i].userId == this.user.id) {
-                                        self.queries.push(this.allQueries[i]);
+                                self.queries = [];
+                                for (var i = 0; i < self.allQueries.length; i++) {
+                                    if (self.allQueries[i].userId == self.user.id) {
+                                        self.queries.push(self.allQueries[i]);
                                     }
                                 }
                             },
@@ -1191,7 +1193,7 @@
                             }
                         });
                         //this.unselectItem();
-                        //this.updateQueries();
+                        this.updateQueries();
                     },
                     async downvoteAnswer(item) {
                         var message;
@@ -1214,7 +1216,7 @@
                             }
                         });
                         //this.unselectItem();
-                        //this.updateQueries();
+                        this.updateQueries();
                     },
                     async deleteAnswer(item) {
                         var question = confirm("Are you sure you want to delete answer?");
