@@ -1319,6 +1319,7 @@
                     //########## QUERY HANDLING ##########
                     // Populating frequently asked queries from server based on number of duplicates registered
                     async populateFrequentlyAsked(category) {
+                        this.frequentlyAsked = [];
                         await $.ajax({
                             url: `/frequentlyasked/${category}`,
                             type: 'GET',
@@ -1336,6 +1337,7 @@
                     },
                     // Populating last asked queries from server based on time registered
                     async populateLastAsked(category) {
+                        this.lastAsked = [];
                         await $.ajax({
                             url: `/lastasked/${category}`,
                             type: 'GET',
