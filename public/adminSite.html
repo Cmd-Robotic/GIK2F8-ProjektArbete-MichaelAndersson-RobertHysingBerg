@@ -92,7 +92,6 @@
                         <th scope="col">Firstname</th>
                         <th scope="col">Lastname</th>
                         <th scope="col">Email</th>
-                        <th scope="col">Last login</th>
                         <th scope="col" class="user-actions">Actions</th>
                     </tr>
                 </thead>
@@ -104,7 +103,6 @@
                         <td>{{ item.fname }}</td>
                         <td>{{ item.lname }}</td>
                         <td>{{ item.email}}</td>
-                        <td>{{ item.lastLogin}}</td>
                         <td>
                             <button type="button" class="btn btn-primary" data-toggle="modal"
                                 data-target="#updateUserModal" v-on:click="selectUser(item)">
