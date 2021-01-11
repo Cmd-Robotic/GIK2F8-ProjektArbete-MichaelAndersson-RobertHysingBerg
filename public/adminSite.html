@@ -51,9 +51,9 @@
                             </span>
                             <span v-show="admin"><a class="dropdown-item" href="adminSite.html">Admin</a></span>
                             <span v-show="loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
-                                    data-target="#settingsModal">Settings</a></span>
+                                    v-on:click="selectUser(user)" data-target="#updateUserModal">Settings</a></span>
                             <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
-                                    data-target="#registerModal">Register</a></span>
+                                    data-target="#addUserModal">Register</a></span>
                             <span v-show="!loggedIn"><a class="dropdown-item" href="#" data-toggle="modal"
                                     data-target="#loginModal">Log in</a></span>
                             <span v-show="loggedIn"><a class="dropdown-item" href="index.html" v-on:click="logOutUser()">Log
@@ -720,8 +720,8 @@
                         }
                     });
                 },
-                selectItem(item) {
-                    this.selectedItem = item;
+                selectUser(item) {
+                    this.selectedUser = item;
                 },
                 selectQuery(item) {
                     this.selectedQuery = item;
@@ -729,8 +729,8 @@
                 selectAnswer(item) {
                     this.selectedAnswer = item;
                 },
-                unselectItem() {
-                    this.selectedItem = '';
+                unselectUser() {
+                    this.selectedUser = '';
                 },
                 unselectQuery() {
                     this.selectedQuery = '';
@@ -768,7 +768,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.resetAddUserModal();
                     this.updateUsers();
                 },
@@ -797,16 +796,25 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
+                    this.unselectUser();
                     this.resetUpdateUserModal();
                     this.updateUsers();
                 },
                 async banUser(item) {
                     var message;
-                    var user = item;
-                    item.accessLevel=0;
+                    var user = {
+                        id: item.id,
+                        accessLevel: 0,
+                        username: item.username,
+                        //password: item.password,
+                        fname: item.fname,
+                        lname: item.lname,
+                        email: item.email
+                    }
+                    //item.accessLevel=0;
+                    console.log(user);
                     await $.ajax({
-                        url: '/user/admin',
+                        url: '/user/admin/',
                         type: 'PUT',
                         data: user,
                         success: () => {
@@ -818,7 +826,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateUsers();
                 },
                 async deleteUser(item) {
@@ -838,7 +845,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateUsers();
                 },
 
@@ -864,7 +870,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.resetAddQueryModal();
                     this.updateQueries();
                 },
@@ -911,7 +916,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateQueries();
                 },
                 async markDuplicate(item) {
@@ -1007,7 +1011,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateQueries();
                 },
                 async downvoteAnswer(item) {
@@ -1031,7 +1034,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateQueries();
                 },
                 async deleteAnswer(item) {
@@ -1051,7 +1053,6 @@
                             alert(message);
                         }
                     });
-                    //this.unselectItem();
                     this.updateQueries();
                     this.populateAnswers();
                 },

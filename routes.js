@@ -499,7 +499,7 @@ routes.put('/user/admin/', async (req, res) => {
                 const accessLevel = await dataValidation.validAccessLevel(req.body.accessLevel);
                 const id = await dataValidation.validId(req.body.id);
                 const username = await dataValidation.validUsername(req.body.username);
-                if (!fname || !lname || !email || !accessLevel || !id || !username) {
+                if (!fname || !lname || !email || accessLevel<0 || accessLevel>3 || !id || !username) {
                     res.status(400).send('ERROR! Invalid data sent to server');
                 }
                 else {
